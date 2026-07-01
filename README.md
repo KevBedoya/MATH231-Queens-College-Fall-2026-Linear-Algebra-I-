@@ -73,12 +73,20 @@ delivered as in-lecture **demos**:
 3 exams (final includes a cheat sheet), 4 assigned projects, and 8–10 homework
 assignments blending hand computation with MATLAB verification.
 
+## Grades
+
+Course grades are posted on **Gradesly** — <https://gradesly.com/users/sign_in> —
+the platform students use to view their MATH 231 grades. Sign-in / enrollment
+instructions will be announced by the instructor at the appropriate time.
+
 ## Repository layout
 
 - **`course_plan/`** — the full unit-by-unit progression (`.tex` + compiled PDF),
   including the projects/demos appendix and a one-semester carving suggestion.
 - **`tentative_textbooks/`** — referenced texts with bibliographic details and
   links (`.tex` + compiled PDF).
+- **`schedule/`** — the Fall 2026 meeting-by-meeting schedule (Tue/Thu), with
+  college-closure and no-class days highlighted (`.tex` + compiled PDF).
 
 ## Reference texts
 
