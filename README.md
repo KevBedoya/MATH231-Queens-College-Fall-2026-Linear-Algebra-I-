@@ -12,6 +12,21 @@ and MATLAB (verification).
 > importance. Items are priority-tagged `[Core]` / `[Recommended]` /
 > `[Enrichment]` so a one-semester path can be carved cleanly.
 
+## Course information
+
+| | |
+|---|---|
+| **Institution** | Queens College (CUNY) |
+| **Instructor** | Kevin Bedoya |
+| **Term / session** | Fall 2026 — Regular Academic Session |
+| **Meeting dates** | August 28, 2026 – December 21, 2026 |
+| **Days / time** | Tuesday & Thursday, 12:10 – 2:00 PM |
+| **Location** | Kiely Hall, Room 326 |
+| **Credits / units** | 4 credits |
+| **Instruction mode** | In-person |
+| **Requirement designation** | Required Core — Mathematical & Quantitative Reasoning |
+| **Enrollment requirement** | PRE: MATH 141 or 151, minimum grade C− |
+
 ## Structure at a glance
 
 The material is sequenced for strict dependency-correctness into **12 units**
