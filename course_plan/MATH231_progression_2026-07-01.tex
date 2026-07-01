@@ -1,0 +1,706 @@
+%==============================================================================
+%  MATH 231 -- Applied Linear Algebra (Fall 2026)
+%  A Natural Progression Through the Course Material
+%
+%  This document re-sequences the tentative syllabus for dependency-correctness
+%  WITHOUT omitting any proposed material.  Each unit specifies:
+%     - Domain(s)          : Pure LA / Numerical LA / Optimization / ML /
+%                            Multivariable Calculus / Spectral Graph Theory / ...
+%     - Primary object(s)  : vectors, matrices, complex numbers, quaternions, sets
+%     - Topics             : the conceptual content
+%     - Key theorems       : named results to prove or state
+%     - Tools / formulas   : closed-form computational instruments
+%     - Algorithms         : procedures to implement
+%     - Applications        : where it is used (ML, physics, DSP, ...)
+%     - ENTER              : prerequisites needed to begin the unit
+%     - EXIT (gateway)     : what a student must master to advance
+%
+%  Priority tags:  [Core]  [Recommended]  [Enrichment]
+%  Compile with pdflatex (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\Large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\part}{\centering\huge\bfseries\sffamily}{}{0pt}{}
+
+\newcommand{\dom}[1]{{\sffamily\bfseries\color{RoyalBlue}#1}}
+\newcommand{\pri}[1]{{\footnotesize\sffamily\color{BrickRed}[\,#1\,]}}
+\newcommand{\obj}[1]{{\itshape #1}}
+
+% Per-unit field list -------------------------------------------------------
+\newenvironment{unitfields}
+  {\begin{description}[leftmargin=0pt,labelindent=0pt,style=nextline,
+      font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=3pt,topsep=4pt]}
+  {\end{description}}
+
+\newcommand{\ff}[1]{\item[#1]}
+
+\theoremstyle{definition}
+\newtheorem*{gateway}{Gateway to next unit}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Applied Linear Algebra}\\[4pt]
+       {\large\sffamily A Natural Progression Through the Course Material}\\[2pt]
+       {\normalsize\sffamily Fall 2026 -- working draft}}
+\author{}
+\date{\normalsize\sffamily Draft dated July 1, 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.2cm}
+
+%==============================================================================
+\section*{How to read this document}
+%==============================================================================
+The tentative syllabus contains \emph{more than one semester} of material by
+design: the intent is a wide breadth from which to select the topics students
+find most compelling and the instructor deems most essential.  Accordingly:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item Units are ordered so that every concept is preceded by its prerequisites.
+        The \dom{Domain} tag names the discipline; the \obj{objects} name the
+        primary mathematical objects in play.
+  \item Priority tags let you carve a one-semester path:
+        \pri{Core} = spine of the course (skip nothing);
+        \pri{Recommended} = strongly desired if time permits;
+        \pri{Enrichment} = optional depth / seminar-style topics.
+  \item Each unit ends with an explicit \textbf{Gateway}: the competencies a
+        student must hold before the next unit is intelligible.
+  \item The course is grouped into four \emph{arcs}. A minimal one-semester
+        realization is Arcs~I--III plus a chosen slice of Arc~IV.
+\end{itemize}
+
+\noindent\textbf{Domains used:} Pure Linear Algebra; Numerical Analysis /
+Numerical Linear Algebra; Multivariable Calculus; Optimization; Machine
+Learning; Spectral Graph Theory.\\[2pt]
+\textbf{Implementation languages:} C\texttt{++} (low-level kernels),
+Python (high-level demos), MATLAB (verification).
+
+%==============================================================================
+\section*{Dependency map (arc-level)}
+%==============================================================================
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}c l l@{}}
+\toprule
+\textbf{Arc} & \textbf{Units} & \textbf{Depends on} \\
+\midrule
+I.   Foundations                 & 1--3   & --- \\
+II.  Matrices \& Continuous Math  & 4--6   & Arc I \\
+III. Core Matrix Theory          & 7--9   & Arcs I--II \\
+IV.  Advanced Methods \& Apps     & 10--12 & Arcs I--III \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Two ``honest'' forward references worth naming up front:
+the \emph{spectral} and \emph{nuclear} matrix norms are \emph{defined} in
+Unit~4 but only \emph{computed/justified} after the SVD in Unit~11; the
+\emph{Hessian} is introduced in Unit~5 but its definiteness analysis is
+completed in Unit~11.
+
+%##############################################################################
+\part*{Arc I -- Foundations}
+%##############################################################################
+
+%------------------------------------------------------------------ Unit 1 ---
+\section{Vectors, Vector Spaces \& the Language of the Course}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} \pri{Core}
+\ff{Primary object(s)} \obj{sets, fields ($\mathbb{R},\mathbb{C}$), vectors}
+\ff{Topics}
+  Sets and functions; the field axioms for $\mathbb{R}$ and $\mathbb{C}$.
+  Vectors in $\mathbb{R}^2,\mathbb{R}^3,\mathbb{R}^n$ and higher-dimensional
+  spaces. The algebraic properties: vector addition, scalar multiplication,
+  additive identity/inverse, commutativity, associativity, the zero vector,
+  distributivity, multiplicative identity. \textbf{Formal definition of a
+  vector space} (a set $V$ with $+$ and scalar multiplication satisfying the
+  six axioms). Subspaces; span; linear independence/dependence; basis;
+  dimension. Geometric picture: parallelogram rule, scaling, normalization.
+\ff{Key theorems}
+  Uniqueness of the additive identity and additive inverse;
+  every spanning set contains a basis / every independent set extends to a
+  basis \pri{Recommended}; dimension is well-defined (basis-size invariance)
+  \pri{Recommended}.
+\ff{Tools / formulas}
+  Linear combinations; coordinate representation relative to a basis.
+\ff{Algorithms} --- (algorithmic content begins in Unit~2).
+\ff{Applications}
+  Image vectorization (an image as a point in $\mathbb{R}^{HW}$);
+  physical vectors (position/velocity/acceleration) as a motivating instance
+  \pri{Recommended}.
+\ff{Languages} Python (construct/visualize vectors), C\texttt{++} \pri{Enrichment}.
+\ff{ENTER} High-school algebra; comfort with set notation.
+\end{unitfields}
+\begin{gateway}
+Student can state the six vector-space axioms, verify whether a given set with
+operations is a vector space, and compute a basis/dimension of a subspace of
+$\mathbb{R}^n$.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 2 ---
+\section{Inner Products, Norms \& Similarity}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} + \dom{Numerical LA} + \dom{Machine Learning} \pri{Core}
+\ff{Primary object(s)} \obj{vectors}
+\ff{Topics}
+  Dot (inner) product; component and orthogonal projection of one vector onto
+  another; angle between vectors. Orthogonal vs.\ parallel vectors.
+  \textbf{Vector norms}: Euclidean/standard ($\ell_2$), Manhattan/taxicab
+  ($\ell_1$), Chebyshev/chessboard ($\ell_\infty$), and the general $p$-norm.
+  Normalization. Distance/metric induced by a norm. Cosine similarity and
+  general similarity kernels.
+\ff{Key theorems}
+  \textbf{Cauchy--Schwarz inequality}; triangle inequality; Pythagorean
+  identity for orthogonal vectors \pri{Recommended}.
+\ff{Tools / formulas}
+  Dot product $\langle x,y\rangle$; projection
+  $\operatorname{proj}_y x=\frac{\langle x,y\rangle}{\langle y,y\rangle}y$;
+  cosine similarity $\frac{\langle x,y\rangle}{\|x\|\,\|y\|}$; $p$-norm
+  $\|x\|_p=(\sum|x_i|^p)^{1/p}$; general kernel $k(x,y)$.
+\ff{Algorithms}
+  \textbf{Gram--Schmidt orthogonalization} (classical form; modified form
+  deferred to Unit~10) \pri{Core};
+  \textbf{$k$-Nearest Neighbors} \pri{Recommended};
+  \textbf{$k$-means clustering} \pri{Recommended}.
+\ff{Applications}
+  Semantic embeddings in language models (cosine similarity between token/word
+  vectors); retrieval; clustering; a geometric preview of the SVM margin
+  \pri{Enrichment}.
+\ff{Languages}
+  C\texttt{++} kernels (inner product, cosine similarity, with compiler-flag
+  optimization) \pri{Core}; Python demos (KNN, $k$-means) \pri{Recommended};
+  MATLAB verification.
+\ff{ENTER} Unit~1 (vectors, span, basis).
+\end{unitfields}
+\begin{gateway}
+Student can compute norms/projections/cosine similarity by hand and in code,
+prove Cauchy--Schwarz, and run Gram--Schmidt to produce an orthonormal set.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 3 ---
+\section{Complex Numbers \& Quaternions}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra / Algebra} \pri{Core (complex)}, \pri{Enrichment (quaternions)}
+\ff{Primary object(s)} \obj{complex numbers $\mathbb{C}$, quaternions $\mathbb{H}$}
+\ff{Topics}
+  Algebraic structure of $\mathbb{C}$: addition, multiplication, conjugation.
+  Real and imaginary parts; the modulus. Polar form; the complex plane and the
+  geometric interpretation of multiplication as rotation-and-scaling.
+  Quaternions: non-commutative multiplication, use in 3-D rotation
+  \pri{Enrichment}.
+\ff{Key theorems}
+  \textbf{Euler's formula} $e^{i\theta}=\cos\theta+i\sin\theta$;
+  \textbf{De Moivre's theorem}; Fundamental Theorem of Algebra (stated)
+  \pri{Recommended}.
+\ff{Tools / formulas}
+  Modulus $|z|=\sqrt{a^2+b^2}$; $\operatorname{Re}z,\operatorname{Im}z$;
+  polar form $z=re^{i\theta}$; $n$-th roots of unity \pri{Recommended};
+  quaternion product / rotation formula \pri{Enrichment}.
+\ff{Algorithms} Complex arithmetic; rotation composition via quaternions \pri{Enrichment}.
+\ff{Applications}
+  Signal representation (phasors) \pri{Recommended}; 3-D rotations in graphics
+  and robotics \pri{Enrichment}; foreshadowing complex eigenvalues (Unit~11).
+\ff{Languages} Python (complex plane visualization); MATLAB.
+\ff{ENTER} Unit~1 (fields, vectors); Unit~2 (norms $\Rightarrow$ modulus).
+\end{unitfields}
+\begin{gateway}
+Student can move fluently between rectangular and polar form, apply Euler/De
+Moivre, and interpret complex multiplication geometrically.
+\end{gateway}
+
+%##############################################################################
+\part*{Arc II -- Matrices \& Continuous Math}
+%##############################################################################
+
+%------------------------------------------------------------------ Unit 4 ---
+\section{Matrices: Algebra, Determinant, Trace \& Matrix Norms}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} + \dom{Numerical LA} \pri{Core}
+\ff{Primary object(s)} \obj{matrices}
+\ff{Topics}
+  Matrices as arrays and as objects: addition, scalar multiplication, matrix
+  multiplication, transpose/conjugate-transpose, inverse. Special matrices
+  (identity, diagonal, symmetric, orthogonal). Determinant and its properties;
+  trace. The matrix exponential $e^{A}$ (defined by its series; closed forms
+  deferred to Unit~11). \textbf{Matrix norms}: induced/operator $1$-norm,
+  $\infty$-norm, spectral ($2$-)norm; Frobenius norm; nuclear norm.
+\ff{Key theorems}
+  Determinant multiplicativity $\det(AB)=\det A\det B$; invertibility
+  $\iff\det\neq 0$; submultiplicativity of induced norms
+  $\|AB\|\le\|A\|\|B\|$ \pri{Recommended}.
+\ff{Tools / formulas}
+  $\operatorname{tr}(A)=\sum a_{ii}$; determinant (cofactor and via
+  elimination); $\|A\|_F=\sqrt{\sum a_{ij}^2}$; induced norm
+  $\|A\|=\sup_{x\neq0}\|Ax\|/\|x\|$; $e^{A}=\sum_k A^k/k!$.
+  \emph{Note:} spectral and nuclear norms are \emph{defined} here but
+  \emph{computed} via the SVD in Unit~11.
+\ff{Algorithms}
+  Naive and blocked matrix multiply; matrix--vector product \pri{Core}.
+\ff{Applications}
+  Linear operators on data; adjacency/weight matrices (preview of graphs).
+\ff{Languages}
+  C\texttt{++} (matmul, mat--vec with \texttt{-O2/-O3}, cache blocking)
+  \pri{Core}; Python/MATLAB verification.
+\ff{ENTER} Units~1--2 (vectors, norms).
+\end{unitfields}
+\begin{gateway}
+Student can multiply/invert matrices, compute determinant and trace, and
+evaluate the Frobenius and induced $1/\infty$ norms; understands what the
+spectral/nuclear norms \emph{mean} even before computing them.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 5 ---
+\section{Multivariable Calculus: Gradients, Hessians \& Taylor's Theorem}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Multivariable Calculus} \pri{Core}
+\ff{Primary object(s)} \obj{multivariate functions, vectors, matrices}
+\ff{Topics}
+  Multivariable scalar functions and vector-valued functions; their graphs.
+  Equations of planes; tangent planes. The definition of the derivative for
+  multivariate scalar functions; partial derivatives. Linear approximation.
+  \textbf{The gradient} (a vector) and \textbf{the Hessian} (a matrix;
+  definiteness analysis completed in Unit~11). Review of exponential and
+  logarithmic functions and \emph{derivations} of the derivatives of $e^x$ and
+  $\ln x$.
+\ff{Key theorems}
+  \textbf{Taylor's theorem}, univariate and multivariate (first- and
+  second-order forms) \pri{Core}; equality of mixed partials (Clairaut)
+  \pri{Recommended}.
+\ff{Tools / formulas}
+  Gradient $\nabla f$; Hessian $H_f$; tangent-plane / first-order model
+  $f(x)\approx f(a)+\nabla f(a)^\top(x-a)$; second-order model with
+  $\tfrac12(x-a)^\top H(x-a)$; $\frac{d}{dx}e^x=e^x$,
+  $\frac{d}{dx}\ln x=1/x$.
+\ff{Algorithms}
+  Numerical gradient (finite differences) \pri{Recommended}.
+\ff{Applications}
+  Sets the analytic foundation for all of Arc~IV (optimization, regression).
+\ff{Languages}
+  Python (surface/contour plots, gradient fields); MATLAB.
+\ff{ENTER} Units~1--2 (vectors, inner products) and Unit~4 (matrices, for the Hessian).
+\end{unitfields}
+\begin{gateway}
+Student can compute gradients/Hessians, write first- and second-order Taylor
+models of a multivariate function, and derive $\frac{d}{dx}e^x$ and
+$\frac{d}{dx}\ln x$ from first principles.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 6 ---
+\section{Numerical Foundations: Complexity, Floating Point, Conditioning \& Stability}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Numerical Analysis} \pri{Core (short unit)}
+\ff{Primary object(s)} \obj{real numbers, floating-point numbers, functions}
+\ff{Topics}
+  Time complexity: Big-$O$, $\Omega$, $\Theta$. The floating-point number
+  system as the footing of numerical analysis. The \textbf{condition number} of
+  a (univariate, then matrix) problem $\Rightarrow$ sensitivity of outputs to
+  input perturbation. \textbf{Stability} of algorithms. Sources of numerical
+  error: cancellation, rounding, precision. Tolerances and stopping criteria
+  in iterative algorithms.
+\ff{Key theorems}
+  Relationship $\text{error}\lesssim(\text{condition number})\times
+  (\text{machine epsilon})$ for stable algorithms \pri{Recommended}.
+\ff{Tools / formulas}
+  Machine epsilon; condition number $\kappa(f)=|xf'(x)/f(x)|$ (univariate) and
+  $\kappa(A)=\|A\|\,\|A^{-1}\|$ (matrix, referenced forward to Unit~11);
+  absolute vs.\ relative error.
+\ff{Algorithms}
+  Illustrative unstable vs.\ stable computations (e.g., catastrophic
+  cancellation demos) \pri{Core}.
+\ff{Applications}
+  Governs the reliability of every later algorithm (elimination, QR, eigen).
+\ff{Languages}
+  C\texttt{++} (float vs.\ double behavior); Python/MATLAB (epsilon,
+  ill-conditioned examples).
+\ff{ENTER} Unit~4 (matrix norms); Unit~5 (derivatives, for condition numbers).
+\end{unitfields}
+\begin{gateway}
+Student can give asymptotic costs, explain what conditioning and stability mean,
+identify cancellation, and set a sensible tolerance for an iterative method.
+\end{gateway}
+
+%##############################################################################
+\part*{Arc III -- Core Matrix Theory}
+%##############################################################################
+
+%------------------------------------------------------------------ Unit 7 ---
+\section{Linear Systems \& Elimination}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} + \dom{Numerical LA} \pri{Core}
+\ff{Primary object(s)} \obj{matrices, vectors}
+\ff{Topics}
+  Systems $Ax=b$; row operations; row-echelon and reduced row-echelon form.
+  Existence and uniqueness of solutions; rank; pivots; homogeneous vs.\
+  inhomogeneous systems. \textbf{LU factorization}; pivoting for stability
+  (tie to Unit~6).
+\ff{Key theorems}
+  Rouch\'e--Capelli (solvability via rank) \pri{Recommended};
+  existence/uniqueness of $LU$ with partial pivoting \pri{Recommended}.
+\ff{Tools / formulas}
+  Gaussian/Gauss--Jordan elimination; back/forward substitution; $A=LU$,
+  $PA=LU$.
+\ff{Algorithms}
+  \textbf{Gaussian elimination}; \textbf{LU factorization} with partial
+  pivoting \pri{Core}.
+\ff{Applications}
+  The computational workhorse behind regression, Newton steps, and more.
+\ff{Languages}
+  C\texttt{++} (elimination kernel) \pri{Recommended};
+  MATLAB (\texttt{lu}, verification) \pri{Core}.
+\ff{ENTER} Units~1--2, 4 (vectors, matrices); Unit~6 (why pivoting).
+\end{unitfields}
+\begin{gateway}
+Student can solve $Ax=b$ by elimination, determine solvability from rank, and
+produce/use an $LU$ factorization.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 8 ---
+\section{Linear Transformations}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} \pri{Core}
+\ff{Primary object(s)} \obj{linear maps, matrices}
+\ff{Topics}
+  Linear maps $T:V\to W$; the matrix of a linear map; composition as matrix
+  product. Kernel (null space) and image (range) of a map. Injectivity/
+  surjectivity/invertibility. Change of basis and similarity.
+\ff{Key theorems}
+  \textbf{Rank--Nullity theorem}; a linear map is invertible $\iff$ its matrix
+  is invertible \pri{Core}; change-of-basis / similarity relation
+  $B=P^{-1}AP$ \pri{Recommended}.
+\ff{Tools / formulas}
+  Matrix representation in a basis; change-of-basis matrix $P$.
+\ff{Algorithms}
+  Computing kernel/image bases via elimination \pri{Core}.
+\ff{Applications}
+  Rotations/reflections/projections as maps; graphics transforms
+  \pri{Recommended}; sets up the four subspaces and eigen-theory.
+\ff{Languages} Python (visualize $2$-D/$3$-D transforms); MATLAB.
+\ff{ENTER} Unit~7 (elimination, rank); Units~1--2.
+\end{unitfields}
+\begin{gateway}
+Student can pass between a linear map and its matrix, compute kernel/image,
+apply rank--nullity, and change basis.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 9 ---
+\section{The Four Fundamental Subspaces}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure Linear Algebra} \pri{Core}
+\ff{Primary object(s)} \obj{subspaces, matrices}
+\ff{Topics}
+  Column space, null space, row space, left null space of $A$; their
+  dimensions and how they follow from rank. Orthogonality relations between the
+  pairs. The geometry that underlies projection and least squares.
+\ff{Key theorems}
+  \textbf{Fundamental Theorem of Linear Algebra} (dimensions + orthogonality:
+  $\mathcal{N}(A)\perp\mathcal{R}(A^\top)$, $\mathcal{N}(A^\top)\perp
+  \mathcal{R}(A)$) \pri{Core}.
+\ff{Tools / formulas}
+  $\dim\mathcal{C}(A)=\operatorname{rank}A=r$; $\dim\mathcal{N}(A)=n-r$;
+  bases of each subspace from RREF.
+\ff{Algorithms}
+  Extract bases of all four subspaces from elimination \pri{Core}.
+\ff{Applications}
+  Direct foundation for least squares (Unit~10) and PCA/SVD geometry (Unit~11).
+\ff{Languages} Python/MATLAB (rank, null-space bases).
+\ff{ENTER} Units~7--8 (elimination, maps, rank--nullity).
+\end{unitfields}
+\begin{gateway}
+Student can name and produce bases for all four subspaces of a given $A$ and
+state their dimensions and orthogonality relations.
+\end{gateway}
+
+%##############################################################################
+\part*{Arc IV -- Advanced Methods \& Applications}
+%##############################################################################
+
+%------------------------------------------------------------------ Unit 10 --
+\section{Orthogonality, Projections, Least Squares \& Factorizations}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Numerical LA} + \dom{Machine Learning} \pri{Core}
+\ff{Primary object(s)} \obj{matrices, vectors, subspaces}
+\ff{Topics}
+  Orthogonal projection onto a subspace; orthonormal bases. The least-squares
+  problem $\min_x\|Ax-b\|_2$ and the normal equations $A^\top A x=A^\top b$.
+  Linear regression as least squares. \textbf{QR factorization} (classical and
+  \emph{modified} Gram--Schmidt; Householder reflections). \textbf{Cholesky
+  factorization} of the SPD matrix $A^\top A$. Introduction to quadratic forms
+  (definiteness deepened in Unit~11). Orthogonal transforms as a change to an
+  orthonormal basis; the \textbf{Discrete Cosine Transform (DCT)} as a
+  \emph{fixed} orthonormal basis, contrasted with the data-adaptive SVD basis
+  (payoff in the JPEG/SVD image-compression demo, Unit~11) \pri{Recommended}.
+\ff{Key theorems}
+  Projection/orthogonality principle (residual $\perp$ column space);
+  existence \& uniqueness of the least-squares solution when $A$ has full
+  column rank \pri{Core}; $A=QR$ existence \pri{Recommended}.
+\ff{Tools / formulas}
+  Projection matrix $P=A(A^\top A)^{-1}A^\top$; normal equations;
+  $A=QR$; $A^\top A=LL^\top$ (Cholesky); quadratic form $q(x)=x^\top Ax$.
+\ff{Algorithms}
+  \textbf{Ordinary Least Squares (OLS)} \pri{Core};
+  \textbf{Modified Gram--Schmidt} \pri{Core};
+  \textbf{Householder QR} \pri{Recommended};
+  \textbf{Cholesky factorization} \pri{Recommended}.
+\ff{Applications}
+  Linear regression / curve fitting \pri{Core}; data whitening \pri{Enrichment}.
+\ff{Languages}
+  Python (linear regression demo) \pri{Core};
+  MATLAB (\texttt{qr}, \texttt{chol}, verification);
+  C\texttt{++} (QR kernel) \pri{Enrichment}.
+\ff{ENTER} Unit~9 (subspaces, projection geometry); Unit~6 (why MGS/Householder over normal equations).
+\end{unitfields}
+\begin{gateway}
+Student can set up and solve a least-squares problem three ways (normal
+equations, QR, Cholesky), fit a regression model, and explain why QR is more
+stable than the normal equations.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 11 --
+\section{Eigenvalues, Eigenvectors \& the Singular Value Decomposition}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Pure LA} + \dom{Numerical LA} + \dom{Spectral Graph Theory} + \dom{Machine Learning} \pri{Core}
+\ff{Primary object(s)} \obj{matrices, vectors, complex numbers}
+\ff{Topics}
+  Eigenvalues/eigenvectors; characteristic polynomial; connection to
+  determinant ($\prod\lambda_i$) and trace ($\sum\lambda_i$). Diagonalization
+  and similarity. Symmetric matrices and orthogonal diagonalization.
+  \textbf{Quadratic forms and definiteness} (completes Unit~10). The
+  \textbf{SVD} and its geometry; low-rank approximation; \emph{now} the
+  spectral and nuclear norms of Unit~4 are computable. Why eigenvalue problems
+  are solved \emph{iteratively}. Graph Laplacians and spectral clustering.
+  Stochastic (Markov) matrices and the dominant-eigenvector interpretation that
+  underlies PageRank.
+\ff{Key theorems}
+  \textbf{Spectral theorem} (symmetric/Hermitian $\Rightarrow$ orthonormal
+  eigenbasis) \pri{Core};
+  \textbf{Schur's theorem} (unitary triangularization) \pri{Recommended};
+  \textbf{Singular Value Decomposition} \pri{Core};
+  \textbf{Eckart--Young} (best low-rank approximation) \pri{Recommended};
+  \textbf{Abel--Ruffini theorem} (no general radical solution for degree
+  $\ge 5$ $\Rightarrow$ eigenvalues need iteration) \pri{Enrichment};
+  \textbf{Perron--Frobenius theorem} (a nonnegative/stochastic matrix has a
+  positive dominant eigenvalue with a nonnegative eigenvector; underlies
+  PageRank and spectral clustering) \pri{Recommended}.
+\ff{Tools / formulas}
+  Characteristic polynomial $\det(A-\lambda I)=0$; $A=Q\Lambda Q^\top$;
+  $A=U\Sigma V^\top$; $\|A\|_2=\sigma_{\max}$, $\|A\|_*=\sum\sigma_i$;
+  $\kappa_2(A)=\sigma_{\max}/\sigma_{\min}$; matrix exponential via
+  eigendecomposition $e^{A}=Qe^{\Lambda}Q^{-1}$; graph Laplacian $L=D-W$.
+\ff{Algorithms}
+  Power iteration; QR algorithm (stated) \pri{Recommended};
+  \textbf{PCA} \pri{Core};
+  \textbf{Randomized SVD} and \textbf{Hutchinson trace estimation}
+  (\emph{Monte-Carlo application}) \pri{Enrichment};
+  spectral clustering on graph Laplacians \pri{Recommended}.
+\ff{Applications}
+  PCA / dimensionality reduction; Eigenfaces / ``Eigencats'' \pri{Recommended};
+  spectral graph theory and community detection \pri{Recommended};
+  low-rank compression \pri{Enrichment}; Latent Semantic Analysis on a TF--IDF
+  term--document matrix (document retrieval); PageRank; SVD/DCT image
+  compression; static word-embedding geometry (see Projects appendix).
+\ff{Languages}
+  Python (PCA, SVD, Eigenfaces, spectral graph demos) \pri{Core};
+  MATLAB (\texttt{eig}, \texttt{svd}, verification);
+  C\texttt{++} (power iteration) \pri{Enrichment}.
+\ff{ENTER} Units~8--10 (maps, subspaces, projections, quadratic forms); Unit~3 (complex eigenvalues); Unit~6 (why iterative).
+\end{unitfields}
+\begin{gateway}
+Student can diagonalize symmetric matrices, compute/interpret an SVD, use it
+for low-rank approximation and PCA, evaluate the spectral/nuclear norms and
+$\kappa_2$, and build a graph Laplacian for clustering.
+\end{gateway}
+
+%------------------------------------------------------------------ Unit 12 --
+\section{Numerical Optimization \& Machine-Learning Capstone}
+\begin{unitfields}
+\ff{Domain(s)} \dom{Optimization} + \dom{Machine Learning} \pri{Core (grad.\ descent, Newton); Recommended/Enrichment beyond}
+\ff{Primary object(s)} \obj{multivariate functions, matrices, vectors}
+\ff{Topics}
+  Unconstrained minimization; descent directions; step sizes/line search;
+  convergence and its dependence on conditioning (tie to Units~6,11).
+  \textbf{Gradient descent}; \textbf{Newton's method} (Hessian solve $=$ a
+  linear system, Unit~7). Nonlinear least squares: \textbf{Gauss--Newton} and
+  \textbf{Levenberg--Marquardt}. Quasi-Newton \textbf{BFGS} (mention).
+  Constrained optimization and the \textbf{support vector machine} under the
+  Vapnik objective; kernel methods (reuse Unit~2 kernels). Stochastic /
+  Monte-Carlo optimization (SGD) as an application \pri{Enrichment}.
+  Low-rank matrix factorization with a \emph{masked} loss over observed entries
+  (Alternating Least Squares / SGD) for collaborative filtering. Model-selection
+  methodology: train/validation/test splits and cross-validation as estimates of
+  generalization error (ties to Unit~6 tolerances) \pri{Recommended}.
+\ff{Key theorems}
+  First-/second-order optimality conditions (via Taylor, Unit~5);
+  convexity $\Rightarrow$ global optimum \pri{Recommended};
+  local quadratic convergence of Newton's method \pri{Enrichment}.
+\ff{Tools / formulas}
+  GD update $x_{k+1}=x_k-\alpha\nabla f$; Newton
+  $x_{k+1}=x_k-H^{-1}\nabla f$; Gauss--Newton normal-equation step;
+  LM damped step $(J^\top J+\lambda I)\Delta=-J^\top r$; SVM margin/objective.
+\ff{Algorithms}
+  \textbf{Gradient descent} \pri{Core}; \textbf{Newton's method} \pri{Core};
+  \textbf{Gauss--Newton} \pri{Recommended};
+  \textbf{Levenberg--Marquardt} \pri{Recommended};
+  \textbf{BFGS} (mention) \pri{Enrichment};
+  \textbf{SVM training} \pri{Recommended};
+  \textbf{SGD / Monte-Carlo} \pri{Enrichment}.
+\ff{Applications}
+  Model fitting; classification via SVM; the full ML pipeline tying the course
+  together (embeddings $\to$ similarity $\to$ optimization); collaborative-
+  filtering recommender; signal trilateration (GPS-style positioning).
+\ff{Languages}
+  Python (GD, Newton, SVM demos) \pri{Core};
+  MATLAB (\texttt{lsqnonlin}, verification) \pri{Recommended};
+  C\texttt{++} (GD kernel) \pri{Enrichment}.
+\ff{ENTER} Unit~5 (gradient/Hessian/Taylor); Unit~7 (linear solves); Unit~10 (least squares); Unit~11 (definiteness/conditioning).
+\end{unitfields}
+\begin{gateway}
+Course capstone: student can derive and implement gradient descent and Newton's
+method, choose Gauss--Newton/LM for nonlinear least squares, and train an SVM,
+articulating how each method's behavior depends on conditioning.
+\end{gateway}
+
+%==============================================================================
+\section*{Assessment mapping (tentative)}
+%==============================================================================
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Assessment} & \textbf{Units covered} & \textbf{Suggested focus} \\
+\midrule
+Exam 1              & 1--6    & vector spaces, norms, complex, matrices, calculus, conditioning \\
+Exam 2              & 7--10   & systems, maps, subspaces, least squares \\
+Final Exam (cheat sheet) & 1--12 (weighted to 11--12) & eigen/SVD, optimization, synthesis \\
+\midrule
+Project 1 [Assigned] & after 2  & \#1 K-means image color segmentation (Python / C\texttt{++}) \\
+Project 2 [Assigned] & after 11 & \#5 Eigencats via PCA (Python) \\
+Project 3 [Assigned] & after 12 & \#7 Mini-ML: OLS + SVM + KNN with validation (Python) \\
+Project 4 [Assigned] & after 12 & \#8 Signal trilateration: Gauss--Newton / LM (Python / MATLAB) \\
+Lecture demos       & 10--12  & \#2 SVD+DCT, \#3 LSA, \#4 collab.\ filtering, \#6 PageRank, \#9 embeddings \\
+\midrule
+Homework 1--10      & one per unit (Units 1--12, some combined) & mixed hand + MATLAB verification \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\section*{Computational Projects \& Application Demos}
+%==============================================================================
+This is a \emph{menu}, not an assignment quota: every item below is documented,
+but only a small subset is assigned to students as an implementation
+(\textbf{[Assigned]}); the complement are instructor-led \textbf{[Demo]}s that
+still put the application in front of the class. The list is open --- further
+items may be appended as \#10, \#11, \dots\ without disturbing the ordering.
+
+\smallskip
+\noindent\emph{Outline additions these items introduced:} DCT / orthogonal
+transforms (Unit~10); Perron--Frobenius theorem and stochastic matrices
+(Unit~11); TF--IDF term--document weighting (Unit~11); masked-loss / ALS
+factorization and train/validation/test model selection (Unit~12).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}c l c c p{4.6cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Project} & \textbf{Role} & \textbf{Prereq} & \textbf{LA machinery} \\
+\midrule
+1 & K-means color segmentation   & Assigned & U2  & K-means, image vectorization, $\ell_2$ distance \\
+2 & SVD + DCT image compression  & Demo     & U11 & SVD, Eckart--Young, DCT orthonormal basis \\
+3 & LSA file-system search       & Demo     & U11 & truncated SVD, TF--IDF, cosine similarity \\
+4 & Collaborative filtering      & Demo     & U12 & masked low-rank factorization, ALS/SGD \\
+5 & Eigencats (PCA)              & Assigned & U11 & PCA, covariance eigenbasis / SVD \\
+6 & PageRank                     & Demo     & U11 & power method, stochastic matrix, Perron--Frobenius \\
+7 & Mini-ML (OLS/SVM/KNN)        & Assigned & U12 & OLS, SVM, KNN, train/val/test \\
+8 & Signal trilateration        & Assigned & U12 & Gauss--Newton, Levenberg--Marquardt, Jacobian \\
+9 & Semantic embedding geometry  & Demo     & U11 & cosine similarity, KNN, PCA, vector arithmetic \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Assigned implementations}
+\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=4pt]
+\item[\#1 -- K-means image color segmentation (after Unit 2)]
+  Cluster an image's pixels in RGB (or CIELAB) space into $k$ colors and replace
+  each pixel by its cluster centroid; display the quantized/segmented image as a
+  function of $k$. \emph{LA focus:} $\ell_2$ distance, centroids as means,
+  Lloyd's iteration and its convergence. Python (NumPy/Pillow) or a C\texttt{++}
+  kernel.
+\item[\#5 -- Eigencats via PCA (after Unit 11)]
+  Assemble a data matrix of aligned cat (or face) images, mean-center, and
+  compute principal components via the SVD; visualize the top ``eigencats,''
+  reconstruct images from $r$ components, and plot reconstruction error and
+  variance-explained vs.\ $r$. \emph{LA focus:} covariance eigenstructure, SVD,
+  low-rank reconstruction. Python.
+\item[\#7 -- Mini-ML with validation (after Unit 12)]
+  Three sub-tasks on suitable datasets: OLS for a regression problem, an SVM for
+  a classification problem, and KNN for a multiclass problem; use a
+  train/validation/test split, report generalization metrics, and justify model
+  choice. \emph{LA focus:} normal equations vs.\ QR (OLS), margin/kernels (SVM),
+  distance metrics (KNN), validation methodology. Python (hand-implement the
+  cores; library baselines allowed).
+\item[\#8 -- Signal trilateration (after Unit 12)]
+  From noisy range measurements to known anchors, estimate an emitter's position
+  by nonlinear least squares; implement Gauss--Newton and Levenberg--Marquardt
+  and compare convergence/robustness vs.\ initialization and noise.
+  \emph{LA focus:} residual Jacobian, GN normal-equation step, LM damping,
+  conditioning. Python or MATLAB.
+\end{description}
+
+\subsection*{Lecture demos}
+\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=4pt]
+\item[\#2 -- SVD + DCT image compression (Unit 11)]
+  Sweep the rank $r$ of an image's SVD and watch quality vs.\ storage; then show
+  the $8\times8$ block DCT that JPEG actually uses, connecting a \emph{fixed}
+  orthonormal basis to the data-adaptive SVD basis. Motivates Eckart--Young.
+\item[\#3 -- Latent Semantic Analysis search (Unit 11)]
+  Build a small term--document matrix over a mock file system, TF--IDF weight it,
+  truncate its SVD, and answer queries by cosine similarity in the reduced
+  ``concept'' space; contrast with exact keyword matching.
+\item[\#4 -- Collaborative filtering (Unit 12)]
+  On a toy ratings matrix with missing entries, fit a low-rank factorization by
+  ALS/SGD over \emph{observed} entries and predict held-out ratings; frames
+  recommendation as matrix completion.
+\item[\#6 -- PageRank (Unit 11)]
+  Model a small web graph as a stochastic matrix, run the power method, and watch
+  the ranking vector converge to the dominant eigenvector; connect to
+  Perron--Frobenius and the damping factor.
+\item[\#9 -- Semantic embedding geometry (Unit 11, static)]
+  With pretrained word vectors: nearest neighbors under cosine similarity,
+  analogy arithmetic ($\text{king}-\text{man}+\text{woman}\approx\text{queen}$),
+  PCA to $2$-D for visualization, and clustering --- purely linear algebra, no
+  model training.
+\end{description}
+
+%==============================================================================
+\section*{One-semester carving suggestion}
+%==============================================================================
+A realistic 14--15 week path keeps all \pri{Core} items and a chosen subset of
+\pri{Recommended}:
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+  \item \textbf{Arc I} (Units 1--3): $\sim$3 weeks. Quaternions $\to$ Enrichment.
+  \item \textbf{Arc II} (Units 4--6): $\sim$3 weeks. Matrix-exp $\to$ light.
+  \item \textbf{Arc III} (Units 7--9): $\sim$3 weeks.
+  \item \textbf{Arc IV} (Units 10--12): $\sim$4--5 weeks. Pick \emph{one} of
+        \{Levenberg--Marquardt, spectral graph theory, randomized SVD\} as the
+        enrichment capstone rather than all three.
+\end{itemize}
+
+\bigskip
+\noindent\textbf{Reference texts.}
+Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra} (applied
+spine); Trefethen \& Bau, \emph{Numerical Linear Algebra} (Arc~II \& IV
+numerics); Strang, \emph{Linear Algebra and Its Applications} (subspaces \&
+intuition); Axler, \emph{Linear Algebra Done Right} (theoretical backbone,
+Arcs~I \& III).
+
+\end{document}
