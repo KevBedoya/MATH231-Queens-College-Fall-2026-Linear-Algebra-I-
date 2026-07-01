@@ -83,7 +83,15 @@ find most compelling and the instructor deems most essential.  Accordingly:
 Numerical Linear Algebra; Multivariable Calculus; Optimization; Machine
 Learning; Spectral Graph Theory.\\[2pt]
 \textbf{Implementation languages:} C\texttt{++} (low-level kernels),
-Python (high-level demos), MATLAB (verification).
+Python (high-level demos), MATLAB (verification).\\[4pt]
+\textbf{Textbook reference keys} (each unit lists chapter/lecture-level pointers,
+not page-exact):
+\textbf{[BV]} Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra};
+\textbf{[TB]} Trefethen \& Bau, \emph{Numerical Linear Algebra} (cited by
+\emph{Lecture});
+\textbf{[S]} Strang, \emph{Linear Algebra and Its Applications} (4th ed.);
+\textbf{[A]} Axler, \emph{Linear Algebra Done Right} (4th ed.).
+Topics lying outside all four texts are marked \emph{supplementary}.
 
 %==============================================================================
 \section*{Dependency map (arc-level)}
@@ -139,6 +147,9 @@ completed in Unit~11.
   physical vectors (position/velocity/acceleration) as a motivating instance
   \pri{Recommended}.
 \ff{Languages} Python (construct/visualize vectors), C\texttt{++} \pri{Enrichment}.
+\ff{Textbook refs}
+  \textbf{[A]} Ch.~1--2 (vector spaces, independence, bases, dimension);
+  \textbf{[S]} Ch.~2; \textbf{[BV]} Ch.~1, 5.
 \ff{ENTER} High-school algebra; comfort with set notation.
 \end{unitfields}
 \begin{gateway}
@@ -180,6 +191,10 @@ $\mathbb{R}^n$.
   C\texttt{++} kernels (inner product, cosine similarity, with compiler-flag
   optimization) \pri{Core}; Python demos (KNN, $k$-means) \pri{Recommended};
   MATLAB verification.
+\ff{Textbook refs}
+  \textbf{[A]} Ch.~6 (inner product spaces);
+  \textbf{[TB]} Lec.~2--3 (orthogonal vectors, norms), Lec.~8 (Gram--Schmidt);
+  \textbf{[S]} Ch.~3; \textbf{[BV]} Ch.~3--5.
 \ff{ENTER} Unit~1 (vectors, span, basis).
 \end{unitfields}
 \begin{gateway}
@@ -211,6 +226,10 @@ prove Cauchy--Schwarz, and run Gram--Schmidt to produce an orthonormal set.
   Signal representation (phasors) \pri{Recommended}; 3-D rotations in graphics
   and robotics \pri{Enrichment}; foreshadowing complex eigenvalues (Unit~11).
 \ff{Languages} Python (complex plane visualization); MATLAB.
+\ff{Textbook refs}
+  \textbf{[A]} Ch.~1 ($\mathbb{F}=\mathbb{R}$ or $\mathbb{C}$),
+  Ch.~4 (polynomials, fundamental theorem of algebra);
+  Euler's formula, De Moivre, quaternions \emph{supplementary}.
 \ff{ENTER} Unit~1 (fields, vectors); Unit~2 (norms $\Rightarrow$ modulus).
 \end{unitfields}
 \begin{gateway}
@@ -251,6 +270,11 @@ Moivre, and interpret complex multiplication geometrically.
 \ff{Languages}
   C\texttt{++} (matmul, mat--vec with \texttt{-O2/-O3}, cache blocking)
   \pri{Core}; Python/MATLAB verification.
+\ff{Textbook refs}
+  \textbf{[S]} Ch.~1 (matrix operations), Ch.~4 (determinants);
+  \textbf{[A]} Ch.~3, Ch.~9 (trace, determinant);
+  \textbf{[TB]} Lec.~1, 3; \textbf{[BV]} Ch.~6, 10--11;
+  matrix exponential \emph{supplementary}.
 \ff{ENTER} Units~1--2 (vectors, norms).
 \end{unitfields}
 \begin{gateway}
@@ -287,6 +311,10 @@ spectral/nuclear norms \emph{mean} even before computing them.
   Sets the analytic foundation for all of Arc~IV (optimization, regression).
 \ff{Languages}
   Python (surface/contour plots, gradient fields); MATLAB.
+\ff{Textbook refs}
+  \textbf{[BV]} App.~C (derivatives \& optimization);
+  Taylor's theorem and the Hessian \emph{supplementary}
+  (multivariable-calculus text).
 \ff{ENTER} Units~1--2 (vectors, inner products) and Unit~4 (matrices, for the Hessian).
 \end{unitfields}
 \begin{gateway}
@@ -322,6 +350,9 @@ $\frac{d}{dx}\ln x$ from first principles.
 \ff{Languages}
   C\texttt{++} (float vs.\ double behavior); Python/MATLAB (epsilon,
   ill-conditioned examples).
+\ff{Textbook refs}
+  \textbf{[TB]} Lec.~12--15 (conditioning, floating point, stability);
+  Big-Oh / complexity \emph{supplementary}.
 \ff{ENTER} Unit~4 (matrix norms); Unit~5 (derivatives, for condition numbers).
 \end{unitfields}
 \begin{gateway}
@@ -357,6 +388,10 @@ identify cancellation, and set a sensible tolerance for an iterative method.
 \ff{Languages}
   C\texttt{++} (elimination kernel) \pri{Recommended};
   MATLAB (\texttt{lu}, verification) \pri{Core}.
+\ff{Textbook refs}
+  \textbf{[S]} Ch.~1 (Gaussian elimination);
+  \textbf{[TB]} Lec.~20--22 (elimination, pivoting, stability);
+  \textbf{[BV]} Ch.~8, 11.
 \ff{ENTER} Units~1--2, 4 (vectors, matrices); Unit~6 (why pivoting).
 \end{unitfields}
 \begin{gateway}
@@ -385,6 +420,10 @@ produce/use an $LU$ factorization.
   Rotations/reflections/projections as maps; graphics transforms
   \pri{Recommended}; sets up the four subspaces and eigen-theory.
 \ff{Languages} Python (visualize $2$-D/$3$-D transforms); MATLAB.
+\ff{Textbook refs}
+  \textbf{[A]} Ch.~3 (linear maps);
+  \textbf{[S]} App.~A (linear transformations);
+  \textbf{[BV]} Ch.~2 (linear functions).
 \ff{ENTER} Unit~7 (elimination, rank); Units~1--2.
 \end{unitfields}
 \begin{gateway}
@@ -413,6 +452,10 @@ apply rank--nullity, and change basis.
 \ff{Applications}
   Direct foundation for least squares (Unit~10) and PCA/SVD geometry (Unit~11).
 \ff{Languages} Python/MATLAB (rank, null-space bases).
+\ff{Textbook refs}
+  \textbf{[S]} Ch.~2 (\S2.4, the four subspaces);
+  \textbf{[A]} Ch.~3 (null space \& range, fundamental theorem of linear maps);
+  \textbf{[BV]} Ch.~5.
 \ff{ENTER} Units~7--8 (elimination, maps, rank--nullity).
 \end{unitfields}
 \begin{gateway}
@@ -457,6 +500,10 @@ state their dimensions and orthogonality relations.
   Python (linear regression demo) \pri{Core};
   MATLAB (\texttt{qr}, \texttt{chol}, verification);
   C\texttt{++} (QR kernel) \pri{Enrichment}.
+\ff{Textbook refs}
+  \textbf{[TB]} Lec.~6--11 (projectors, QR, Gram--Schmidt, Householder, least
+  squares), Lec.~23 (Cholesky);
+  \textbf{[BV]} Ch.~12--13; \textbf{[S]} Ch.~3, Ch.~6; \textbf{[A]} Ch.~6.
 \ff{ENTER} Unit~9 (subspaces, projection geometry); Unit~6 (why MGS/Householder over normal equations).
 \end{unitfields}
 \begin{gateway}
@@ -512,6 +559,11 @@ stable than the normal equations.
   Python (PCA, SVD, Eigenfaces, spectral graph demos) \pri{Core};
   MATLAB (\texttt{eig}, \texttt{svd}, verification);
   C\texttt{++} (power iteration) \pri{Enrichment}.
+\ff{Textbook refs}
+  \textbf{[A]} Ch.~5, Ch.~7 (spectral theorem, SVD), Ch.~8 (Schur);
+  \textbf{[S]} Ch.~5--6; \textbf{[TB]} Lec.~4--5 (SVD),
+  Lec.~24--31 (eigenvalue algorithms, computing the SVD);
+  PageRank, Perron--Frobenius, spectral graph theory \emph{supplementary}.
 \ff{ENTER} Units~8--10 (maps, subspaces, projections, quadratic forms); Unit~3 (complex eigenvalues); Unit~6 (why iterative).
 \end{unitfields}
 \begin{gateway}
@@ -561,6 +613,10 @@ $\kappa_2$, and build a graph Laplacian for clustering.
   Python (GD, Newton, SVM demos) \pri{Core};
   MATLAB (\texttt{lsqnonlin}, verification) \pri{Recommended};
   C\texttt{++} (GD kernel) \pri{Enrichment}.
+\ff{Textbook refs}
+  \textbf{[BV]} Ch.~18--19 (nonlinear \& constrained least squares:
+  Gauss--Newton, Levenberg--Marquardt), App.~C;
+  gradient descent, Newton, BFGS, SVM \emph{supplementary}.
 \ff{ENTER} Unit~5 (gradient/Hessian/Taylor); Unit~7 (linear solves); Unit~10 (least squares); Unit~11 (definiteness/conditioning).
 \end{unitfields}
 \begin{gateway}
