@@ -1,0 +1,735 @@
+%==============================================================================
+%  MATH 231 -- Applied Linear Algebra (Fall 2026)
+%  A HISTORICAL PROGRESSION THROUGH THE COURSE MATERIAL
+%
+%  Companion to MATH231_progression_2026-07-01.tex.  This document follows the
+%  same arc/unit ordering as the progression, but instead of asking WHAT the
+%  student must learn it asks WHERE each idea came from: who first isolated it,
+%  what concrete problem drove them to it, and how it seeded the next idea in
+%  the course.  Every substantive claim carries a clickable source; all links
+%  are also collected, grouped by theme, in the closing bibliography.
+%
+%  Compile with pdflatex (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\Large\bfseries\sffamily\color{RoyalBlue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\sffamily}{\thesubsection}{0.6em}{}
+\titleformat{\part}{\centering\huge\bfseries\sffamily}{}{0pt}{}
+
+\newcommand{\who}[1]{{\sffamily\bfseries #1}}
+\newcommand{\yr}[1]{{\sffamily\color{BrickRed}(#1)}}
+\newcommand{\unit}[1]{{\footnotesize\sffamily\color{RoyalBlue}[\,#1\,]}}
+
+\hypersetup{colorlinks=true,linkcolor=RoyalBlue,urlcolor=BrickRed,citecolor=RoyalBlue}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Applied Linear Algebra}\\[4pt]
+       {\large\sffamily A Historical Progression Through the Course Material}\\[2pt]
+       {\normalsize\sffamily Fall 2026 -- companion to the syllabus progression}}
+\author{}
+\date{\normalsize\sffamily Draft dated August 4, 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.0cm}
+
+%==============================================================================
+\section*{How to read this document}
+%==============================================================================
+Linear algebra is almost always taught \emph{backwards} relative to how it was
+discovered. Students meet the clean axioms first (a vector space, a linear map)
+and only later the messy computations (elimination, determinants, eigenvalues).
+History ran the other way: people computed with systems of equations for two
+thousand years, manipulated determinants for a century and a half, and multiplied
+matrices for decades \emph{before} anyone wrote down the axioms of a vector space.
+The abstraction was the last thing to arrive, not the first.
+
+This companion therefore has two jobs. It follows the \textbf{same four arcs and
+twelve units} as \texttt{MATH231\_progression\_2026-07-01.tex}, so each section can
+be read alongside the unit it historicizes. But it also lets you see the true
+chronological plot underneath the pedagogical one: determinants before matrices;
+least squares (Unit~10) driving elimination (Unit~7) and the very idea of a
+condition number (Unit~6); celestial mechanics and psychometrics driving
+eigenvalues and the SVD (Unit~11). Marginal tags such as \unit{Units 7, 10} point
+back to where the topic lives in the progression.
+
+A recurring theme is worth stating up front: \textbf{almost every tool in this
+course was invented to solve a physical or data-analytic problem, not for its own
+sake.} Elimination came from taxation and surveying; least squares from a lost
+asteroid; eigenvalues from the wobble of planets and spinning tops; the SVD twice
+over from geometry and then from psychology; gradient descent from orbit-fitting;
+PageRank from ranking the early Web. The abstract structure is the residue left
+behind after the applications were understood.
+
+%##############################################################################
+\part*{Arc I -- Foundations}
+%##############################################################################
+
+%==============================================================================
+\section{Vectors and Vector Spaces \unit{Unit 1}}
+%==============================================================================
+
+\subsection{The object arrived long before the axioms}
+The modern definition of a vector space --- a set closed under addition and
+scalar multiplication satisfying a short list of axioms --- is the \emph{end} of a
+long story, not its beginning. Its true originator is \who{Hermann Grassmann}
+\yr{1844}, a Prussian schoolteacher who published \emph{Die lineale
+Ausdehnungslehre} (``The Theory of Linear Extension''). Grassmann, trying to give
+algebraic meaning to geometric magnitudes of arbitrary dimension, introduced
+essentially everything in Unit~1: linear combinations, linear independence,
+subspaces, and \emph{dimension} as an intrinsic invariant --- decades before
+anyone else thought in $\mathbb{R}^n$ for $n>3$. His book was so far ahead of its
+idiom that it went almost entirely unread; a rewritten 1862 edition fared little
+better in his lifetime
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Grassmann/}{MacTutor:
+Grassmann}; \href{https://mathshistory.st-andrews.ac.uk/HistTopics/Abstract_linear_spaces/}{MacTutor:
+Abstract linear spaces}).
+
+The crisp \emph{axioms} students memorize are due to \who{Giuseppe Peano}
+\yr{1888} in \emph{Calcolo geometrico secondo l'Ausdehnungslehre di H.\ Grassmann}.
+In a book ostensibly popularizing Grassmann, Peano wrote down, in a single
+chapter, the axioms of a real vector space in a form a student would recognize
+today --- and then, remarkably, discussed infinite-dimensional examples
+(\href{https://en.wikipedia.org/wiki/Vector_space\#History}{Wikipedia: Vector
+space -- History};
+\href{https://mathshistory.st-andrews.ac.uk/Biographies/Peano/}{MacTutor:
+Peano}). It took another generation --- and the needs of functional analysis
+(\who{Banach}, \who{Wiener}, \who{Weyl} in the 1920s) --- for the axiomatic
+viewpoint to become standard.
+
+\subsection{Where the word ``vector'' comes from}
+The \emph{term} ``vector'' (and its companion ``scalar'') is not Grassmann's; it
+is \who{William Rowan Hamilton}'s \yr{1840s}, coined while developing quaternions
+(Unit~3), from the Latin \emph{vehere}, ``to carry.'' The now-ubiquitous dot and
+cross products, and the very phrase ``vector analysis,'' were shaped in the 1880s
+by \who{J.\ Willard Gibbs} and \who{Oliver Heaviside}, who stripped Hamilton's
+quaternions down to the 3-vector calculus physicists actually needed
+(\href{https://en.wikipedia.org/wiki/Vector_(mathematics_and_physics)\#History}{Wikipedia:
+Vector -- History}). So the course's opening object carries three distinct
+lineages: Grassmann's abstract structure, Hamilton's name, and Gibbs--Heaviside's
+working notation.
+
+%==============================================================================
+\section{Inner Products, Norms \& Similarity \unit{Unit 2}}
+%==============================================================================
+
+\subsection{The Cauchy--Schwarz inequality: three names, three settings}
+The inequality $|\langle x,y\rangle|\le\|x\|\,\|y\|$ is really the
+\emph{Cauchy--Bunyakovsky--Schwarz} inequality, and its triple name records three
+independent settings. \who{Augustin-Louis Cauchy} proved the finite-sum version in
+his 1821 \emph{Cours d'analyse}. \who{Viktor Bunyakovsky} \yr{1859} extended it to
+integrals. \who{Hermann Amandus Schwarz} \yr{1888} rediscovered the integral form
+in his work on minimal surfaces and gave the proof now taught
+(\href{https://en.wikipedia.org/wiki/Cauchy\%E2\%80\%93Schwarz_inequality\#History}{Wikipedia:
+Cauchy--Schwarz -- History};
+\href{https://mathshistory.st-andrews.ac.uk/Biographies/Cauchy/}{MacTutor:
+Cauchy}). The inequality is exactly what makes ``the cosine of the angle between
+two vectors'' well defined --- the geometric fact underlying every cosine-similarity
+computation in the course's ML demos.
+
+\subsection{Norms and the $\ell_p$ family}
+The $p$-norms the unit tabulates ($\ell_1$, $\ell_2$, $\ell_\infty$) grew out of
+two nineteenth-century inequalities: \who{Otto H\"older}'s \yr{1889} and
+\who{Hermann Minkowski}'s \yr{1896}, the latter from \emph{Geometrie der Zahlen},
+where Minkowski was studying convex bodies and the ``geometry of numbers''
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Minkowski/}{MacTutor:
+Minkowski}). The abstract notion of a \emph{norm} --- a length function
+axiomatizing all of these at once --- and the term ``normed space'' belong to
+\who{Stefan Banach}'s \yr{1922} thesis (with parallel work by Hahn, Helly, and
+Wiener), the founding document of functional analysis
+(\href{https://en.wikipedia.org/wiki/Normed_vector_space\#History}{Wikipedia:
+Normed vector space}). Thus the taxicab/Euclidean/Chebyshev distinction the unit
+draws is a compression of a story that runs from number theory to the birth of
+modern analysis.
+
+\subsection{Gram--Schmidt: orthogonalization with a prehistory}
+The orthogonalization procedure is named for \who{J\o rgen Pedersen Gram}
+\yr{1883} and \who{Erhard Schmidt} \yr{1907}, but neither invented it: essentially
+the same construction appears in work of \who{Laplace} and \who{Cauchy} decades
+earlier, and Schmidt himself credited Gram
+(\href{https://en.wikipedia.org/wiki/Gram\%E2\%80\%93Schmidt_process\#History}{Wikipedia:
+Gram--Schmidt}). Gram met it while studying least-squares approximation by
+orthogonal functions --- already tying Unit~2 forward to Unit~10. The distinction
+between ``classical'' and ``modified'' Gram--Schmidt that the progression defers to
+Unit~10 is a \emph{twentieth-century, numerical} discovery: the two are identical
+in exact arithmetic and wildly different in floating point (Unit~6).
+
+%==============================================================================
+\section{Complex Numbers \& Quaternions \unit{Unit 3}}
+%==============================================================================
+
+\subsection{Complex numbers were forced, not invented}
+Nobody set out to invent $\sqrt{-1}$; it was forced on algebraists by the cubic.
+\who{Gerolamo Cardano}, in \emph{Ars Magna} \yr{1545}, was pushed into writing
+$5\pm\sqrt{-15}$ while solving equations and called such quantities ``as subtle as
+they are useless.'' \who{Rafael Bombelli} \yr{1572} gave consistent arithmetic
+rules for them, noticing they were unavoidable even when the \emph{final} answers
+were real (the \emph{casus irreducibilis})
+(\href{https://mathshistory.st-andrews.ac.uk/HistTopics/Quadratic_etc_equations/}{MacTutor:
+cubic/quartic equations};
+\href{https://en.wikipedia.org/wiki/Complex_number\#History}{Wikipedia: Complex
+number -- History}).
+
+The \emph{geometric} picture the unit relies on --- the complex plane, and
+multiplication as rotation-and-scaling --- came much later and, tellingly, from
+three people at once: \who{Caspar Wessel} \yr{1799}, \who{Jean-Robert Argand}
+\yr{1806}, and \who{Carl Friedrich Gauss}, who coined the term ``complex number''
+and did most to legitimize the plane picture in \yr{1831}. \who{Hamilton}
+\yr{1837} then removed the last whiff of mysticism by \emph{defining} a complex
+number as an ordered pair $(a,b)$ of reals with prescribed multiplication --- a
+purely algebraic construction. \who{Euler}'s formula
+$e^{i\theta}=\cos\theta+i\sin\theta$ \yr{1748} (anticipated by \who{Roger Cotes},
+1714) and \who{de Moivre}'s theorem \yr{1707--1722} supplied the bridge between the
+algebra and the trigonometry the unit exploits
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Euler/}{MacTutor: Euler}).
+The \who{Fundamental Theorem of Algebra}, that this number system is finally
+``complete'' for polynomials, was first proved (with gaps by modern standards) by
+Gauss in his 1799 doctoral dissertation
+(\href{https://mathshistory.st-andrews.ac.uk/HistTopics/Fund_theorem_of_algebra/}{MacTutor:
+FTA}).
+
+\subsection{Quaternions: Hamilton's search for 3-D multiplication}
+The quaternion enrichment topic has one of the most famous origin stories in
+mathematics. \who{Hamilton} spent years trying to build a consistent
+multiplication on \emph{triples} to do for 3-D space what complex numbers do for
+the plane --- and it is impossible. On 16~October~1843, walking to Broom (Brougham)
+Bridge in Dublin, he realized he needed \emph{four} dimensions and a
+\emph{non-commutative} product ($ij=-ji$), and carved $i^2=j^2=k^2=ijk=-1$ into the
+bridge (\href{https://mathshistory.st-andrews.ac.uk/Biographies/Hamilton/}{MacTutor:
+Hamilton}; \href{https://en.wikipedia.org/wiki/Quaternion\#History}{Wikipedia:
+Quaternion -- History}). The motivating problem --- rotations in 3-D --- is exactly
+why quaternions survive today in computer graphics and robotics, where they avoid
+the ``gimbal lock'' of Euler angles. Non-commutativity, first met here, is the
+student's first warning that matrix multiplication (Unit~4) need not commute.
+
+%##############################################################################
+\part*{Arc II -- Matrices \& Continuous Math}
+%##############################################################################
+
+%==============================================================================
+\section{Matrices: Algebra, Determinant \& Trace \unit{Unit 4}}
+%==============================================================================
+
+\subsection{Determinants came first --- by 150 years}
+One of the great inversions in the history of the subject: the \emph{determinant}
+predates the \emph{matrix} by about a century and a half. Working independently,
+\who{Seki Takakazu} in Japan \yr{1683} and \who{Gottfried Wilhelm Leibniz}
+\yr{1693, in a letter to l'H\^opital} developed determinant-like expressions to
+decide when systems of linear equations have solutions
+(\href{https://mathshistory.st-andrews.ac.uk/HistTopics/Matrices_and_determinants/}{MacTutor:
+Matrices and determinants}). \who{Gabriel Cramer} \yr{1750} gave the explicit rule
+now bearing his name while studying which plane curve passes through given points.
+\who{Pierre-Simon Laplace} \yr{1772} gave the cofactor (``Laplace'') expansion.
+The subject was finally systematized by \who{Cauchy} \yr{1812}, who fixed the
+modern meaning of the word ``determinant,'' proved the product theorem
+$\det(AB)=\det(A)\det(B)$ the unit states, and connected determinants to the
+eigenvalue work of Unit~11
+(\href{https://en.wikipedia.org/wiki/Determinant\#History}{Wikipedia: Determinant
+-- History}).
+
+\subsection{The matrix as an object: Sylvester and Cayley}
+The word ``matrix'' --- Latin for ``womb,'' the thing from which determinants are
+born --- was coined by \who{James Joseph Sylvester} \yr{1850}. But the decisive
+step, treating a matrix as a \emph{single algebraic object} with its own addition,
+multiplication, and inverse, is \who{Arthur Cayley}'s \emph{A Memoir on the Theory
+of Matrices} \yr{1858}. There Cayley defined matrix multiplication so that it
+represents \emph{composition of linear substitutions} (the Unit~8 viewpoint,
+arrived at first!), noted that it is non-commutative, and stated what we call the
+Cayley--Hamilton theorem
+(\href{https://en.wikipedia.org/wiki/Arthur_Cayley}{Wikipedia: Cayley};
+\href{https://mathshistory.st-andrews.ac.uk/Biographies/Cayley/}{MacTutor:
+Cayley}; and Cayley's paper via
+\href{https://www.jstor.org/stable/108649}{JSTOR / Phil.\ Trans.\ Royal Soc.\ 148
+(1858)}). It is historically accurate to tell students that matrix
+\emph{multiplication is defined the way it is because it must mirror the
+composition of linear maps} --- that is the reason Cayley chose the rule.
+
+The word ``trace'' is a translation of the German \emph{Spur}; the matrix
+exponential $e^A$ the unit previews belongs to the theory of linear differential
+equations and, later, to \who{Sophus Lie}'s theory of continuous groups.
+
+%==============================================================================
+\section{Multivariable Calculus: Gradients, Hessians \& Taylor \unit{Unit 5}}
+%==============================================================================
+
+This unit imports the analytic machinery that Arc~IV will need. Its pieces have
+sharply datable origins. \who{Brook Taylor} published his expansion in
+\emph{Methodus Incrementorum Directa et Inversa} \yr{1715}, though special cases
+were known to Gregory and Newton
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Taylor/}{MacTutor:
+Taylor}). \emph{Partial} derivatives and the equality of mixed partials
+(Clairaut's theorem) come from the 18th-century analysts \who{Euler},
+\who{Alexis Clairaut}, and \who{d'Alembert}, wrestling with the vibrating-string
+and heat problems.
+
+The two named objects of the unit are eponymous. The \who{Hessian} matrix of
+second partials is named for \who{Ludwig Otto Hesse} \yr{mid-1800s}, who used it
+studying curves and surfaces
+(\href{https://en.wikipedia.org/wiki/Hessian_matrix}{Wikipedia: Hessian}); the
+closely related \who{Jacobian} is \who{Carl Gustav Jacob Jacobi}'s \yr{1841}
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Jacobi/}{MacTutor:
+Jacobi}). The symbol $\nabla$ (``nabla''/``del'') for the gradient was introduced
+by \who{Hamilton} and named ``gradient'' in the vector-calculus tradition of
+Maxwell and Gibbs. Note the forward reference the progression itself flags: the
+gradient and Hessian are \emph{defined} here, but the meaning of Hessian
+\emph{definiteness} must wait for the spectral theory of Unit~11 --- historically,
+too, definiteness of quadratic forms (Gauss, Sylvester) matured alongside
+eigenvalue theory, not calculus.
+
+%==============================================================================
+\section{Numerical Foundations: Conditioning \& Stability \unit{Unit 6}}
+%==============================================================================
+
+This is the most modern unit in the whole course: its central concepts are
+essentially products of the \emph{electronic-computer era}, invented because
+people were, for the first time, running thousands of arithmetic operations and
+watching errors accumulate.
+
+The \who{condition number} --- how much a problem amplifies input error,
+independent of any algorithm --- was introduced by \who{Alan Turing} \yr{1948} in
+``Rounding-off errors in matrix processes,'' and in parallel by \who{John von
+Neumann} and \who{Herman Goldstine} \yr{1947} in their analysis of inverting large
+matrices for early computers
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Turing/}{MacTutor:
+Turing}; \href{https://en.wikipedia.org/wiki/Condition_number}{Wikipedia: Condition
+number}). Turing's same paper is one of the birthplaces of the LU viewpoint of
+Unit~7. The distinction between a well-conditioned \emph{problem} and a stable
+\emph{algorithm} --- and the technique of \emph{backward error analysis} that makes
+it precise --- is the life's work of \who{James H.\ Wilkinson} in the 1950s--60s,
+crystallized in \emph{Rounding Errors in Algebraic Processes} \yr{1963} and
+\emph{The Algebraic Eigenvalue Problem} \yr{1965}
+(\href{https://en.wikipedia.org/wiki/James_H._Wilkinson}{Wikipedia: Wilkinson}).
+The floating-point system itself was standardized only in \yr{1985} as IEEE~754,
+driven largely by \who{William Kahan}
+(\href{https://en.wikipedia.org/wiki/IEEE_754\#History}{Wikipedia: IEEE 754}). On
+the complexity side, ``big-$O$'' notation is older and comes from analytic number
+theory --- \who{Paul Bachmann} \yr{1894} and \who{Edmund Landau} \yr{1909} --- and
+was imported into the analysis of algorithms by \who{Donald Knuth} in the 1960s
+(\href{https://en.wikipedia.org/wiki/Big_O_notation\#History}{Wikipedia: Big-O
+notation}).
+
+%##############################################################################
+\part*{Arc III -- Core Matrix Theory}
+%##############################################################################
+
+%==============================================================================
+\section{Linear Systems \& Elimination \unit{Unit 7}}
+%==============================================================================
+
+\subsection{The oldest algorithm in the course}
+Gaussian elimination is by far the oldest technique in MATH~231 --- roughly two
+millennia older than the man it is named for. Chapter~8 (\emph{Fangcheng},
+``rectangular arrays'') of the Chinese \emph{Nine Chapters on the Mathematical Art}
+(\emph{Ji\u{u}zh\=ang Su\`ansh\`u}), compiled during the Han dynasty around the
+\yr{1st century BCE}, solves systems of up to five equations by exactly the
+row-reduction we teach, laying coefficients out as a rectangular array of counting
+rods and eliminating column by column --- and freely using negative numbers to do
+it (\href{https://en.wikipedia.org/wiki/Gaussian_elimination\#History}{Wikipedia:
+Gaussian elimination -- History};
+\href{https://mathshistory.st-andrews.ac.uk/HistTopics/Nine_chapters/}{MacTutor:
+The Nine Chapters}).
+
+\who{Gauss} himself came to elimination not as pure algebra but through
+\emph{astronomy and geodesy}: he needed to solve the overdetermined normal
+equations of least squares (Unit~10) to fit orbits and survey the kingdom of
+Hanover, and described a systematic elimination in \emph{Theoria Motus} \yr{1809}
+and later geodetic work. The name ``Gaussian elimination'' is a 20th-century
+retronym. The ``Gauss--Jordan'' refinement is due to the geodesist \who{Wilhelm
+Jordan} \yr{1888} (not the mathematician Camille Jordan), again motivated by
+surveying computations.
+
+\subsection{LU factorization: elimination as a product}
+Recognizing that elimination \emph{is} a factorization $A=LU$ into lower- and
+upper-triangular factors --- and analyzing when pivoting is needed for stability
+(the tie back to Unit~6) --- is again modern, belonging to \who{Turing} \yr{1948}
+and to the mid-century numerical-analysis school (Doolittle, Crout, and the Polish
+astronomer \who{Banachiewicz} contributed variants)
+(\href{https://en.wikipedia.org/wiki/LU_decomposition\#History}{Wikipedia: LU
+decomposition}). The historical order is worth stressing to students: the
+\emph{algorithm} is ancient, but the \emph{factorization interpretation} that makes
+it composable and analyzable is younger than the computer.
+
+%==============================================================================
+\section{Linear Transformations \unit{Unit 8}}
+%==============================================================================
+
+The idea that a matrix \emph{is} the coordinate shadow of a coordinate-free
+\emph{linear map} $T:V\to W$ was, historically, present at the creation of matrix
+algebra: as noted in Unit~4, \who{Cayley} \yr{1858} defined matrix multiplication
+precisely to encode the composition of ``linear substitutions.'' The
+coordinate-free \emph{map} viewpoint --- kernels, images, and the behavior of maps
+independent of a chosen basis --- matured with \who{Grassmann} and \who{Peano}
+(Unit~1) and became the organizing principle of the subject in the 20th century,
+through \who{Emmy Noether}'s structural algebra and the textbooks it inspired
+(\href{https://en.wikipedia.org/wiki/Linear_map\#History}{Wikipedia: Linear map}).
+The word ``rank'' (\emph{Rang}) for the dimension of the image is
+\who{Ferdinand Georg Frobenius}'s \yr{1878}
+(\href{https://mathshistory.st-andrews.ac.uk/Biographies/Frobenius/}{MacTutor:
+Frobenius}), and the change-of-basis/similarity relation $B=P^{-1}AP$ is what
+Cauchy and Jordan were implicitly using in their eigenvalue work. The
+\who{Rank--Nullity theorem} is a direct descendant of Grassmann's dimension
+formula for subspaces.
+
+%==============================================================================
+\section{The Four Fundamental Subspaces \unit{Unit 9}}
+%==============================================================================
+
+The individual facts here --- column space, null space, row space, left null
+space, and the orthogonality between the pairs --- are consequences of
+nineteenth-century rank theory (Frobenius, Sylvester). But the \emph{packaging} as
+``the four fundamental subspaces'' and ``the Fundamental Theorem of Linear
+Algebra'' is a modern, explicitly \emph{pedagogical} creation of \who{Gilbert
+Strang}, argued most directly in his 1993 \emph{American Mathematical Monthly}
+article ``The Fundamental Theorem of Linear Algebra''
+(\href{https://www.jstor.org/stable/2324660}{JSTOR: Strang, Amer.\ Math.\ Monthly
+100 (1993)}; \href{https://en.wikipedia.org/wiki/Fundamental_theorem_of_linear_algebra}{Wikipedia:
+Fundamental theorem of linear algebra}). This is a good place to tell students
+that not every ``theorem'' is a discovery of a new fact --- sometimes it is the
+discovery of the \emph{right way to see} old facts, and the payoff is that
+projection and least squares (Unit~10) and the geometry of the SVD (Unit~11) fall
+out almost for free.
+
+%##############################################################################
+\part*{Arc IV -- Advanced Methods \& Applications}
+%##############################################################################
+
+%==============================================================================
+\section{Orthogonality, Projections, Least Squares \& Factorizations \unit{Unit 10}}
+%==============================================================================
+
+\subsection{Least squares: a lost asteroid and a priority dispute}
+Least squares is the historical engine that drives much of this course, and it was
+born from a concrete emergency in astronomy. On 1~January~1801 the astronomer
+Piazzi observed the dwarf planet \emph{Ceres} for 41 days, then lost it in the
+Sun's glare. \who{Gauss}, age 24, recovered it by fitting an orbit to the sparse,
+noisy data --- and the method he used was least squares. He published it in
+\emph{Theoria Motus} \yr{1809}, claiming to have used it since 1795, but
+\who{Adrien-Marie Legendre} had \emph{published} it first, in an 1805 appendix
+under the name \emph{m\'ethode des moindres carr\'es}. The resulting priority
+dispute is one of the famous quarrels in the history of mathematics
+(\href{https://en.wikipedia.org/wiki/Least_squares\#History}{Wikipedia: Least
+squares -- History};
+\href{https://mathshistory.st-andrews.ac.uk/Biographies/Legendre/}{MacTutor:
+Legendre}). Gauss went further, connecting least squares to the normal (Gaussian)
+distribution and thereby founding the statistical theory of estimation --- which is
+why linear regression, the Unit~10 core application, \emph{is} least squares.
+
+\subsection{The factorizations that make it stable}
+The unit's factorizations are 20th-century numerical refinements of Gauss's idea,
+each solving a stability problem the normal equations $A^\top A x=A^\top b$ create
+(the $\kappa(A^\top A)=\kappa(A)^2$ blow-up of Unit~6):
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item \who{Cholesky factorization} $A^\top A=LL^\top$ is due to
+        \who{Andr\'e-Louis Cholesky} around \yr{1910}, a French military
+        geodesist solving normal equations for triangulation surveys. He was
+        killed in 1918; his method was published posthumously in 1924
+        (\href{https://en.wikipedia.org/wiki/Cholesky_decomposition\#History}{Wikipedia:
+        Cholesky};
+        \href{https://mathshistory.st-andrews.ac.uk/Biographies/Cholesky/}{MacTutor:
+        Cholesky}). A pure application of least-squares surveying, exactly the
+        setting of the unit.
+  \item \who{Householder QR} uses the reflections introduced by \who{Alston
+        Householder} \yr{1958} in ``Unitary triangularization of a nonsymmetric
+        matrix'' --- expressly to compute more stably than Gram--Schmidt
+        (\href{https://en.wikipedia.org/wiki/Householder_transformation}{Wikipedia:
+        Householder transformation};
+        \href{https://mathshistory.st-andrews.ac.uk/Biographies/Householder/}{MacTutor:
+        Householder}). The alternative, \who{Givens} rotations, appeared the same
+        year. \who{Modified Gram--Schmidt}, as noted in Unit~2, is the same 1907
+        procedure re-analyzed for floating point.
+\end{itemize}
+The \who{Discrete Cosine Transform} the unit uses to contrast a \emph{fixed}
+orthonormal basis with the data-adaptive SVD basis was introduced by \who{Nasir
+Ahmed}, T.\ Natarajan, and K.R.\ Rao \yr{1974}, and became the mathematical heart
+of the JPEG image standard \yr{1992}
+(\href{https://en.wikipedia.org/wiki/Discrete_cosine_transform\#History}{Wikipedia:
+DCT -- History}).
+
+%==============================================================================
+\section{Eigenvalues, Eigenvectors \& the SVD \unit{Unit 11}}
+%==============================================================================
+
+\subsection{Eigenvalues: wobbling planets and spinning tops}
+Eigenvalues entered mathematics through \emph{physics}, long before matrices
+existed to house them. In the 18th century \who{Euler} studied the principal axes
+of rotation of a rigid body (the directions in which a spinning top rotates
+cleanly), and \who{Lagrange} and \who{Laplace} studied the \emph{secular equation}
+--- ``secular'' from \emph{saeculum}, a century --- governing the slow, long-term
+perturbations of the planetary orbits. The condition for a stable orbit is exactly
+an eigenvalue condition (\href{https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors\#History}{Wikipedia:
+Eigenvalues -- History}). \who{Cauchy} \yr{1829} unified this: studying quadratic
+forms, he proved that a (real) symmetric matrix has real eigenvalues and
+orthogonal principal axes --- the \who{spectral theorem} in embryo, and the source
+of the Hessian-definiteness analysis promised back in Unit~5. The name is a
+translation curiosity: the German \emph{Eigenwert} (``own/characteristic value'')
+was fixed by \who{David Hilbert} \yr{1904} in his study of integral operators,
+where he also introduced ``spectrum'' (\emph{Spektrum}); English kept the German
+prefix, giving the hybrid ``eigenvalue.'' That eigenvalues of large matrices must
+be found \emph{iteratively} is not a computational accident but a theorem: the
+\who{Abel--Ruffini theorem} (\who{Paolo Ruffini} \yr{1799}, \who{Niels Henrik
+Abel} \yr{1824}, completed by \who{Galois}) says the degree-$\ge 5$ characteristic
+polynomial has no general solution in radicals
+(\href{https://en.wikipedia.org/wiki/Abel\%E2\%80\%93Ruffini_theorem}{Wikipedia:
+Abel--Ruffini}). The modern \who{QR algorithm} that actually does the iteration was
+found independently by \who{John G.F.\ Francis} \yr{1961} and \who{Vera
+Kublanovskaya} \yr{1961}
+(\href{https://en.wikipedia.org/wiki/QR_algorithm\#History}{Wikipedia: QR
+algorithm}).
+
+\subsection{The SVD: discovered (at least) three times}
+The Singular Value Decomposition has one of the richest multiple-discovery
+histories in mathematics. \who{Eugenio Beltrami} \yr{1873} and \who{Camille Jordan}
+\yr{1874} found it independently while studying bilinear forms; \who{James Joseph
+Sylvester} \yr{1889} rediscovered it again; \who{Erhard Schmidt} \yr{1907} produced
+the infinite-dimensional (integral-operator) version and, crucially, the idea of
+\emph{best low-rank approximation}
+(\href{https://en.wikipedia.org/wiki/Singular_value_decomposition\#History}{Wikipedia:
+SVD -- History}; G.W.\ Stewart's survey
+\href{https://www.jstor.org/stable/2132388}{``On the Early History of the Singular
+Value Decomposition,'' SIAM Review 35 (1993)}). The result the unit calls
+\who{Eckart--Young} --- that truncating the SVD gives the optimal low-rank
+approximation --- was proved by \who{Carl Eckart} and \who{Gale Young} \yr{1936}
+\emph{in a psychology journal}, \emph{Psychometrika}, because the motivating
+problem was factor analysis of psychological test data
+(\href{https://link.springer.com/article/10.1007/BF02288367}{Eckart \& Young,
+Psychometrika 1 (1936)}). The practical algorithm for computing the SVD is
+\who{Gene Golub} and \who{William Kahan}'s \yr{1965}.
+
+\subsection{PCA, PageRank, and spectral graphs: eigenvalues escape physics}
+The applications in this unit show the same eigen-machinery migrating into
+statistics and data:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item \who{Principal Component Analysis} was introduced geometrically by
+        \who{Karl Pearson} \yr{1901} (``On lines and planes of closest fit to
+        systems of points in space'') and independently, with the modern name and
+        statistical framing, by \who{Harold Hotelling} \yr{1933} --- again from
+        \emph{psychometrics}
+        (\href{https://en.wikipedia.org/wiki/Principal_component_analysis\#History}{Wikipedia:
+        PCA -- History}; \href{https://www.tandfonline.com/doi/abs/10.1080/14786440109462720}{Pearson
+        1901, Phil.\ Mag.}). The ``Eigencats/Eigenfaces'' project descends directly
+        from this line (Turk \& Pentland, 1991).
+  \item The \who{Perron--Frobenius theorem} --- a nonnegative matrix has a positive
+        dominant eigenvalue with a nonnegative eigenvector --- is \who{Oskar
+        Perron}'s \yr{1907} and \who{Georg Frobenius}'s \yr{1912}
+        (\href{https://en.wikipedia.org/wiki/Perron\%E2\%80\%93Frobenius_theorem}{Wikipedia:
+        Perron--Frobenius}). It is the mathematical guarantee that
+        \who{PageRank} works: \who{Larry Page} and \who{Sergey Brin} \yr{1998}
+        defined a web page's importance as its coordinate in the dominant
+        eigenvector of a stochastic ``random surfer'' matrix
+        (\href{http://infolab.stanford.edu/~backrub/google.html}{Brin \& Page, ``The
+        Anatomy of a Large-Scale Hypertextual Web Search Engine,'' WWW7 1998};
+        \href{http://ilpubs.stanford.edu:8090/422/}{Page, Brin, Motwani \&
+        Winograd, ``The PageRank Citation Ranking,'' 1999}).
+  \item \who{Spectral graph theory} begins with \who{Gustav Kirchhoff}'s \yr{1847}
+        matrix-tree theorem for electrical networks (the origin of the graph
+        Laplacian $L=D-W$), and the clustering use rests on \who{Miroslav
+        Fiedler}'s \yr{1973} ``algebraic connectivity'' and the eigenvector now
+        called the Fiedler vector
+        (\href{https://en.wikipedia.org/wiki/Algebraic_connectivity}{Wikipedia:
+        Algebraic connectivity}), later turned into the normalized-cut clustering
+        of Shi \& Malik \yr{2000}.
+  \item \who{Latent Semantic Analysis} (Demo \#3) applies the truncated SVD to a
+        TF--IDF term--document matrix: the SVD/LSA method is Deerwester, Dumais,
+        Landauer, Furnas \& Harshman \yr{1990}, and the inverse-document-frequency
+        weighting is \who{Karen Sp\"arck Jones}'s \yr{1972}
+        (\href{https://en.wikipedia.org/wiki/Latent_semantic_analysis\#History}{Wikipedia:
+        LSA -- History}).
+\end{itemize}
+
+%==============================================================================
+\section{Numerical Optimization \& the ML Capstone \unit{Unit 12}}
+%==============================================================================
+
+\subsection{Descent methods, from Cauchy to the present}
+The capstone's optimization methods again reach back to concrete
+nineteenth-century problems. \who{Gradient descent} (``steepest descent'') is
+\who{Cauchy}'s \yr{1847}, proposed in a short note precisely for solving the
+systems of equations arising in \emph{astronomical orbit computation} --- the same
+problem family that produced least squares
+(\href{https://en.wikipedia.org/wiki/Gradient_descent\#History}{Wikipedia: Gradient
+descent -- History}). \who{Newton's method} descends from \who{Isaac Newton}
+\yr{c.\ 1669} and \who{Joseph Raphson} \yr{1690}; its use inside optimization makes
+each step a linear \emph{solve} $H\Delta = -\nabla f$, tying the capstone straight
+back to Unit~7.
+
+For nonlinear least squares (the trilateration project), \who{Gauss--Newton}
+descends from Gauss's own orbit work; the damped variant is \who{Kenneth
+Levenberg}'s \yr{1944} and \who{Donald Marquardt}'s \yr{1963}, the latter developed
+at DuPont for fitting chemical models to data
+(\href{https://en.wikipedia.org/wiki/Levenberg\%E2\%80\%93Marquardt_algorithm\#History}{Wikipedia:
+Levenberg--Marquardt}). The quasi-Newton \who{BFGS} method is the 1970 work of
+\who{Broyden, Fletcher, Goldfarb} and \who{Shanno}
+(\href{https://en.wikipedia.org/wiki/Broyden\%E2\%80\%93Fletcher\%E2\%80\%93Goldfarb\%E2\%80\%93Shanno_algorithm}{Wikipedia:
+BFGS}). The convergence-depends-on-conditioning theme that closes the course is
+exactly the Turing/Wilkinson insight of Unit~6 applied to iteration.
+
+\subsection{The machine-learning payoff}
+The learning algorithms the course ends on are recent but rest entirely on the
+linear-algebra spine built in Arcs~I--III:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item The \who{Support Vector Machine} grows out of the statistical learning
+        theory of \who{Vladimir Vapnik} and \who{Alexey Chervonenkis} in the
+        1960s--70s; the kernelized, maximum-margin form the unit teaches is Boser,
+        Guyon \& Vapnik \yr{1992} and the soft-margin version is Cortes \& Vapnik
+        \yr{1995} (\href{https://en.wikipedia.org/wiki/Support_vector_machine\#History}{Wikipedia:
+        SVM -- History}).
+  \item \who{$k$-means} (Project \#1) traces to \who{Hugo Steinhaus} \yr{1956},
+        \who{Stuart Lloyd} (Bell Labs, \yr{1957}, published 1982), and \who{James
+        MacQueen} \yr{1967}, who coined the name; \who{$k$-nearest-neighbors} to
+        \who{Fix \& Hodges} \yr{1951} and \who{Cover \& Hart} \yr{1967}
+        (\href{https://en.wikipedia.org/wiki/K-means_clustering\#History}{Wikipedia:
+        $k$-means};
+        \href{https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm}{Wikipedia:
+        $k$-NN}).
+  \item The \who{static word-embedding} geometry (Demo \#9) is the most recent
+        idea in the course --- \emph{word2vec} (Mikolov et al., \yr{2013}) and
+        \emph{GloVe} (Pennington, Socher \& Manning, \yr{2014}) --- yet the analogy
+        arithmetic $\text{king}-\text{man}+\text{woman}\approx\text{queen}$ is
+        \emph{pure} Unit~2 linear algebra: vector addition and cosine similarity
+        (\href{https://arxiv.org/abs/1301.3781}{Mikolov et al., ``Efficient
+        Estimation of Word Representations,'' arXiv:1301.3781};
+        \href{https://nlp.stanford.edu/pubs/glove.pdf}{Pennington et al., GloVe,
+        EMNLP 2014}). It is a fitting close: the newest tools in machine learning
+        cash out, geometrically, as the oldest ideas in the course.
+\end{itemize}
+
+%==============================================================================
+\section*{A one-page chronology}
+%==============================================================================
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}r l l@{}}
+\toprule
+\textbf{Date} & \textbf{Milestone} & \textbf{Course unit} \\
+\midrule
+c.\ 1st c.\ BCE & \emph{Nine Chapters}, Ch.\ 8: elimination on rod arrays & 7 \\
+1545 & Cardano meets $\sqrt{-1}$ in the cubic (\emph{Ars Magna})           & 3 \\
+1683/1693 & Seki; Leibniz: determinants                                     & 4 \\
+1715 & Taylor's theorem                                                     & 5 \\
+1748 & Euler's formula $e^{i\theta}=\cos\theta+i\sin\theta$                 & 3 \\
+1799/1824 & Ruffini--Abel: quintic unsolvable in radicals                   & 11 \\
+1801/1805/1809 & Ceres; Legendre \& Gauss: least squares                    & 10 \\
+1829 & Cauchy: real eigenvalues of symmetric forms (spectral theorem)       & 11 \\
+1843 & Hamilton: quaternions                                                & 3 \\
+1844/1888 & Grassmann; Peano: vector spaces \& axioms                       & 1 \\
+1847 & Cauchy: steepest descent \quad/\quad Kirchhoff: graph Laplacian      & 12 / 11 \\
+1850/1858 & Sylvester names ``matrix''; Cayley's matrix algebra             & 4, 8 \\
+1873/1874 & Beltrami \& Jordan: the SVD                                      & 11 \\
+1901/1933 & Pearson; Hotelling: PCA                                         & 11 \\
+1907/1912 & Perron--Frobenius theorem                                       & 11 \\
+1907 & Gram--Schmidt (Schmidt); low-rank approximation                      & 2, 11 \\
+1910/1924 & Cholesky factorization (geodesy)                                & 10 \\
+1936 & Eckart--Young low-rank optimality (\emph{Psychometrika})             & 11 \\
+1947/1948 & von Neumann--Goldstine; Turing: conditioning, LU                & 6, 7 \\
+1958 & Householder reflections                                              & 10 \\
+1961 & Francis \& Kublanovskaya: QR eigenvalue algorithm                    & 11 \\
+1963/1965 & Wilkinson: backward error analysis                              & 6 \\
+1965 & Golub--Kahan: computing the SVD                                      & 11 \\
+1972/1974 & Sp\"arck Jones: IDF \quad/\quad Ahmed et al.: DCT               & 11, 10 \\
+1990/1995 & LSA \quad/\quad soft-margin SVM                                 & 11, 12 \\
+1998 & Page \& Brin: PageRank                                               & 11 \\
+2013/2014 & word2vec; GloVe embeddings                                      & 11 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\section*{Sources \& further reading (all links)}
+%==============================================================================
+\small
+\textbf{History surveys \& general references.}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+  \item MacTutor, \emph{Matrices and determinants}: \url{https://mathshistory.st-andrews.ac.uk/HistTopics/Matrices_and_determinants/}
+  \item MacTutor, \emph{Abstract linear spaces}: \url{https://mathshistory.st-andrews.ac.uk/HistTopics/Abstract_linear_spaces/}
+  \item MacTutor, \emph{The Nine Chapters}: \url{https://mathshistory.st-andrews.ac.uk/HistTopics/Nine_chapters/}
+  \item MacTutor, \emph{Fundamental theorem of algebra}: \url{https://mathshistory.st-andrews.ac.uk/HistTopics/Fund_theorem_of_algebra/}
+  \item MacTutor, \emph{Quadratic, cubic and quartic equations}: \url{https://mathshistory.st-andrews.ac.uk/HistTopics/Quadratic_etc_equations/}
+  \item G.W.\ Stewart, ``On the Early History of the Singular Value Decomposition,'' \emph{SIAM Review} 35 (1993): \url{https://www.jstor.org/stable/2132388}
+\end{itemize}
+
+\textbf{Biographies (MacTutor).}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+  \item Grassmann: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Grassmann/} \quad
+        Peano: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Peano/}
+  \item Cauchy: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Cauchy/} \quad
+        Hamilton: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Hamilton/}
+  \item Cayley: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Cayley/} \quad
+        Euler: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Euler/}
+  \item Legendre: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Legendre/} \quad
+        Jacobi: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Jacobi/}
+  \item Minkowski: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Minkowski/} \quad
+        Frobenius: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Frobenius/}
+  \item Taylor: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Taylor/} \quad
+        Turing: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Turing/}
+  \item Householder: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Householder/} \quad
+        Cholesky: \url{https://mathshistory.st-andrews.ac.uk/Biographies/Cholesky/}
+\end{itemize}
+
+\textbf{Primary sources \& papers.}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+  \item Cayley, ``A Memoir on the Theory of Matrices'' (1858): \url{https://www.jstor.org/stable/108649}
+  \item Pearson, ``On lines and planes of closest fit\dots'' (1901): \url{https://www.tandfonline.com/doi/abs/10.1080/14786440109462720}
+  \item Eckart \& Young, \emph{Psychometrika} 1 (1936): \url{https://link.springer.com/article/10.1007/BF02288367}
+  \item Strang, ``The Fundamental Theorem of Linear Algebra,'' \emph{Amer.\ Math.\ Monthly} 100 (1993): \url{https://www.jstor.org/stable/2324660}
+  \item Brin \& Page, ``The Anatomy of a\dots Web Search Engine'' (1998): \url{http://infolab.stanford.edu/~backrub/google.html}
+  \item Page, Brin, Motwani \& Winograd, ``The PageRank Citation Ranking'' (1999): \url{http://ilpubs.stanford.edu:8090/422/}
+  \item Mikolov et al., word2vec (2013): \url{https://arxiv.org/abs/1301.3781}
+  \item Pennington, Socher \& Manning, GloVe (2014): \url{https://nlp.stanford.edu/pubs/glove.pdf}
+\end{itemize}
+
+\textbf{Topic overviews (Wikipedia ``History'' sections).}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+  \item Vector space: \url{https://en.wikipedia.org/wiki/Vector_space\#History}
+  \item Determinant: \url{https://en.wikipedia.org/wiki/Determinant\#History} \quad
+        Complex number: \url{https://en.wikipedia.org/wiki/Complex_number\#History}
+  \item Quaternion: \url{https://en.wikipedia.org/wiki/Quaternion\#History} \quad
+        Cauchy--Schwarz: \url{https://en.wikipedia.org/wiki/Cauchy\%E2\%80\%93Schwarz_inequality\#History}
+  \item Gram--Schmidt: \url{https://en.wikipedia.org/wiki/Gram\%E2\%80\%93Schmidt_process\#History} \quad
+        Normed space: \url{https://en.wikipedia.org/wiki/Normed_vector_space\#History}
+  \item Gaussian elimination: \url{https://en.wikipedia.org/wiki/Gaussian_elimination\#History} \quad
+        LU decomposition: \url{https://en.wikipedia.org/wiki/LU_decomposition\#History}
+  \item Condition number: \url{https://en.wikipedia.org/wiki/Condition_number} \quad
+        IEEE 754: \url{https://en.wikipedia.org/wiki/IEEE_754\#History}
+  \item Big-O notation: \url{https://en.wikipedia.org/wiki/Big_O_notation\#History} \quad
+        Linear map: \url{https://en.wikipedia.org/wiki/Linear_map\#History}
+  \item Eigenvalues: \url{https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors\#History} \quad
+        Abel--Ruffini: \url{https://en.wikipedia.org/wiki/Abel\%E2\%80\%93Ruffini_theorem}
+  \item SVD: \url{https://en.wikipedia.org/wiki/Singular_value_decomposition\#History} \quad
+        QR algorithm: \url{https://en.wikipedia.org/wiki/QR_algorithm\#History}
+  \item PCA: \url{https://en.wikipedia.org/wiki/Principal_component_analysis\#History} \quad
+        Perron--Frobenius: \url{https://en.wikipedia.org/wiki/Perron\%E2\%80\%93Frobenius_theorem}
+  \item Least squares: \url{https://en.wikipedia.org/wiki/Least_squares\#History} \quad
+        Householder: \url{https://en.wikipedia.org/wiki/Householder_transformation}
+  \item Cholesky: \url{https://en.wikipedia.org/wiki/Cholesky_decomposition\#History} \quad
+        DCT: \url{https://en.wikipedia.org/wiki/Discrete_cosine_transform\#History}
+  \item Algebraic connectivity: \url{https://en.wikipedia.org/wiki/Algebraic_connectivity} \quad
+        LSA: \url{https://en.wikipedia.org/wiki/Latent_semantic_analysis\#History}
+  \item Gradient descent: \url{https://en.wikipedia.org/wiki/Gradient_descent\#History} \quad
+        Levenberg--Marquardt: \url{https://en.wikipedia.org/wiki/Levenberg\%E2\%80\%93Marquardt_algorithm\#History}
+  \item BFGS: \url{https://en.wikipedia.org/wiki/Broyden\%E2\%80\%93Fletcher\%E2\%80\%93Goldfarb\%E2\%80\%93Shanno_algorithm} \quad
+        SVM: \url{https://en.wikipedia.org/wiki/Support_vector_machine\#History}
+  \item $k$-means: \url{https://en.wikipedia.org/wiki/K-means_clustering\#History} \quad
+        $k$-NN: \url{https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm}
+  \item Hessian: \url{https://en.wikipedia.org/wiki/Hessian_matrix} \quad
+        Fundamental theorem of linear algebra: \url{https://en.wikipedia.org/wiki/Fundamental_theorem_of_linear_algebra}
+\end{itemize}
+\normalsize
+
+\vspace{0.5em}
+\noindent\emph{Note on reliability.} Dates for multiply-discovered results (the
+SVD, least squares, Gram--Schmidt) are inherently contested; where a priority
+dispute exists it is flagged in the text. MacTutor (St~Andrews) and the cited
+primary papers are the authoritative sources; Wikipedia links are included for
+convenient orientation and their own reference lists, not as the final word.
+
+\end{document}
