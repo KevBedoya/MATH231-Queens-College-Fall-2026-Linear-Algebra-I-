@@ -1,18 +1,24 @@
 %==============================================================================
 %  MATH 231 -- Applied Linear Algebra (Queens College, Fall 2026)
-%  LECTURE 1 -- Tuesday, September 1, 2026 -- Kiely Hall 326, 12:10-2:00 PM
+%  LECTURE 1 -- Tuesday, September 1, 2026
 %
-%  Section 1: "Vectors: Magnitude, Direction, the Norm, and Addition"
+%  Section 1: "Vectors: Magnitude, Direction, and the First Vector Operations"
+%
+%  OPERATION ARITY is a running thread: the norm (Sec. 2) is unary, addition
+%  and subtraction (Sec. 7) are binary on two vectors, and scalar
+%  multiplication (Sec. 8) is binary on a scalar and a vector.  Keep the three
+%  framings parallel.
+%
+%  AUDIENCE: this document is distributed to students.  Keep it free of
+%  instructor-facing apparatus -- time budgets, pacing notes, teaching cues,
+%  and internal course-planning cross-references belong elsewhere.
+%
+%  NOTATION ORDER: R^2 is introduced in Section 6 and must not appear before
+%  it.  Sections 1-5 refer to "the plane" instead.
 %
 %  STATUS: in progress.  This document currently contains the FIRST content
 %  section of Lecture 1 only; further sections will be appended below the
 %  practice set as the lecture is built out.
-%
-%  Conventions used in this file:
-%     \inote{...}   -- instructor note: NOT board content, planning only
-%     \board{...}   -- an explicit board / drawing cue
-%     \tchip{...}   -- the time budget for the section it sits beside
-%  Timing rationale and the lean/full variants are in "Timing" at the end.
 %
 %  Compile with pdflatex (standard TeX Live packages only; uses tikz).
 %==============================================================================
@@ -35,29 +41,16 @@
 \titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
 \titlespacing*{\section}{0pt}{14pt}{6pt}
 
-\newcommand{\tchip}[1]{{\normalfont\small\sffamily\bfseries
-  \colorbox{RoyalBlue!12}{\strut\,#1\,}}}
-
-\newcommand{\inote}[1]{\par\smallskip\noindent
-  {\small\sffamily\color{black!65}%
-   \textbf{\textcolor{RoyalBlue}{Instructor note.}}\ #1}\par\smallskip}
-
-\newcommand{\board}[1]{\par\smallskip\noindent
-  {\small\sffamily\color{black!70}%
-   \textbf{\textcolor{ForestGreen}{At the board.}}\ #1}\par\smallskip}
-
 \theoremstyle{definition}
 \newtheorem{defn}{Definition}
 \newtheorem{ex}{Example}
 \theoremstyle{remark}
 \newtheorem*{rmk}{Remark}
 
-% Forward-reference flags, in the spirit of the "honest forward references"
-% named in the course-progression document.
+% Honest forward references: things we are simplifying on purpose today and
+% will come back to later in the course.
 \newcommand{\lookahead}{\par\smallskip\noindent
   \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
-\newcommand{\lookaheadt}[1]{\par\smallskip\noindent
-  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead --- #1}}\ \ignorespaces}
 
 %--------------------------------------------------------------- notation ----
 \newcommand{\R}{\mathbb{R}}
@@ -79,70 +72,34 @@
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Applied Linear Algebra}\\[4pt]
        {\large\sffamily Lecture 1 \textbullet\ Vectors: Magnitude, Direction,
-        the Norm, and Addition}\\[2pt]
+        and the First Vector Operations}\\[2pt]
        {\normalsize\sffamily Tuesday, September 1, 2026 \textbullet\
         Kiely Hall 326 \textbullet\ Instructor: Kevin Bedoya}}
 \author{}
-\date{\normalsize\sffamily Draft dated August 23, 2026}
+\date{}
 
 \begin{document}
 \maketitle
-\vspace{-1.1cm}
+\vspace{-1.6cm}
 
-%==============================================================================
-\section*{Session plan}
-%==============================================================================
-\noindent
-\begin{tabular}{@{}r l l@{}}
-\toprule
-\textbf{\S} & \textbf{Segment} & \textbf{Budget} \\
-\midrule
-0 & Syllabus, logistics, course introduction            & 25 min \\
-1 & Vectors: magnitude, direction, the Euclidean plane  &  8 min \\
-2 & The norm --- our first vector operation             &  7 min \\
-3 & Bridge to calculus: the derivative as a vector      &  6 min \\
-4 & Vector quantities vs.\ scalar quantities            &  4 min \\
-5 & One-dimensional vectors                             &  3 min \\
-6 & Notation and set-theoretic placement                &  5 min \\
-7 & Addition and subtraction                            &  7 min \\
-8 & Practice set P1--P4                                 & 15 min \\
-  & Questions / transitions (slack)                     &  5 min \\
-\midrule
-  & \textbf{Content total (\S1--8)}                      & \textbf{60 min} \\
-  & \textbf{Session total}                              & \textbf{85 min} \\
-\bottomrule
-\end{tabular}
-
-\vspace{6pt}
-\noindent\textbf{Learning objectives.} By the end of the session a student can:
-state what a vector is in terms of magnitude and direction; identify the tail
-and head of a vector in $\R^2$; compute the Euclidean norm of a vector and
-explain why it is a \emph{unary} operation; distinguish vector quantities from
-scalar quantities; read all three notational conventions for a vector; and add
-and subtract vectors in $\R^2$ both componentwise and geometrically.
-
-\inote{Prerequisite reach-back is deliberately shallow --- Pythagoras and the
-notion of a derivative are the only things assumed. \S3 is the only segment
-that requires calculus, and it is motivational: nothing later in the course
-depends on it, so it is the first candidate to trim if the clock demands.}
-
-\lookaheadt{placement in the course progression.} \S1--\S2 and \S6--\S8 belong to
-Unit~1 (\emph{Vectors, Vector Spaces \& the Language of the Course}), with one
-deliberate forward pull: the Euclidean ($\ell_2$) norm is formally a Unit~2
-object, but ``magnitude'' is the natural entry point to a vector, so the
-$\ell_2$ norm is introduced here and the general $p$-norm family, the induced
-metric, and the inner product are deferred to Unit~2 where they belong.
+\noindent\textbf{What you should be able to do afterwards.} State what a vector
+is in terms of magnitude and direction; identify the tail and head of a vector
+in the plane; compute the Euclidean norm of a vector and explain why it is a
+\emph{unary} operation; distinguish vector quantities from scalar quantities;
+read all three notational conventions for a vector; add and subtract vectors in
+the plane both componentwise and geometrically; and scale a vector by a real
+number, saying what the scaling does to its magnitude and direction.
 
 \medskip
-\noindent\textbf{Textbook alignment.}
-\textbf{[BV]} Ch.~1 (vectors, addition, scalar multiplication), Ch.~3 (norm and
-distance); \textbf{[S]} Ch.~1; \textbf{[A]} Ch.~1; \textbf{[TB]} Lec.~2--3
-(norms).
+\noindent\textbf{Further reading.}
+Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra}, Ch.~1
+(vectors, addition, scalar multiplication) and Ch.~3 (norm and distance);
+Strang, \emph{Linear Algebra and Its Applications}, Ch.~1;
+Axler, \emph{Linear Algebra Done Right}, Ch.~1;
+Trefethen \& Bau, \emph{Numerical Linear Algebra}, Lec.~2--3 (norms).
 
 %==============================================================================
-\section[Vectors: magnitude, direction, and the space they live in]%
-        {Vectors: magnitude, direction, and the space they live in
-         \hfill \tchip{8 min}}
+\section{Vectors: magnitude, direction, and the space they live in}
 %==============================================================================
 We begin with a working definition --- deliberately informal, and stated in the
 language of quantities rather than axioms.
@@ -192,9 +149,9 @@ vector, and it has two distinguished points:
         compute it in \S2.
 \end{itemize}
 
-\board{Draw the left-hand figure only. Mark the tail, mark the head, draw the
-arrowhead conspicuously --- the arrowhead \emph{is} the direction, and students
-who draw bare line segments lose that information.}
+\noindent Note the arrowhead in the left-hand figure below: the arrowhead
+\emph{is} the direction, so a bare line segment would lose half the
+information.
 
 \begin{center}
 \begin{tikzpicture}[scale=0.95]
@@ -219,16 +176,15 @@ who draw bare line segments lose that information.}
 \end{center}
 
 %==============================================================================
-\section[The norm --- our first vector operation]%
-        {The norm --- our first vector operation \hfill \tchip{7 min}}
+\section{The norm --- our first vector operation}
 %==============================================================================
 The magnitude of a vector is not just a description of it; it is something we
 \emph{compute} from it. Computing it is our first vector operation, and it has a
 name.
 
-\begin{defn}[Euclidean norm in $\R^2$]
-For a vector $\vc{v}$ with tail at the origin and head at $(x,y)$, the
-\textbf{Euclidean norm} of $\vc{v}$ is
+\begin{defn}[Euclidean norm]
+For a vector $\vc{v}$ in the plane with tail at the origin and head at $(x,y)$,
+the \textbf{Euclidean norm} of $\vc{v}$ is
 \[
   \norm{\vc{v}} \;=\; \sqrt{x^{2}+y^{2}},
 \]
@@ -241,8 +197,9 @@ Two things to notice about the shape of this operation.
   \item It is \textbf{unary}: it takes \emph{one} vector as input. Compare $3+5$,
         where addition consumes two numbers --- a \emph{binary} operation. The
         norm consumes one vector and returns one number.
-  \item It maps a \emph{vector} to a \emph{scalar}: $\norm{\cdot}:\R^2\to\R$,
-        and the output is never negative. Length cannot be negative.
+  \item It turns a \emph{vector} into a \emph{scalar}: the input is a vector in
+        the plane, the output is a single real number, and that number is never
+        negative. Length cannot be negative.
 \end{itemize}
 
 \noindent The formula is Pythagoras, nothing more. The right-hand figure above
@@ -255,6 +212,8 @@ For $\vc{v}$ with head at $(1,2)$,
   \norm{\vc{v}} \;=\; \sqrt{1^{2}+2^{2}} \;=\; \sqrt{1+4} \;=\; \sqrt{5}
   \;\approx\; 2.236.
 \]
+Note that $\sqrt{5}$ is a finished answer: a norm is generically irrational, and
+there is no need to convert it to a decimal.
 \end{ex}
 
 \begin{ex}[A clean one]
@@ -262,28 +221,14 @@ For $\vc{w}$ with head at $(3,4)$,
 $\norm{\vc{w}}=\sqrt{9+16}=\sqrt{25}=5$.
 \end{ex}
 
-\inote{Do $\sqrt5$ first and $(3,4)$ second, in that order. The first example
-teaches that a norm is generically irrational and that $\sqrt{5}$ is a finished
-answer requiring no decimal; the second is the reward. Reversing them trains
-students to expect integers and to distrust radicals.}
-
 \begin{rmk}
 So three phrases now name the same number: the \emph{magnitude} of the vector,
 the \emph{length} of the arrow, and the \emph{Euclidean norm} $\norm{\vc{v}}$.
 Use them interchangeably.
 \end{rmk}
 
-\inote{Suppressed on purpose: ``magnitude $=$ norm'' holds \emph{up to the
-choice of underlying metric}, and there are other norms --- $\ell_1$,
-$\ell_\infty$, the general $p$-norm --- under which the same arrow has a
-different length. Do not raise this today; naming a choice students cannot yet
-see makes the definition feel arbitrary. It is Unit~2 material, and the
-$\ell_1/\ell_\infty$ contrast is the payoff of introducing it there.}
-
 %==============================================================================
-\section[Bridge to calculus: the derivative as a vector quantity]%
-        {Bridge to calculus: the derivative as a vector quantity
-         \hfill \tchip{6 min}}
+\section{Bridge to calculus: the derivative as a vector quantity}
 %==============================================================================
 Vectors are not new to you --- you have been computing one all through calculus
 without calling it that.
@@ -329,8 +274,7 @@ accumulates along the tangent per unit of horizontal travel.
 \end{center}
 
 %==============================================================================
-\section[Vector quantities vs.\ scalar quantities]%
-        {Vector quantities vs.\ scalar quantities \hfill \tchip{4 min}}
+\section{Vector quantities vs.\ scalar quantities}
 %==============================================================================
 The phrase from \S3 is worth making official, because it sorts most of the
 quantities you will meet in the sciences into two bins.
@@ -351,12 +295,8 @@ exactly the magnitude of the velocity vector --- that is, its norm --- which is
 why the two words are not synonyms and why a car going round a bend at constant
 speed is nonetheless accelerating.
 
-\inote{This is the segment where students volunteer examples from their own
-majors; it can absorb unlimited time. Take two examples, then move on.}
-
 %==============================================================================
-\section[One-dimensional vectors]%
-        {One-dimensional vectors \hfill \tchip{3 min}}
+\section{One-dimensional vectors}
 %==============================================================================
 Nothing above required two dimensions. In one dimension --- on the number line
 --- a vector is a signed number, and the two attributes are still both present:
@@ -389,9 +329,7 @@ all along.
 \end{center}
 
 %==============================================================================
-\section[Notation, and where vectors sit set-theoretically]%
-        {Notation, and where vectors sit set-theoretically
-         \hfill \tchip{5 min}}
+\section{Notation, and where vectors sit set-theoretically}
 %==============================================================================
 There are several standard ways to denote a vector symbolically. Using the
 letter $v$ purely as an example --- \emph{any} letter may be used:
@@ -414,7 +352,8 @@ will tell you which object you are looking at. Getting comfortable reading all
 three is part of the course: you will meet all of them in the reference texts.
 
 \subsection*{The set-theoretic statement}
-To say that $\vc{v}$ is a two-dimensional vector, we write
+Until now we have said ``the plane'' in words. Here is its name. To say that
+$\vc{v}$ is a two-dimensional vector, we write
 \[
   \vc{v}\in\R^{2},
   \qquad\text{where}\qquad
@@ -422,6 +361,8 @@ To say that $\vc{v}$ is a two-dimensional vector, we write
 \]
 Read aloud: ``$\vc{v}$ is in $\R$-two.'' The superscript $2$ is the dimension of
 \S1 --- two coordinates, each free to be any real number, chosen independently.
+From here on, $\R^{2}$ replaces ``the plane'' as our standard name for the space
+a two-dimensional vector lives in.
 
 \subsection*{The numerical convention for this class}
 We write a vector in brackets, listing its coordinates in order:
@@ -430,9 +371,7 @@ We write a vector in brackets, listing its coordinates in order:
   \qquad\text{for instance}\qquad
   \vc{v}=[\,1,\,2\,].
 \]
-
-\inote{Order matters and will not be belabored again: $[1,2]\neq[2,1]$. Say it
-once here.}
+Order matters: $[1,2]\neq[2,1]$.
 
 \lookahead At this stage of the course, a vector \emph{is} a point of the plane
 together with the convention that its tail sits at the origin: the head is
@@ -442,12 +381,9 @@ and we will discard it once you are fluent --- a vector is really a
 which is precisely what makes the head-to-tail picture in \S7 legitimate.
 
 %==============================================================================
-\section[Addition and subtraction]%
-        {Addition and subtraction \hfill \tchip{7 min}}
+\section{Addition and subtraction}
 %==============================================================================
-Many operations on vectors await us. Here are the first two binary ones ---
-each consumes \emph{two} vectors and returns a vector, in contrast to the norm
-of \S2.
+Many operations on vectors await us. Here are the first two.
 
 \begin{defn}[Addition and subtraction in $\R^2$]
 Let $\vc{u},\vc{v}\in\R^{2}$ with $\vc{u}=[x_1,y_1]$ and $\vc{v}=[x_2,y_2]$.
@@ -462,7 +398,21 @@ Then
 \noindent Both are \textbf{componentwise}: the first coordinates interact only
 with each other, and likewise the second. Nothing mixes across slots.
 
-\begin{ex}[Worked at the board]
+\smallskip
+\noindent Now notice the \emph{shape} of these two operations, exactly as we did
+for the norm in \S2. Each one is a \textbf{binary operator}: it consumes
+\emph{two} vectors and returns a vector.
+\[
+  +\;:\;\R^{2}\times\R^{2}\to\R^{2},
+  \qquad\qquad
+  -\;:\;\R^{2}\times\R^{2}\to\R^{2}.
+\]
+Read the left-hand side as ``a pair of vectors from $\R^{2}$ goes in.'' Contrast
+this with the norm, which was \emph{unary} --- one vector in, one \emph{number}
+out. Addition and subtraction are binary, and they never leave $\R^{2}$: two
+vectors in, one vector out.
+
+\begin{ex}[Both operations on one pair]
 Let $\vc{u}=[2,1]$ and $\vc{v}=[1,3]$. Then
 \[
   \vc{u}+\vc{v}=[\,2+1,\;1+3\,]=[\,3,\,4\,],
@@ -488,8 +438,8 @@ measure how far apart two vectors are.
 
 \begin{center}
 % both lattices share the same extent so the two pictures align side by side
-\begin{tikzpicture}[scale=0.8]
-  \lattice{-1}{4}{-3}{5}
+\begin{tikzpicture}[scale=0.78]
+  \lattice{-1}{4}{-2}{5}
   \draw[ForestGreen,dashed] (2,1) -- (3,4);
   \draw[RoyalBlue,dashed]   (1,3) -- (3,4);
   \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
@@ -500,8 +450,8 @@ measure how far apart two vectors are.
   \node[right,font=\small,BrickRed]         at (3.08,4.32) {$\vc{u}+\vc{v}$};
 \end{tikzpicture}
 \hspace{1.0cm}
-\begin{tikzpicture}[scale=0.8]
-  \lattice{-1}{4}{-3}{5}
+\begin{tikzpicture}[scale=0.78]
+  \lattice{-1}{4}{-2}{5}
   \draw[BrickRed,dashed,thinarr] (1,3) -- (2,1);
   \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
   \draw[vecarr,ForestGreen] (0,0) -- (1,3);
@@ -513,14 +463,96 @@ measure how far apart two vectors are.
 \end{tikzpicture}
 \end{center}
 
-\inote{On the right-hand figure, say explicitly that the dashed arrow and the
-solid red arrow are the \emph{same vector} drawn in two places --- same
-magnitude, same direction, different tail. This is the first appearance of the
-translation-invariance flagged in \S6, and it is the single most common point of
-confusion in the practice set.}
+\noindent In the right-hand figure the dashed arrow and the solid arrow labelled
+$\vc{u}-\vc{v}$ are the \emph{same vector} drawn in two places: same magnitude,
+same direction, different tail. That is the translation-invariance flagged in
+\S6, seen for the first time.
 
 %==============================================================================
-\section[Practice set]{Practice set \hfill \tchip{15 min}}
+\section{Scalar multiplication}
+%==============================================================================
+Addition and subtraction combine a vector with another vector. The next
+operation combines a vector with a \emph{scalar} --- one of the plain numbers of
+\S4, carrying magnitude but no direction.
+
+\begin{defn}[Scalar multiplication in $\R^2$]
+Let $\vc{v}=[\,x,\,y\,]\in\R^{2}$ and let $\alpha\in\R$. Then
+\[
+  \alpha\vc{v} \;=\; [\,\alpha x,\;\;\alpha y\,].
+\]
+\end{defn}
+
+\noindent Componentwise again: $\alpha$ multiplies \emph{every} coordinate.
+
+\smallskip
+\noindent This operation is binary as well, but its two inputs are of
+\emph{different kinds} --- a number and a vector, not two vectors:
+\[
+  \R\times\R^{2}\to\R^{2}.
+\]
+A scalar and a vector go in; a vector comes out. That mixed signature is why
+$\alpha$ is called a \emph{scalar} in the first place: its job is to set the
+scale of the vector.
+
+\begin{ex}[Scaling the running vector]
+Let $\vc{v}=[\,1,\,2\,]$, our vector from \S1, with $\norm{\vc{v}}=\sqrt{5}$.
+\[
+  2\vc{v}=[\,2,\,4\,],
+  \qquad
+  \tfrac12\vc{v}=[\,\tfrac12,\,1\,],
+  \qquad
+  -\vc{v}=(-1)\vc{v}=[\,-1,\,-2\,].
+\]
+Their norms are
+\[
+  \norm{2\vc{v}}=\sqrt{4+16}=\sqrt{20}=2\sqrt5,
+  \qquad
+  \norm{\tfrac12\vc{v}}=\sqrt{\tfrac14+1}=\tfrac{\sqrt5}{2},
+  \qquad
+  \norm{-\vc{v}}=\sqrt{1+4}=\sqrt5 .
+\]
+So $2\vc{v}$ is twice as long as $\vc{v}$, $\tfrac12\vc{v}$ is half as long, and
+$-\vc{v}$ is exactly as long as $\vc{v}$ but points the opposite way.
+\end{ex}
+
+\begin{rmk}
+Read off the pattern: scaling by $\alpha$ multiplies the magnitude by
+$\lvert\alpha\rvert$,
+\[
+  \norm{\alpha\vc{v}}=\lvert\alpha\rvert\,\norm{\vc{v}},
+\]
+and the \emph{sign} of $\alpha$ decides the direction --- positive keeps it,
+negative reverses it. That is the same sign-carries-direction rule you saw on
+the number line in \S5, now acting on a vector in the plane. Taking $\alpha=0$
+collapses the vector to $[\,0,\,0\,]$, the \textbf{zero vector}, which has no
+direction at all.
+\end{rmk}
+
+\Needspace*{13\baselineskip}
+\noindent Geometrically, scalar multiplication never turns a vector off its own
+line: every multiple of $\vc{v}$ lies on the single straight line through the
+origin and the head of $\vc{v}$. Scaling slides the arrowhead along that line
+--- stretching it out, pulling it in, or flipping it through the origin --- and
+nothing else.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \lattice{-2}{3}{-3}{5}
+  % the line through the origin along v -- every multiple of v lands on it
+  \draw[gray!45,dashed] (-1.4,-2.8) -- (2.4,4.8);
+  \draw[vecarr,RoyalBlue!40] (0,0) -- (2,4);
+  \draw[vecarr,RoyalBlue]    (0,0) -- (1,2);
+  \draw[vecarr,ForestGreen]  (0,0) -- (0.5,1);
+  \draw[vecarr,BrickRed]     (0,0) -- (-1,-2);
+  \node[right,font=\scriptsize,RoyalBlue!60] at (2.06,4.04)   {$2\vc{v}=[2,4]$};
+  \node[right,font=\scriptsize,RoyalBlue]    at (1.08,2.02)   {$\vc{v}=[1,2]$};
+  \node[left,font=\scriptsize,ForestGreen]   at (0.30,1.06)   {$\tfrac12\vc{v}$};
+  \node[left,font=\scriptsize,BrickRed]      at (-1.04,-2.02) {$-\vc{v}=[-1,-2]$};
+\end{tikzpicture}
+\end{center}
+
+%==============================================================================
+\section{Practice set}
 %==============================================================================
 For each pair below: \textbf{(a)} draw $\vc{u}$ and $\vc{v}$ on one set of axes,
 tails at the origin, arrowheads marked; \textbf{(b)} compute the indicated sum
@@ -536,7 +568,11 @@ axes.
 \end{enumerate}
 
 \medskip
-\noindent\emph{If time permits:} compute the norm of each resultant.
+\noindent\emph{Optional:} compute the norm of each resultant.
+
+\smallskip
+\noindent Watch the signs in P4: both inputs have a negative component, so
+$2-(-3)=5$ and $-2-(-1)=-1$.
 
 \subsection*{Answer key}
 \begin{center}
@@ -552,83 +588,5 @@ P4 & $[2,-2]$  & $[-3,-1]$  & $\vc{u}-\vc{v}=[5,-1]$  & $\sqrt{26}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-\inote{The four are ordered by difficulty and the ordering is load-bearing.
-P1 is a clean first-quadrant parallelogram (and its norm is the friendly $5$).
-P2 is the first difference and the first negative component --- the resultant
-leaves the first quadrant. P3 places $\vc{u}$ in the second quadrant. P4 is the
-hard one: a difference in which \emph{both} inputs have a negative component, so
-$-2-(-1)=-1$ and $2-(-3)=5$ are both sign traps. Expect P4 to consume as much
-time as P1--P2 together; if the clock is tight, P3--P4 are the designated cut
-(see Timing).}
-
-%==============================================================================
-\section*{Timing}
-%==============================================================================
-\noindent\textbf{The short answer: this section runs about 60 minutes} --- 55
-minutes of content plus roughly 5 minutes of questions and transitions. With 25
-minutes of syllabus in front of it, the session totals about \textbf{85
-minutes}.
-
-Measured against the two clocks in play:
-
-\begin{itemize}[leftmargin=1.4em,itemsep=3pt]
-  \item Against the \textbf{scheduled slot} of 12:10--2:00 PM
-        (\textbf{110 minutes}), 85 minutes fits comfortably with 25 minutes to
-        spare --- run it as written, take the optional norms in \S8, and let
-        first-day questions expand.
-  \item Against a \textbf{75-minute session} (25 syllabus $+$ 50 content),
-        it is about \textbf{10 minutes over}. It does not fit as written.
-\end{itemize}
-
-\inote{The 110-minute slot and the 75-minute plan are both plausible readings of
-a first meeting --- an early dismissal on day one is ordinary. The lean column
-below is what to do if the session really is 75 minutes; nothing in it is
-lost material, only relocated.}
-
-\begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}r l c c@{}}
-\toprule
-\textbf{\S} & \textbf{Segment} & \textbf{As written} & \textbf{Lean (75-min)} \\
-\midrule
-1 & Vectors, magnitude, direction, the plane   &  8 &  8 \\
-2 & The norm                                    &  7 &  7 \\
-3 & The derivative as a vector                  &  6 &  4 \\
-4 & Vector vs.\ scalar quantities               &  4 &  3 \\
-5 & One-dimensional vectors                     &  3 &  3 \\
-6 & Notation and $\R^2$                         &  5 &  5 \\
-7 & Addition and subtraction                    &  7 &  7 \\
-8 & Practice P1--P4                             & 15 &  8 \ (P1--P2 only) \\
-  & Slack                                       &  5 &  5 \\
-\midrule
-  & \textbf{Content total}                       & \textbf{60} & \textbf{50} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent\textbf{The two cuts, in priority order.}
-\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
-  \item \textbf{P3--P4 to homework} (saves 7 min). They are the two
-        sign-trap problems --- exactly the ones that reward unhurried work at a
-        desk rather than a rushed 90 seconds under time pressure.
-  \item \textbf{Compress \S3--\S4 to 7 minutes total} (saves 3 min): state the
-        tangent-as-vector reading with the $f(x)=x^2$ figure, take
-        \emph{one} student example of a vector quantity instead of several, and
-        move on.
-\end{enumerate}
-
-\noindent\textbf{Do not cut} \S1--\S2 or \S7: they are the definitional spine,
-and every later lecture assumes them. If the clock collapses entirely, end after
-the worked example in \S7 and open Lecture~2 with the practice set as a
-warm-up --- that costs 15 minutes here and buys a natural re-entry point next
-session.
-
-\medskip
-\noindent\textbf{Pacing checkpoints.} At $+25$ min you should be starting \S1;
-at $+40$ min you should be finishing \S2 (the norm computed, $\sqrt5$ on the
-board); at $+55$ min you should be entering \S6. If \S2 is not done by $+40$,
-take cut \#2 immediately rather than compressing the practice set --- students
-learn addition by doing it, not by watching it.
 
 \end{document}
