@@ -43,7 +43,15 @@
 %        circle and S^1, 12.2 direction-magnitude decomposition, 12.3 the
 %        shadow (motivation + derivation), 12.4 proj and comp, 12.5 practice,
 %        12.6 the orthogonal piece v - proj_u(v), 12.7 Cauchy-Schwarz
-%    13  practice set (addition and subtraction)
+%    13  metrics and the p-norm family: 13.1 metrics, 13.2 the Euclidean
+%        distance is a metric, 13.3 Manhattan, 13.4 Chebyshev, 13.5 naming the
+%        norms by subscript, 13.6 the p-norm, 13.7 the limit as p -> infinity
+%        (squeeze theorem), 13.8 unit balls
+%    14  practice set (addition and subtraction)
+%
+%  NOTATION.  Sections 1-12 write the Euclidean norm as ||v|| with no subscript.
+%  Section 13 introduces the family ||v||_p and states that the bare ||v||
+%  continues to mean ||v||_2 everywhere in this document.
 %
 %  Cauchy-Schwarz is introduced in 12.7 rather than deferred: the projection
 %  right triangle hands it over directly (a leg is no longer than the
@@ -146,7 +154,10 @@ of cosines; compute dot products and cosine similarities; test two vectors for
 orthogonality with a single dot product; normalize a vector and split it into a
 direction and a magnitude; compute the projection of one vector onto another and
 the component that goes with it; split a vector into a piece along $\vc{u}$ and
-a piece orthogonal to $\vc{u}$; and state the Cauchy--Schwarz inequality.
+a piece orthogonal to $\vc{u}$; state the Cauchy--Schwarz inequality; list the
+axioms a metric must satisfy and verify them for the Euclidean distance; compute
+Manhattan and Chebyshev distances; and explain why the $1$-, $2$- and
+$\infty$-norms carry those subscripts.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -1764,10 +1775,10 @@ head of a unit vector.
 \end{center}
 
 \lookahead The circle is an artefact of the \emph{Euclidean} norm, not of
-normalization itself. Later in the course we will define other norms on
-$\R^{2}$, and each one has its own set of ``vectors of length $1$'' --- which
-turns out to be a different shape in the plane for each norm. The circle is only
-the first of a family of pictures.
+normalization itself. In \S13 we will define other norms on $\R^{2}$, and each
+one has its own set of ``vectors of length $1$'' --- which turns out to be a
+different shape in the plane for each norm. The circle is only the first of a
+family of pictures.
 
 \subsubsection*{The set-theoretic statement}
 That circle has a name, and it lets us say ``$\vc{u}$ has unit length'' in the
@@ -2190,6 +2201,471 @@ where the middle step is Cauchy--Schwarz. Taking square roots of both
 non-negative sides gives the triangle inequality. The geometric picture and the
 algebraic bound were the same statement all along.
 \end{rmk}
+
+%==============================================================================
+\section{Metrics, and the family of norms}
+%==============================================================================
+Every norm we have written so far has been the Euclidean one, and we have been
+writing it $\norm{\vc{v}}$ with no further comment. It is time to admit that
+this was a choice. Behind the norm sits a more primitive object --- a notion of
+\emph{distance} --- and the Euclidean notion is only one of many.
+
+%------------------------------------------------------------------------------
+\subsection{Metrics}
+%------------------------------------------------------------------------------
+\begin{defn}[Metric]
+Let $A$ be a set. A \textbf{metric} on $A$ is a function $d$ that takes two
+elements of $A$ and returns a non-negative real number --- interpreted as the
+\emph{distance} between them --- subject to the following. For all
+$x,y,z\in A$:
+\begin{enumerate}[label=\textbf{M\arabic*.},leftmargin=3.0em,itemsep=4pt,
+                  topsep=4pt]
+  \item $d(x,y)=0 \iff x=y$
+        \hfill (a point is at distance zero from itself, and from nothing else)
+  \item $d(x,y)=d(y,x)$
+        \hfill (symmetry)
+  \item $d(x,y)+d(y,z)\ge d(x,z)$
+        \hfill (triangle inequality)
+  \item $d(x,y)\ge 0$
+        \hfill (non-negativity)
+\end{enumerate}
+\end{defn}
+
+\noindent The elements of $A$ are usually points of a coordinate space --- for
+us $A=\R^{2}$, and the two elements are two vectors --- but nothing in the
+definition requires that. Metrics are defined on sets of strings, of functions,
+of images, of DNA sequences. The four conditions are all that ``distance'' has
+to mean.
+
+\begin{rmk}
+Axiom \textbf{M4} is listed for emphasis, but it is not independent: it follows
+from the other three. Put $z=x$ in \textbf{M3} to get
+$d(x,y)+d(y,x)\ge d(x,x)$, which is $0$ by \textbf{M1}. Then \textbf{M2} turns
+the left side into $2d(x,y)$, so $2d(x,y)\ge 0$ and hence $d(x,y)\ge 0$. Worth
+knowing, because it means that to check something is a metric you only ever have
+to check three things.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The Euclidean distance is a metric}
+%------------------------------------------------------------------------------
+The distance we have been using all along is
+\[
+  d_2(\vc{x},\vc{y})
+  \;=\; \sqrt{(x_1-y_1)^{2}+(x_2-y_2)^{2}}
+  \;=\; \norm{\vc{x}-\vc{y}} ,
+\]
+the norm of the difference --- which is exactly the between-the-heads reading of
+\S7.3. Let us check all four axioms. Each one turns out to be a result we
+already have.
+
+\smallskip
+\noindent\textbf{M1.} Suppose $d_2(\vc{x},\vc{y})=0$. Then
+$(x_1-y_1)^{2}+(x_2-y_2)^{2}=0$. A sum of two squares of real numbers is zero
+only if each square is zero, so $x_1=y_1$ and $x_2=y_2$ --- that is,
+$\vc{x}=\vc{y}$ by the equality of \S9. Conversely, if $\vc{x}=\vc{y}$ then both
+differences vanish and the square root is $0$. \hfill$\checkmark$
+
+\smallskip
+\noindent\textbf{M2.} Since $\vc{x}-\vc{y}=-(\vc{y}-\vc{x})$, the scaling rule
+of \S8 with $\alpha=-1$ gives
+\[
+  \norm{\vc{x}-\vc{y}}
+  = \norm{(-1)(\vc{y}-\vc{x})}
+  = \lvert -1\rvert\,\norm{\vc{y}-\vc{x}}
+  = \norm{\vc{y}-\vc{x}} ,
+\]
+so $d_2(\vc{x},\vc{y})=d_2(\vc{y},\vc{x})$. Geometrically: mirroring a
+displacement does not change its length. \hfill$\checkmark$
+
+\smallskip
+\noindent\textbf{M3.} This is \S7.2 in disguise. Put
+$\vc{u}=\vc{x}-\vc{y}$ and $\vc{v}=\vc{y}-\vc{z}$, and notice that
+\[
+  \vc{u}+\vc{v} = (\vc{x}-\vc{y})+(\vc{y}-\vc{z}) = \vc{x}-\vc{z} .
+\]
+The triangle inequality for norms says $\norm{\vc{u}+\vc{v}}\le
+\norm{\vc{u}}+\norm{\vc{v}}$, which reads
+\[
+  \norm{\vc{x}-\vc{z}} \;\le\; \norm{\vc{x}-\vc{y}}+\norm{\vc{y}-\vc{z}},
+  \qquad\text{that is}\qquad
+  d_2(\vc{x},\vc{z}) \le d_2(\vc{x},\vc{y})+d_2(\vc{y},\vc{z}) .
+\]
+\hfill$\checkmark$
+
+\smallskip
+\noindent\textbf{M4.} A square root of a non-negative quantity is
+non-negative. \hfill$\checkmark$
+
+\begin{rmk}
+Notice what \textbf{M3} explains retroactively. In \S7.2 we called
+$\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$ the ``triangle
+inequality'' because of a picture of a triangle. We can now see the deeper
+reason for the name: it is the axiom that makes distance behave like distance,
+in \emph{any} setting, with or without a picture.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A different geometry: the Manhattan metric}
+%------------------------------------------------------------------------------
+The Euclidean metric assigns to two points the length of the shortest straight
+line joining them. That is humanity's most familiar notion of distance, and in
+flat coordinate space it is the right one. But ``shortest path'' depends on which
+paths are \emph{available}, and that depends on the geometry of the space you are
+moving through.
+
+So consider a plane carved into a grid of city blocks by streets and avenues,
+and suppose you must travel between two street corners. You are not allowed to
+cut through the buildings. Every route is a sequence of moves along streets and
+avenues, and the Euclidean distance --- the straight line between the corners
+--- is not merely inconvenient but \emph{wrong}: it would report the distance
+you could travel if you could pass through walls, which badly understates the
+trip.
+
+What is the honest answer? Any legal route must cover the whole horizontal gap
+and the whole vertical gap, and no route need cover more. So the distance is the
+sum of the two gaps, and it does not matter in what order you take them.
+
+\begin{defn}[Manhattan metric]
+For $\vc{x}=(x_1,x_2)$ and $\vc{y}=(y_1,y_2)$ in $\R^{2}$, the
+\textbf{Manhattan} or \textbf{taxicab} metric is
+\[
+  d_1(\vc{x},\vc{y}) \;=\; \lvert x_1-y_1\rvert + \lvert x_2-y_2\rvert .
+\]
+\end{defn}
+
+\noindent The name is as literal as it sounds: it is the distance a taxi drives
+on a rectangular street grid.
+
+\smallskip
+\noindent\emph{Exercise (homework).} Verify that $d_1$ satisfies
+\textbf{M1}--\textbf{M3}, and hence is a metric on $\R^{2}$.
+
+\subsubsection*{Practice}
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=5pt,
+                  topsep=5pt]
+  \item Compute $d_1(\vc{x},\vc{y})$ for $\vc{x}=(1,2)$ and $\vc{y}=(4,6)$.
+  \item Compute $d_1(\vc{x},\vc{y})$ for $\vc{x}=(-2,3)$ and $\vc{y}=(3,-1)$.
+\end{enumerate}
+
+\smallskip
+\noindent\textbf{Answers.}
+\begin{align*}
+  \text{P1:}\quad d_1 &= \lvert 1-4\rvert+\lvert 2-6\rvert = 3+4 = 7,
+    &&\text{compare } d_2=\sqrt{9+16}=5 . \\
+  \text{P2:}\quad d_1 &= \lvert -2-3\rvert+\lvert 3-(-1)\rvert = 5+4 = 9,
+    &&\text{compare } d_2=\sqrt{25+16}=\sqrt{41}\approx 6.40 .
+\end{align*}
+In both cases the taxicab distance exceeds the Euclidean one, which is what you
+should expect: forbidding diagonal movement can only make the trip longer.
+
+%------------------------------------------------------------------------------
+\subsection{The Chebyshev metric}
+%------------------------------------------------------------------------------
+A third notion of distance keeps only the \emph{largest} of the coordinate
+displacements and ignores the other entirely.
+
+\begin{defn}[Chebyshev metric]
+For $\vc{x},\vc{y}\in\R^{2}$, the \textbf{Chebyshev} metric is
+\[
+  d_\infty(\vc{x},\vc{y})
+  \;=\; \max\bigl\{\,\lvert x_1-y_1\rvert,\;\lvert x_2-y_2\rvert\,\bigr\}.
+\]
+\end{defn}
+
+\begin{rmk}[Why it is called the chess metric]
+Think of a king on a chessboard. A king moves one square per turn in any of
+eight directions, including diagonally --- and a diagonal step advances it by
+one square \emph{horizontally and vertically at the same time}. So the smaller
+of the two displacements comes for free: it is covered incidentally while
+closing the larger one. The number of moves a king needs to travel between two
+squares is therefore exactly the larger of the horizontal and vertical gaps ---
+precisely $d_\infty$.
+
+For example, from $(1,1)$ to $(4,3)$ the gaps are $3$ and $2$, so
+$d_\infty=3$, and indeed three moves suffice:
+$(1,1)\to(2,2)\to(3,3)\to(4,3)$. No shorter route exists, because three columns
+must be crossed and a king crosses at most one per move.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Naming the norms}
+%------------------------------------------------------------------------------
+Each of these metrics has a norm attached to it, and the two are two views of
+the same measurement:
+\[
+  \norm{\vc{v}} = d(\vc{v},\vc{0})
+  \qquad\text{and}\qquad
+  d(\vc{x},\vc{y}) = \norm{\vc{x}-\vc{y}} .
+\]
+The norm is the distance from the origin; the distance is the norm of the
+difference. So each of our three metrics names a norm, and since there are now
+several we can no longer write $\norm{\vc{v}}$ and leave it at that. The
+standard fix is a \textbf{subscript}:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Norm} & \textbf{Notation} & \textbf{Formula} \\
+\midrule
+Manhattan / taxicab & $\norm{\vc{v}}_1$
+  & $\lvert v_1\rvert+\lvert v_2\rvert$ \\
+Euclidean           & $\norm{\vc{v}}_2$
+  & $\sqrt{\lvert v_1\rvert^{2}+\lvert v_2\rvert^{2}}$ \\
+Chebyshev           & $\norm{\vc{v}}_\infty$
+  & $\max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{rmk}[Our convention]
+Everywhere in \S1--\S12, and everywhere later unless a subscript says
+otherwise, a bare $\norm{\vc{v}}$ means the Euclidean norm $\norm{\vc{v}}_2$.
+The Euclidean norm keeps the privilege of needing no subscript.
+\end{rmk}
+
+\noindent Which leaves an obvious question: why $1$, $2$ and $\infty$? The
+numbers are not arbitrary labels. They are parameter values.
+
+%------------------------------------------------------------------------------
+\subsection{The $p$-norm}
+%------------------------------------------------------------------------------
+\begin{defn}[$p$-norm]
+For a real number $p\ge 1$ and $\vc{v}=[\,v_1,\,v_2\,]\in\R^{2}$, the
+\textbf{$p$-norm} of $\vc{v}$ is
+\[
+  \norm{\vc{v}}_p
+  \;=\;
+  \bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}\bigr)^{1/p} .
+\]
+\end{defn}
+
+\noindent Two of our three norms are already on this list. Setting $p=1$,
+\[
+  \norm{\vc{v}}_1
+  = \bigl(\lvert v_1\rvert^{1}+\lvert v_2\rvert^{1}\bigr)^{1/1}
+  = \lvert v_1\rvert+\lvert v_2\rvert ,
+\]
+which is the Manhattan norm. Setting $p=2$,
+\[
+  \norm{\vc{v}}_2
+  = \bigl(\lvert v_1\rvert^{2}+\lvert v_2\rvert^{2}\bigr)^{1/2}
+  = \sqrt{v_1^{2}+v_2^{2}} ,
+\]
+which is the Euclidean norm --- the absolute values are harmless here, since
+squaring destroys signs anyway. So the subscripts were never names; they were
+\emph{the value of $p$}. This is why the Manhattan and Euclidean norms are
+properly called the \textbf{$1$-norm} and the \textbf{$2$-norm}.
+
+\begin{rmk}[Why $p\ge 1$]
+The restriction is not decoration --- the formula stops being a norm below $1$.
+Take $p=\tfrac12$, $\vc{u}=[\,1,\,0\,]$ and $\vc{v}=[\,0,\,1\,]$. Then
+$\norm{\vc{u}}_{1/2}=1^{2}=1$ and $\norm{\vc{v}}_{1/2}=1$, while
+$\vc{u}+\vc{v}=[\,1,\,1\,]$ gives
+\[
+  \norm{\vc{u}+\vc{v}}_{1/2} = \bigl(1+1\bigr)^{2} = 4 .
+\]
+But $4>1+1$, so the triangle inequality fails. Whatever that formula measures,
+it is not a length.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{What happens as \texorpdfstring{$p\to\infty$}{p to infinity}}
+%------------------------------------------------------------------------------
+That accounts for $1$ and $2$. But the Chebyshev norm was defined by a
+\emph{maximum}, which looks nothing like the $p$-norm formula --- and its
+subscript is not even a number. Both puzzles are resolved by the same
+computation.
+
+\begin{quote}
+\textbf{Claim.} For every $\vc{v}\in\R^{2}$,
+\[
+  \lim_{p\to\infty}\norm{\vc{v}}_p
+  \;=\;
+  \max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\} .
+\]
+\end{quote}
+
+\noindent\emph{Proof.} If $\vc{v}=\vc{0}$ both sides are $0$, so assume
+$\vc{v}\neq\vc{0}$ and write
+\[
+  M = \max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\} > 0 .
+\]
+The idea is to trap $\norm{\vc{v}}_p$ between two quantities that both approach
+$M$, and then apply the squeeze theorem from MATH~141.
+
+\smallskip
+\noindent\textbf{A lower bound.} One of the two coordinates realises the
+maximum, so one of the terms $\lvert v_1\rvert^{p}$, $\lvert v_2\rvert^{p}$
+equals $M^{p}$ exactly. The other term is non-negative. Hence
+\[
+  \lvert v_1\rvert^{p}+\lvert v_2\rvert^{p} \;\ge\; M^{p},
+\]
+and raising both sides to the power $1/p$ --- which preserves the inequality,
+since $t\mapsto t^{1/p}$ is increasing on $[0,\infty)$ ---
+\[
+  \norm{\vc{v}}_p \;\ge\; \bigl(M^{p}\bigr)^{1/p} = M .
+\]
+
+\smallskip
+\noindent\textbf{An upper bound.} Every coordinate is at most $M$ in absolute
+value, so each term is at most $M^{p}$, and there are two of them:
+\[
+  \lvert v_1\rvert^{p}+\lvert v_2\rvert^{p} \;\le\; 2M^{p} .
+\]
+Again taking $p$-th roots,
+\[
+  \norm{\vc{v}}_p \;\le\; \bigl(2M^{p}\bigr)^{1/p} = 2^{1/p}\,M .
+\]
+
+\smallskip
+\noindent\textbf{Squeezing.} Combining the two bounds, for every $p\ge1$,
+\[
+  M \;\le\; \norm{\vc{v}}_p \;\le\; 2^{1/p}\,M .
+\]
+Now let $p\to\infty$. The left-hand bound does not depend on $p$ at all, so it
+stays at $M$. On the right, $1/p\to0$ and $t\mapsto 2^{t}$ is continuous, so
+$2^{1/p}\to 2^{0}=1$ and the whole bound tends to $M$. Both outer quantities
+converge to the same limit $M$, so by the squeeze theorem the quantity trapped
+between them does too:
+\[
+  \lim_{p\to\infty}\norm{\vc{v}}_p = M
+  = \max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\}. \qquad\blacksquare
+\]
+
+\noindent Both puzzles dissolve at once. The Chebyshev norm is not a separate
+construction bolted on beside the others --- it is the \emph{limiting case} of
+the $p$-norm family, which is exactly why its subscript is $\infty$:
+\[
+  \norm{\vc{v}}_\infty := \lim_{p\to\infty}\norm{\vc{v}}_p
+  = \max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\}.
+\]
+And the maximum was inevitable. As $p$ grows, raising to the $p$-th power
+exaggerates the gap between a larger and a smaller number without limit, so the
+larger coordinate comes to dominate the sum completely and the smaller one
+becomes negligible. Taking $p\to\infty$ makes that domination total.
+
+\begin{rmk}
+Nothing in the argument used the fact that there are exactly two coordinates.
+In $\R^{n}$ the upper bound becomes $n^{1/p}M$, and $n^{1/p}\to1$ just as
+$2^{1/p}$ did --- the constant is different, the limit is not. All that matters
+is that the number of coordinates is finite.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Unit balls: the shape of ``length one''}
+%------------------------------------------------------------------------------
+In \S12.1 we found that the vectors of unit length trace a circle of radius $1$,
+and flagged that this was an artefact of the Euclidean norm. Now we can see what
+the other norms give. In each case we are drawing the same set --- the vectors
+whose length is $1$ --- under a different definition of length.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item $\norm{\vc{v}}_1=1$ means $\lvert v_1\rvert+\lvert v_2\rvert=1$. In the
+        first quadrant that is the line $v_1+v_2=1$ joining $(1,0)$ to $(0,1)$;
+        reflecting into the other three quadrants gives a \textbf{diamond} with
+        vertices at $(\pm1,0)$ and $(0,\pm1)$.
+  \item $\norm{\vc{v}}_2=1$ means $v_1^{2}+v_2^{2}=1$: the \textbf{circle} of
+        radius $1$.
+  \item $\norm{\vc{v}}_\infty=1$ means the larger of $\lvert v_1\rvert$,
+        $\lvert v_2\rvert$ equals $1$ while the other is at most $1$: the
+        boundary of the \textbf{square} with corners $(\pm1,\pm1)$.
+\end{itemize}
+
+\noindent All three are centred at the origin. The set is called the
+\emph{unit ball} of the norm, and its shape is the norm's signature.
+
+\begin{center}
+\begin{tabular}{@{}c@{\hspace{0.9cm}}c@{\hspace{0.9cm}}c@{}}
+\begin{tikzpicture}[scale=0.95]
+  % grid must start on a multiple of the step, or the lines miss the integers
+  \draw[step=0.5cm,gray!22,very thin] (-1.5,-1.5) grid (1.5,1.5);
+  \draw[axisline] (-1.7,0) -- (1.85,0);
+  \draw[axisline] (0,-1.7) -- (0,1.85);
+  \draw[RoyalBlue,thick] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.95]
+  % grid must start on a multiple of the step, or the lines miss the integers
+  \draw[step=0.5cm,gray!22,very thin] (-1.5,-1.5) grid (1.5,1.5);
+  \draw[axisline] (-1.7,0) -- (1.85,0);
+  \draw[axisline] (0,-1.7) -- (0,1.85);
+  \draw[BrickRed,thick] (0,0) circle (1);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.95]
+  % grid must start on a multiple of the step, or the lines miss the integers
+  \draw[step=0.5cm,gray!22,very thin] (-1.5,-1.5) grid (1.5,1.5);
+  \draw[axisline] (-1.7,0) -- (1.85,0);
+  \draw[axisline] (0,-1.7) -- (0,1.85);
+  % heavier stroke: this square's edges lie on gridlines and would blend in
+  \draw[ForestGreen,very thick] (-1,-1) rectangle (1,1);
+\end{tikzpicture}
+\\[3pt]
+{\small $\norm{\vc{v}}_1=1$: a diamond} &
+{\small $\norm{\vc{v}}_2=1$: a circle} &
+{\small $\norm{\vc{v}}_\infty=1$: a square}
+\end{tabular}
+\end{center}
+
+\subsubsection*{Varying $p$ continuously}
+The three pictures are not three unrelated shapes. The $p$-norm is continuous
+in $p$, so as $p$ increases from $1$ the unit ball deforms smoothly: the
+diamond's flat edges bow outward, passing exactly through the circle at $p=2$,
+and continue bulging until they flatten against the square in the limit
+$p\to\infty$.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.9]
+  % grid must start on a multiple of the step, or the lines miss the integers
+  \draw[step=0.5cm,gray!20,very thin] (-1.5,-1.5) grid (1.5,1.5);
+  \draw[axisline] (-1.68,0) -- (1.72,0) node[right,font=\scriptsize,black]{$v_1$};
+  \draw[axisline] (0,-1.68) -- (0,1.72) node[above,font=\scriptsize,black]{$v_2$};
+  % p = infinity (square) and p = 1 (diamond): exact, drawn as straight lines
+  \draw[ForestGreen,thick] (-1,-1) rectangle (1,1);
+  \draw[RoyalBlue,thick] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+  % p = 2: exact circle
+  \draw[BrickRed,thick] (0,0) circle (1);
+  % intermediate p, via the superellipse |cos t|^(2/p), |sin t|^(2/p);
+  % the domain is offset so the samples never land exactly on 90/180/270
+  \draw[Purple!75,thick,domain=0.7:360.7,smooth,variable=\t,samples=200]
+        plot ({sign(cos(\t))*(abs(cos(\t)))^(2/1.5)},
+              {sign(sin(\t))*(abs(sin(\t)))^(2/1.5)});
+  \draw[Orange,thick,domain=0.7:360.7,smooth,variable=\t,samples=200]
+        plot ({sign(cos(\t))*(abs(cos(\t)))^(2/4)},
+              {sign(sin(\t))*(abs(sin(\t)))^(2/4)});
+  % legend: a short stroke in each colour, keyed to the curves above
+  \draw[RoyalBlue,thick]   (1.10,1.20) -- (1.26,1.20);
+  \draw[Purple!75,thick]   (1.10,0.98) -- (1.26,0.98);
+  \draw[BrickRed,thick]    (1.10,0.76) -- (1.26,0.76);
+  \draw[Orange,thick]      (1.10,0.54) -- (1.26,0.54);
+  \draw[ForestGreen,thick] (1.10,0.32) -- (1.26,0.32);
+  \node[right,font=\scriptsize] at (1.28,1.20) {$p=1$};
+  \node[right,font=\scriptsize] at (1.28,0.98) {$p=1.5$};
+  \node[right,font=\scriptsize] at (1.28,0.76) {$p=2$};
+  \node[right,font=\scriptsize] at (1.28,0.54) {$p=4$};
+  \node[right,font=\scriptsize] at (1.28,0.32) {$p=\infty$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Reading the picture from the inside out also reveals an ordering. The
+diamond sits inside the circle, which sits inside the square, and the balls only
+ever grow as $p$ grows. Since a \emph{larger} unit ball means it takes a bigger
+vector to reach length $1$, the norms themselves run the other way:
+\[
+  \norm{\vc{v}}_\infty \;\le\; \norm{\vc{v}}_2 \;\le\; \norm{\vc{v}}_1 .
+\]
+Check it on $\vc{v}=[\,1,\,1\,]$: the three norms are $1$, $\sqrt2\approx1.414$,
+and $2$. The same vector has three different lengths, and which one is
+``correct'' is a question about the problem you are solving, not about the
+vector.
+
+\lookahead We have now met four metrics and a whole family of norms, but we have
+not yet said what a \emph{norm} is in the way that \S13.1 said what a metric is
+--- the $p\ge1$ restriction, for instance, was justified by one counterexample
+rather than by a definition. The next section gives the axioms a norm must
+satisfy and checks them against the family we have built.
 
 %==============================================================================
 \section{Practice set: addition and subtraction}
