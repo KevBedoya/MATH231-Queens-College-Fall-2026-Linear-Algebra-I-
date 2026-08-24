@@ -39,7 +39,16 @@
 %        and the derivation, 11.3 the dot product, 11.4 cosine similarity,
 %        11.5 numerical similarity, 11.6 cos(u,u) and <u,u> = ||u||^2,
 %        11.7 the orthogonality test, 11.8 practice
-%    12  practice set (addition and subtraction)
+%    12  unit vectors, projection, Cauchy-Schwarz: 12.1 normalization, the unit
+%        circle and S^1, 12.2 direction-magnitude decomposition, 12.3 the
+%        shadow (motivation + derivation), 12.4 proj and comp, 12.5 practice,
+%        12.6 the orthogonal piece v - proj_u(v), 12.7 Cauchy-Schwarz
+%    13  practice set (addition and subtraction)
+%
+%  Cauchy-Schwarz is introduced in 12.7 rather than deferred: the projection
+%  right triangle hands it over directly (a leg is no longer than the
+%  hypotenuse, i.e. a shadow is no longer than its object), so the transition
+%  needs no manufacturing.
 %
 %  TWO CORRECTIONS made against the drafted outline for Sec. 11, both
 %  deliberate:
@@ -88,6 +97,10 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\vc}[1]{\mathbf{#1}}
 \newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}                 % normalized vector
+\newcommand{\Sph}[1]{\mathbb{S}^{#1}}              % the #1-sphere
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
@@ -129,8 +142,11 @@ $\alpha=-1$ does to it; decide when two vectors drawn in different places are
 the \emph{same} vector; say what it means for two vectors to be parallel or
 orthogonal, in terms of the angle $\theta$ between them; derive
 $\langle\vc{u},\vc{v}\rangle=\norm{\vc{u}}\norm{\vc{v}}\cos\theta$ from the law
-of cosines; compute dot products and cosine similarities; and test two vectors
-for orthogonality with a single dot product.
+of cosines; compute dot products and cosine similarities; test two vectors for
+orthogonality with a single dot product; normalize a vector and split it into a
+direction and a magnitude; compute the projection of one vector onto another and
+the component that goes with it; split a vector into a piece along $\vc{u}$ and
+a piece orthogonal to $\vc{u}$; and state the Cauchy--Schwarz inequality.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -1626,7 +1642,7 @@ $\norm{\vc{w}}=\sqrt5$, $\norm{\vc{z}}=\sqrt{45}=3\sqrt5$.
 
 \subsubsection*{Answer key}
 \begin{center}
-\renewcommand{\arraystretch}{1.45}
+\renewcommand{\arraystretch}{2.1}   % display fractions need the extra height
 \begin{tabular}{@{}l l l l@{}}
 \toprule
 \textbf{Pair} & \textbf{Dot product} & \textbf{Cosine similarity} & \textbf{Arrangement} \\
@@ -1662,6 +1678,517 @@ orthogonal to $\vc{u}$, has no choice but to be orthogonal to $\vc{v}$ as well.
 Two of the three pairs therefore always carry the same label, and
 $\{$parallel, antiparallel, orthogonal$\}$ can never appear once each. A fourth
 vector is the minimum needed.
+\end{rmk}
+
+%==============================================================================
+\section{Unit vectors, projection, and Cauchy--Schwarz}
+%==============================================================================
+Since \S1 we have said that a vector carries two attributes, a magnitude and a
+direction. So far we have only ever handled them together. This section pulls
+them apart --- a \textbf{direction--magnitude decomposition}, if you like ---
+and then uses the pieces to answer a genuinely new question: how much of one
+vector points along another?
+
+%------------------------------------------------------------------------------
+\subsection{Normalization and unit vectors}
+%------------------------------------------------------------------------------
+To isolate the direction of a vector, throw away its magnitude by dividing it
+out.
+
+\begin{defn}[Normalization]
+A nonzero vector $\vc{u}\in\R^{2}$ is \textbf{normalized} by dividing it by its
+own magnitude. We write
+\[
+  \uv{u} \;:=\; \frac{\vc{u}}{\norm{\vc{u}}}
+  \;=\; \frac{1}{\norm{\vc{u}}}\,\vc{u},
+\]
+read ``$\vc{u}$-hat.'' The result has length $1$, and a vector of length $1$ is
+called a \textbf{unit vector}; we also say it has \textbf{unit length}.
+\end{defn}
+
+\noindent Why does normalizing produce length $1$? Because dividing by
+$\norm{\vc{u}}$ is scalar multiplication by $\alpha=1/\norm{\vc{u}}$, and \S8
+told us exactly what scaling does to a norm:
+\[
+  \norm{\uv{u}}
+  = \Bigl\lVert \tfrac{1}{\norm{\vc{u}}}\,\vc{u}\Bigr\rVert
+  = \left\lvert \tfrac{1}{\norm{\vc{u}}}\right\rvert \norm{\vc{u}}
+  = \frac{\norm{\vc{u}}}{\norm{\vc{u}}}
+  = 1 .
+\]
+And since $1/\norm{\vc{u}}>0$, the sign rule of \S8.1 says the direction is
+untouched. Normalizing therefore does precisely one thing: it discards the
+magnitude and keeps the direction. That is the whole point --- we normalize when
+we want to talk about a vector's direction \emph{only}.
+
+\begin{ex}[Normalizing]
+For $\vc{u}=[\,3,\,4\,]$ we have $\norm{\vc{u}}=5$, so
+\[
+  \uv{u}=\frac{1}{5}[\,3,\,4\,]=[\,0.6,\,0.8\,],
+\]
+and indeed $\norm{\uv{u}}=\sqrt{0.36+0.64}=\sqrt{1}=1$. The vector $\uv{u}$
+points the same way as $\vc{u}$ but is five times shorter.
+\end{ex}
+
+\noindent The zero vector cannot be normalized --- the division is undefined,
+which is the arithmetic shadow of the fact recorded in \S8 that
+$[\,0,\,0\,]$ has no direction to extract.
+
+\subsubsection*{Where all the unit vectors live}
+A unit vector satisfies $\norm{\vc{u}}=1$, that is $\sqrt{u_1^{2}+u_2^{2}}=1$,
+or equivalently
+\[
+  u_1^{2}+u_2^{2}=1 .
+\]
+That is the equation of a circle of radius $1$ centred at the origin. So:
+
+\begin{quote}
+Under the Euclidean norm, the heads of \emph{all} unit vectors lie on a single
+circle of radius $1$ about the origin --- and every point of that circle is the
+head of a unit vector.
+\end{quote}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-2}{4}{-2}{5}
+  \draw[gray!55,dashed] (0,0) circle (1);
+  \draw[gray!40,dashed] (0,0) -- (3.35,4.47);
+  \draw[vecarr,ForestGreen!60] (0,0) -- (-0.8,0.6);
+  \draw[vecarr,ForestGreen!60] (0,0) -- (0.6,-0.8);
+  \draw[vecarr,RoyalBlue]      (0,0) -- (3,4);
+  \draw[vecarr,BrickRed]       (0,0) -- (0.6,0.8);
+  \node[right,font=\small,RoyalBlue]     at (3.04,4.02)   {$\vc{u}=[3,4]$};
+  \node[right,font=\scriptsize,BrickRed] at (0.68,0.74)   {$\uv{u}=[0.6,0.8]$};
+  \node[below left,font=\scriptsize,gray] at (-0.78,-0.78) {$\Sph{1}$};
+\end{tikzpicture}
+\end{center}
+
+\lookahead The circle is an artefact of the \emph{Euclidean} norm, not of
+normalization itself. Later in the course we will define other norms on
+$\R^{2}$, and each one has its own set of ``vectors of length $1$'' --- which
+turns out to be a different shape in the plane for each norm. The circle is only
+the first of a family of pictures.
+
+\subsubsection*{The set-theoretic statement}
+That circle has a name, and it lets us say ``$\vc{u}$ has unit length'' in the
+notation of \S6.
+
+\begin{defn}[The $1$-sphere]
+\[
+  \Sph{1} \;:=\; \bigl\{\, \vc{u}\in\R^{2} \;:\; \norm{\vc{u}}=1 \,\bigr\}.
+\]
+Writing $\vc{u}\in\Sph{1}$ is a formal way of saying that $\vc{u}$ is a unit
+vector.
+\end{defn}
+
+\begin{rmk}
+The superscript counts the dimension of the \emph{sphere itself}, not of the
+space it sits in. The $1$-sphere $\Sph{1}$ is a circle: a one-dimensional curve
+living in the two-dimensional plane --- you need only one number, an angle, to
+say where you are on it. The $2$-sphere $\Sph{2}$ is the ordinary sphere: a
+two-dimensional surface living in three-dimensional space. So a circle is a
+``one-dimensional sphere,'' and the object you would casually call ``a sphere''
+is $\Sph{2}$.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The direction--magnitude decomposition}
+%------------------------------------------------------------------------------
+Now put the two attributes back together deliberately. Multiply and divide any
+nonzero $\vc{u}$ by its own norm:
+\[
+  \vc{u}
+  \;=\;
+  \underbrace{\frac{\vc{u}}{\norm{\vc{u}}}}_{\textstyle\text{direction}}
+  \cdot
+  \underbrace{\vphantom{\frac{\vc{u}}{\norm{\vc{u}}}}\norm{\vc{u}}}_{\textstyle\text{magnitude}}
+  \;=\;
+  \uv{u}\,\norm{\vc{u}} .
+\]
+The first factor is a unit vector carrying the direction and nothing else; the
+second is a positive scalar carrying the magnitude and nothing else. Every
+nonzero vector splits this way, and the split is unique:
+
+\begin{quote}
+\textbf{Direction--magnitude decomposition.} For every nonzero
+$\vc{u}\in\R^{2}$ there are a unit vector $\uv{u}\in\Sph{1}$ and a scalar
+$\alpha\in\R$ with $\alpha>0$ such that
+\[
+  \vc{u} \;=\; \alpha\,\uv{u} ,
+\]
+and they are uniquely determined: $\alpha=\norm{\vc{u}}$ and
+$\uv{u}=\vc{u}/\norm{\vc{u}}$.
+\end{quote}
+
+\begin{rmk}
+Two fine points, both worth stating once. First, the restriction $\alpha>0$ is
+what buys uniqueness: if negative scalars were allowed we could also write
+$\vc{u}=(-\norm{\vc{u}})(-\uv{u})$, since $-\uv{u}$ is a unit vector too by
+\S8.2. Second, the zero vector is genuinely excluded --- it has no direction, so
+there is no unit vector to factor out of it.
+\end{rmk}
+
+\noindent From here on, whenever we want ``a vector pointing that way, with that
+length,'' we will build it as (scalar)$\,\times\,$(unit vector). The next
+subsection is the first place we need to.
+
+%------------------------------------------------------------------------------
+\subsection{The shadow of one vector on another}
+%------------------------------------------------------------------------------
+Here is the question. Let $\vc{u}$ be a vector lying along the $x$-axis, and let
+$\vc{v}$ be a vector making an angle of $45^{\circ}$ --- that is, $\pi/4$ ---
+with $\vc{u}$.
+
+\begin{quote}
+How much of $\vc{v}$ points in the direction of $\vc{u}$?
+\end{quote}
+
+\noindent Put physically: if light shone straight down onto the line carrying
+$\vc{u}$, what \emph{shadow} would $\vc{v}$ cast on it? Call that shadow
+$\vc{w}$. To find it, drop a line from the head of $\vc{v}$ perpendicular to
+$\vc{u}$; where it lands is the head of the shadow.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \lattice{-1}{5}{-1}{4}
+  \draw[gray!55,dashed] (3,3) -- (3,0);
+  \draw[gray!75] (2.82,0) -- (2.82,0.18) -- (3,0.18);
+  % u is drawn longer than the shadow so the part of it not covered by the
+  % thick red shadow arrow still reads as a vector from the origin
+  \draw[vecarr,RoyalBlue!75] (0,0) -- (4.6,0);
+  \draw[vecarr,ForestGreen]  (0,0) -- (3,3);
+  \draw[vecarr,BrickRed,line width=1.5pt] (0,0) -- (3,0);
+  \draw[gray!75,thin] (0:1.2) arc (0:45:1.2);
+  \node[font=\small] at (22.5:1.52) {$\tfrac{\pi}{4}$};
+  \node[right,font=\small,RoyalBlue!75]   at (4.65,0)    {$\vc{u}$};
+  \node[above,font=\small,ForestGreen]    at (3,3.08)    {$\vc{v}$};
+  \node[left,font=\scriptsize,ForestGreen] at (1.4,1.62) {$\norm{\vc{v}}$};
+  \node[below,font=\scriptsize,BrickRed]  at (1.5,-0.06) {$\vc{w}$, of length $\alpha$};
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{Deriving the shadow}
+\textbf{Step 1 --- the direction.} The shadow lies along $\vc{u}$, so it points
+in the direction $\uv{u}=\vc{u}/\norm{\vc{u}}$. By the decomposition of \S12.2
+we may therefore write it as
+\[
+  \vc{w} \;=\; \frac{\vc{u}}{\norm{\vc{u}}}\cdot\alpha ,
+\]
+where $\alpha$ is the length of the shadow. This is exactly why we built the
+decomposition first: we know the direction, we do not yet know the magnitude, so
+we write the vector in the form that separates them.
+
+\smallskip
+\noindent\textbf{Step 2 --- the length, by trigonometry.} The perpendicular we
+dropped creates a right triangle. Its hypotenuse is $\vc{v}$, of length
+$\norm{\vc{v}}$; the leg along $\vc{u}$ is the shadow, of length $\alpha$; and
+the angle between them is $\pi/4$. Cosine is adjacent over hypotenuse, so
+\[
+  \cos\frac{\pi}{4} = \frac{\alpha}{\norm{\vc{v}}},
+  \qquad\text{hence}\qquad
+  \alpha = \norm{\vc{v}}\cos\frac{\pi}{4} .
+\]
+
+\smallskip
+\noindent\textbf{Step 3 --- replace the angle by the cosine similarity.} Here
+$\pi/4$ is the angle between $\vc{u}$ and $\vc{v}$, so by \S11.4 it is exactly
+what $\cos(\vc{u},\vc{v})$ computes:
+$\cos(\vc{u},\vc{v})=\cos(\pi/4)$. Substituting,
+\[
+  \vc{w} \;=\; \frac{\vc{u}}{\norm{\vc{u}}}\cdot\cos(\vc{u},\vc{v})\cdot\norm{\vc{v}} .
+\]
+
+\smallskip
+\noindent\textbf{Step 4 --- unfold the cosine similarity.} Now use the
+definition $\cos(\vc{u},\vc{v})=\langle\vc{u},\vc{v}\rangle/(\norm{\vc{u}}\norm{\vc{v}})$:
+\[
+  \vc{w}
+  = \frac{\vc{u}}{\norm{\vc{u}}}
+    \cdot\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}}
+    \cdot\norm{\vc{v}}
+  = \frac{\vc{u}}{\norm{\vc{u}}}\cdot\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}
+  = \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u} .
+\]
+The $\norm{\vc{v}}$ cancels, and with it the last trace of geometry: no angle,
+no protractor, no triangle. The shadow is computable from the components of
+$\vc{u}$ and $\vc{v}$ alone.
+
+\smallskip
+\noindent Written back in direction--magnitude form, the same vector reads
+\[
+  \vc{w}
+  \;=\;
+  \underbrace{\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}}_{\textstyle\text{magnitude}}
+  \cdot
+  \underbrace{\frac{\vc{u}}{\norm{\vc{u}}}}_{\textstyle\text{direction}} .
+\]
+
+%------------------------------------------------------------------------------
+\subsection{Projection and component}
+%------------------------------------------------------------------------------
+The shadow vector has a formal name.
+
+\begin{defn}[Projection and component]
+For $\vc{u},\vc{v}\in\R^{2}$ with $\vc{u}\neq\vc{0}$, the \textbf{projection of
+$\vc{v}$ onto $\vc{u}$} is
+\[
+  \proj{\vc{u}}{\vc{v}}
+  \;:=\;
+  \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}\cdot\frac{\vc{u}}{\norm{\vc{u}}}
+  \;=\;
+  \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u} ,
+\]
+and the scalar part of it --- the length of the shadow --- is the
+\textbf{component of $\vc{v}$ along $\vc{u}$},
+\[
+  \comp{\vc{u}}{\vc{v}} \;:=\; \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}} .
+\]
+\end{defn}
+
+\noindent The two are related by exactly the decomposition of \S12.2 ---
+component is the magnitude, $\uv{u}$ is the direction:
+\[
+  \proj{\vc{u}}{\vc{v}} \;=\; \comp{\vc{u}}{\vc{v}}\cdot\uv{u} .
+\]
+The projection is a \emph{vector}; the component is a \emph{scalar}. Keeping
+that straight is most of the battle.
+
+\begin{rmk}[The component is signed]
+Although we called $\alpha$ ``the length of the shadow,'' $\comp{\vc{u}}{\vc{v}}$
+can be negative, because $\langle\vc{u},\vc{v}\rangle$ can be. Reading it off
+the table in \S11.4: the component is positive when $\theta$ is acute
+(so $\vc{v}$ leans toward $\vc{u}$), zero when the two are orthogonal
+(no shadow at all), and negative when $\theta$ is obtuse (so $\vc{v}$ leans
+away, and the shadow falls on the far side of the origin, pointing against
+$\vc{u}$). It is a \emph{signed} length.
+\end{rmk}
+
+\begin{rmk}[Order matters]
+The subscript names the vector you are projecting \emph{onto}, and swapping the
+two arguments gives a different answer:
+$\proj{\vc{u}}{\vc{v}}\neq\proj{\vc{v}}{\vc{u}}$ in general. The numerator
+$\langle\vc{u},\vc{v}\rangle$ is symmetric, but the $\norm{\vc{u}}^{2}$ in the
+denominator and the $\vc{u}$ outside it are not. Problems P1 and P2 below are
+the same two vectors in the two orders; compare the answers.
+\end{rmk}
+
+\begin{ex}[The motivating case, both ways]
+Take $\vc{u}=[\,2,\,0\,]$ along the $x$-axis and $\vc{v}=[\,3,\,3\,]$, which
+does make an angle of $\pi/4$ with it. By the formula:
+$\langle\vc{u},\vc{v}\rangle=2(3)+0(3)=6$ and $\norm{\vc{u}}^{2}=4$, so
+\[
+  \comp{\vc{u}}{\vc{v}}=\frac{6}{2}=3,
+  \qquad
+  \proj{\vc{u}}{\vc{v}}=\frac{6}{4}[\,2,\,0\,]=\tfrac32[\,2,\,0\,]=[\,3,\,0\,].
+\]
+Now check it against the trigonometry of Step 2, which never mentioned
+components: $\norm{\vc{v}}=\sqrt{18}=3\sqrt2$ and $\cos(\pi/4)=\sqrt2/2$, so
+\[
+  \alpha=\norm{\vc{v}}\cos\frac{\pi}{4}=3\sqrt2\cdot\frac{\sqrt2}{2}=\frac{3\cdot 2}{2}=3 .
+\]
+The two routes agree. And the answer is the one the picture demands: the shadow
+of $[3,3]$ on the $x$-axis reaches out to $x=3$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Practice: projections}
+%------------------------------------------------------------------------------
+For each pair, compute $\comp{\vc{u}}{\vc{v}}$ and $\proj{\vc{u}}{\vc{v}}$.
+
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=6pt,
+                  topsep=6pt]
+  \item $\vc{u}=[\,1,\,0\,]$, \quad $\vc{v}=[\,3,\,4\,]$.
+  \item $\vc{u}=[\,3,\,4\,]$, \quad $\vc{v}=[\,1,\,0\,]$.
+  \item $\vc{u}=[\,1,\,2\,]$, \quad $\vc{v}=[\,4,\,-3\,]$.
+\end{enumerate}
+
+\subsubsection*{Answer key}
+\begin{center}
+\renewcommand{\arraystretch}{2.2}   % display fractions need the extra height
+\begin{tabular}{@{}c c c c c@{}}
+\toprule
+\textbf{\#} & $\langle\vc{u},\vc{v}\rangle$ & $\norm{\vc{u}}^{2}$
+            & $\comp{\vc{u}}{\vc{v}}$ & $\proj{\vc{u}}{\vc{v}}$ \\
+\midrule
+P1 & $1(3)+0(4)=3$    & $1$  & $\dfrac{3}{1}=3$
+   & $\dfrac{3}{1}[1,0]=[\,3,\,0\,]$ \\
+P2 & $3(1)+4(0)=3$    & $25$ & $\dfrac{3}{5}$
+   & $\dfrac{3}{25}[3,4]=\bigl[\,\tfrac{9}{25},\,\tfrac{12}{25}\,\bigr]$ \\
+P3 & $1(4)+2(-3)=-2$  & $5$  & $-\dfrac{2}{\sqrt5}$
+   & $-\dfrac{2}{5}[1,2]=\bigl[\,-\tfrac{2}{5},\,-\tfrac{4}{5}\,\bigr]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things to take from these. \textbf{P1}: projecting onto
+$[\,1,\,0\,]$ simply keeps the first coordinate and discards the second, which
+is what projecting onto the $x$-axis ought to do --- a good sanity check that
+the formula is not doing anything exotic. \textbf{P2}: the same two vectors in
+the opposite order give a completely different answer, even though the dot
+product in the numerator is identical. \textbf{P3}: the component is negative,
+so the projection points \emph{against} $\vc{u}$; here $\vc{v}$ leans away from
+$\vc{u}$, at an obtuse angle to it.
+
+%------------------------------------------------------------------------------
+\subsection{The orthogonal piece}
+%------------------------------------------------------------------------------
+Return to the picture. We dropped a perpendicular from the head of $\vc{v}$ down
+to $\vc{u}$ and used its foot to locate the shadow. But that perpendicular
+segment is itself a vector, and it is worth naming: it runs from the head of
+$\proj{\vc{u}}{\vc{v}}$ to the head of $\vc{v}$, so by the between-the-heads
+reading of \S7.3 it is
+\[
+  \vc{v}-\proj{\vc{u}}{\vc{v}} .
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \lattice{-1}{4}{-1}{4}
+  \draw[vecarr,RoyalBlue]     (0,0) -- (3,1);
+  \draw[vecarr,ForestGreen]   (0,0) -- (1,3);
+  \draw[vecarr,BrickRed]      (0,0) -- (1.8,0.6);
+  \draw[vecarr,Purple,dashed] (1.8,0.6) -- (1,3);
+  \draw[gray!75] (2.085,0.695) -- (1.990,0.980) -- (1.705,0.885);
+  \node[right,font=\small,RoyalBlue]        at (3.04,1.02) {$\vc{u}$};
+  \node[above,font=\small,ForestGreen]      at (1,3.08)    {$\vc{v}$};
+  \node[below right,font=\scriptsize,BrickRed] at (1.88,0.52) {$\proj{\vc{u}}{\vc{v}}$};
+  \node[right,font=\scriptsize,Purple]      at (1.42,1.95)  {$\vc{v}-\proj{\vc{u}}{\vc{v}}$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Notice first that the two pieces reassemble $\vc{v}$, head to tail:
+\[
+  \vc{v}
+  \;=\;
+  \underbrace{\proj{\vc{u}}{\vc{v}}}_{\textstyle\text{the part along }\vc{u}}
+  \;+\;
+  \underbrace{\bigl(\vc{v}-\proj{\vc{u}}{\vc{v}}\bigr)}_{\textstyle\text{the part orthogonal to }\vc{u}} .
+\]
+Subtracting off $\proj{\vc{u}}{\vc{v}}$ removes from $\vc{v}$ exactly its
+directional contribution along $\vc{u}$ --- everything that pointed that way is
+gone, and what remains cannot point along $\vc{u}$ at all. The claim implicit in
+the labelling is that the remainder is genuinely orthogonal to $\vc{u}$, and it
+is short work to check.
+
+\subsubsection*{Verification}
+Write $c=\langle\vc{u},\vc{v}\rangle/\norm{\vc{u}}^{2}$, so that
+$\proj{\vc{u}}{\vc{v}}=c\,\vc{u}$ and
+$\vc{v}-\proj{\vc{u}}{\vc{v}}=[\,v_1-cu_1,\;v_2-cu_2\,]$. Dot it against
+$\vc{u}$:
+\begin{align*}
+  \bigl\langle \vc{u},\;\vc{v}-\proj{\vc{u}}{\vc{v}}\bigr\rangle
+   &= u_1(v_1-cu_1)+u_2(v_2-cu_2) \\[2pt]
+   &= \bigl(u_1v_1+u_2v_2\bigr)-c\bigl(u_1^{2}+u_2^{2}\bigr) \\[2pt]
+   &= \langle\vc{u},\vc{v}\rangle - c\,\norm{\vc{u}}^{2} \\[2pt]
+   &= \langle\vc{u},\vc{v}\rangle
+      - \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\cdot\norm{\vc{u}}^{2}
+   \;=\; 0 .
+\end{align*}
+By the orthogonality test of \S11.7, a dot product of zero means orthogonal.
+Note which identity did the work in the third line: $u_1^{2}+u_2^{2}=\norm{\vc{u}}^{2}$,
+the $\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$ of \S11.6. That is the
+promised payoff --- the identity is what lets $\norm{\vc{u}}^{2}$ cancel against
+the denominator of $c$.
+
+\lookahead Splitting a vector into a piece along $\vc{u}$ and a piece orthogonal
+to $\vc{u}$ is not a one-off trick; it is the engine of a great deal of
+computational linear algebra. Run it repeatedly on a list of vectors and you
+manufacture a whole orthogonal family out of an arbitrary one --- which is the
+idea behind the Gram--Schmidt procedure and, through it, the $QR$ factorization
+and the numerical algorithms built on top of them. We will meet all of these
+later; for now, notice only how little machinery it took: a dot product, a
+norm, and a subtraction.
+
+%------------------------------------------------------------------------------
+\subsection{The Cauchy--Schwarz inequality}
+%------------------------------------------------------------------------------
+The projection picture has one more thing to tell us, and it is a bound on the
+dot product itself.
+
+Look again at the right triangle of \S12.3. Its hypotenuse is $\vc{v}$, with
+length $\norm{\vc{v}}$, and one of its legs is the shadow, with length
+$\lvert\comp{\vc{u}}{\vc{v}}\rvert$. A leg of a right triangle is never longer
+than the hypotenuse --- equivalently, and more memorably:
+
+\begin{quote}
+A shadow is never longer than the object casting it.
+\end{quote}
+
+\noindent In symbols, $\lvert\comp{\vc{u}}{\vc{v}}\rvert\le\norm{\vc{v}}$. Now
+substitute the definition of the component and clear the denominator:
+\[
+  \left\lvert\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}\right\rvert
+  \;\le\; \norm{\vc{v}}
+  \qquad\Longrightarrow\qquad
+  \lvert\langle\vc{u},\vc{v}\rangle\rvert \;\le\; \norm{\vc{u}}\,\norm{\vc{v}} .
+\]
+That is a bound on how large a dot product can possibly be, in terms of nothing
+but the two magnitudes --- and it is famous enough to carry two names.
+
+\begin{quote}
+\textbf{Cauchy--Schwarz inequality.} For all $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \bigl\lvert\langle\vc{u},\vc{v}\rangle\bigr\rvert
+  \;\le\;
+  \norm{\vc{u}}\,\norm{\vc{v}} .
+\]
+\end{quote}
+
+\noindent There is also a one-line route to it from \S11 that requires no
+picture at all. Since $\langle\vc{u},\vc{v}\rangle=\norm{\vc{u}}\norm{\vc{v}}\cos\theta$
+and $\lvert\cos\theta\rvert\le1$ for every angle,
+\[
+  \bigl\lvert\langle\vc{u},\vc{v}\rangle\bigr\rvert
+  = \norm{\vc{u}}\,\norm{\vc{v}}\,\lvert\cos\theta\rvert
+  \le \norm{\vc{u}}\,\norm{\vc{v}} .
+\]
+This second route also settles when the bound is \emph{tight}: equality needs
+$\lvert\cos\theta\rvert=1$, hence $\theta=0$ or $\theta=\pi$. So the dot product
+attains its largest possible size exactly when the two vectors are parallel or
+antiparallel --- when, in the shadow picture, the triangle has collapsed and
+$\vc{v}$ lies flat along $\vc{u}$, casting a shadow as long as itself.
+
+\begin{ex}[The bound in action]
+For $\vc{u}=[\,3,\,1\,]$ and $\vc{v}=[\,1,\,3\,]$ we found
+$\langle\vc{u},\vc{v}\rangle=6$ in \S11, while
+$\norm{\vc{u}}\norm{\vc{v}}=\sqrt{10}\cdot\sqrt{10}=10$. And $6\le10$, with
+room to spare --- the slack is exactly the factor $\cos\theta=0.6$. For
+$\vc{u}=[\,1,\,2\,]$ and $\vc{v}=[\,2,\,4\,]$, which are parallel, we get
+$\langle\vc{u},\vc{v}\rangle=10$ and
+$\norm{\vc{u}}\norm{\vc{v}}=\sqrt5\cdot2\sqrt5=10$: equality, as predicted.
+\end{ex}
+
+\begin{rmk}[Why it matters more than it looks]
+Cauchy--Schwarz is what makes \S11.4 legitimate. We defined
+$\cos(\vc{u},\vc{v})=\langle\vc{u},\vc{v}\rangle/(\norm{\vc{u}}\norm{\vc{v}})$
+and asserted that the output lands in $[-1,1]$ --- but rearrange the inequality
+and that assertion \emph{is} Cauchy--Schwarz:
+\[
+  \bigl\lvert\langle\vc{u},\vc{v}\rangle\bigr\rvert\le\norm{\vc{u}}\norm{\vc{v}}
+  \qquad\Longleftrightarrow\qquad
+  -1 \;\le\; \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}} \;\le\; 1 .
+\]
+In $\R^{2}$ we could lean on the angle $\theta$, which we can see. In higher
+dimensions, and in the abstract inner-product spaces of later chapters, there is
+no picture to look at and the angle is \emph{defined} by that quotient --- so
+something has to guarantee the quotient is a legal cosine before $\arccos$ may
+be applied to it. Cauchy--Schwarz is that guarantee, which is why it is stated
+as an inequality about inner products rather than as a fact about triangles.
+\end{rmk}
+
+\begin{rmk}[A second dividend: the triangle inequality, again]
+In \S7.2 we accepted $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$
+because a triangle cannot have one side longer than the other two combined ---
+true, but geometric. It now follows algebraically. Expanding as in \S11.2,
+\[
+  \norm{\vc{u}+\vc{v}}^{2}
+  = \norm{\vc{u}}^{2}+2\langle\vc{u},\vc{v}\rangle+\norm{\vc{v}}^{2}
+  \;\le\; \norm{\vc{u}}^{2}+2\norm{\vc{u}}\norm{\vc{v}}+\norm{\vc{v}}^{2}
+  = \bigl(\norm{\vc{u}}+\norm{\vc{v}}\bigr)^{2},
+\]
+where the middle step is Cauchy--Schwarz. Taking square roots of both
+non-negative sides gives the triangle inequality. The geometric picture and the
+algebraic bound were the same statement all along.
 \end{rmk}
 
 %==============================================================================
