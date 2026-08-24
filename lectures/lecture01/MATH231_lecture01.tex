@@ -30,7 +30,9 @@
 %     5  one-dimensional vectors
 %     6  notation; R^2 introduced here
 %     7  addition & subtraction (binary): 7.1 parallelogram rule,
-%        7.2 triangle inequality, 7.3 subtraction between the heads
+%        7.2 triangle inequality, 7.3 subtraction between the heads,
+%        7.4 practice (kept here, immediately after the operations it drills,
+%        rather than parked at the end of the document)
 %     8  scalar multiplication: 8.1 geometry of scaling, 8.2 mirroring by -1,
 %        8.3 subtraction revisited as u + (-v)
 %     9  when two vectors are equal (displacement, head minus tail)
@@ -47,7 +49,14 @@
 %        distance is a metric, 13.3 Manhattan, 13.4 Chebyshev, 13.5 naming the
 %        norms by subscript, 13.6 the p-norm, 13.7 the limit as p -> infinity
 %        (squeeze theorem), 13.8 unit balls
-%    14  practice set (addition and subtraction)
+%    14  what makes a norm a norm: 14.1 the three properties, 14.2 the p-norm
+%        family passes, 14.3 Holder (Cauchy-Schwarz is the self-conjugate case),
+%        14.4 the quaternion norm, 14.5 why it matters
+%
+%  Sec. 14.3 states HOLDER, not "Cauchy-Schwarz with a p-norm".  The naive
+%  |<u,v>| <= ||u||_p ||v||_p is FALSE (p = infinity, u = v = [1,1] gives
+%  2 <= 1); the exponents must be conjugate, 1/p + 1/q = 1.  Cauchy-Schwarz is
+%  p = q = 2, the one exponent that partners with itself.
 %
 %  NOTATION.  Sections 1-12 write the Euclidean norm as ||v|| with no subscript.
 %  Section 13 introduces the family ||v||_p and states that the bare ||v||
@@ -156,8 +165,8 @@ direction and a magnitude; compute the projection of one vector onto another and
 the component that goes with it; split a vector into a piece along $\vc{u}$ and
 a piece orthogonal to $\vc{u}$; state the Cauchy--Schwarz inequality; list the
 axioms a metric must satisfy and verify them for the Euclidean distance; compute
-Manhattan and Chebyshev distances; and explain why the $1$-, $2$- and
-$\infty$-norms carry those subscripts.
+Manhattan and Chebyshev distances; explain why the $1$-, $2$- and $\infty$-norms
+carry those subscripts; and state the three properties that define a norm.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -664,6 +673,44 @@ and two steps up. The two are opposite arrows on the same line.
 \noindent The dashed arrow and the solid arrow labelled $\vc{u}-\vc{v}$ are the
 \emph{same vector} drawn in two places: same magnitude, same direction,
 different tail. \S9 is where that claim gets its definition.
+
+%------------------------------------------------------------------------------
+\subsection{Practice: addition and subtraction}
+%------------------------------------------------------------------------------
+For each pair below: \textbf{(a)} draw $\vc{u}$ and $\vc{v}$ on one set of axes,
+tails at the origin, arrowheads marked; \textbf{(b)} compute the indicated sum
+or difference componentwise; \textbf{(c)} draw the resulting vector on the same
+axes.
+
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=7pt,
+                  topsep=6pt]
+  \item $\vc{u}=[3,1]$, \quad $\vc{v}=[1,2]$. \quad Compute $\vc{u}+\vc{v}$.
+  \item $\vc{u}=[4,1]$, \quad $\vc{v}=[1,3]$. \quad Compute $\vc{u}-\vc{v}$.
+  \item $\vc{u}=[-2,3]$, \quad $\vc{v}=[3,1]$. \quad Compute $\vc{u}+\vc{v}$.
+  \item $\vc{u}=[2,-2]$, \quad $\vc{v}=[-3,-1]$. \quad Compute $\vc{u}-\vc{v}$.
+\end{enumerate}
+
+\medskip
+\noindent\emph{Optional:} compute the norm of each resultant.
+
+\smallskip
+\noindent Watch the signs in P4: both inputs have a negative component, so
+$2-(-3)=5$ and $-2-(-1)=-1$.
+
+\subsubsection*{Answer key}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c c c c c@{}}
+\toprule
+\textbf{\#} & $\vc{u}$ & $\vc{v}$ & \textbf{Result} & $\norm{\text{result}}$ \\
+\midrule
+P1 & $[3,1]$   & $[1,2]$    & $\vc{u}+\vc{v}=[4,3]$   & $5$ \\
+P2 & $[4,1]$   & $[1,3]$    & $\vc{u}-\vc{v}=[3,-2]$  & $\sqrt{13}$ \\
+P3 & $[-2,3]$  & $[3,1]$    & $\vc{u}+\vc{v}=[1,4]$   & $\sqrt{17}$ \\
+P4 & $[2,-2]$  & $[-3,-1]$  & $\vc{u}-\vc{v}=[5,-1]$  & $\sqrt{26}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 %==============================================================================
 \section{Scalar multiplication}
@@ -2668,41 +2715,237 @@ rather than by a definition. The next section gives the axioms a norm must
 satisfy and checks them against the family we have built.
 
 %==============================================================================
-\section{Practice set: addition and subtraction}
+\section{What makes a norm a norm}
 %==============================================================================
-For each pair below: \textbf{(a)} draw $\vc{u}$ and $\vc{v}$ on one set of axes,
-tails at the origin, arrowheads marked; \textbf{(b)} compute the indicated sum
-or difference componentwise; \textbf{(c)} draw the resulting vector on the same
-axes.
+Section~13 built an entire family of norms without ever saying what the word
+means. A \textbf{norm} is a function that takes a vector and returns a
+non-negative real number,
+\[
+  \norm{\,\cdot\,}\;:\;\R^{2}\to\R ,
+\]
+subject to three conditions. Every member of the $p$-norm family satisfies them,
+for every $p$ in $[1,\infty)$ --- and so does the limiting case $p=\infty$.
 
-\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=7pt,
-                  topsep=6pt]
-  \item $\vc{u}=[3,1]$, \quad $\vc{v}=[1,2]$. \quad Compute $\vc{u}+\vc{v}$.
-  \item $\vc{u}=[4,1]$, \quad $\vc{v}=[1,3]$. \quad Compute $\vc{u}-\vc{v}$.
-  \item $\vc{u}=[-2,3]$, \quad $\vc{v}=[3,1]$. \quad Compute $\vc{u}+\vc{v}$.
-  \item $\vc{u}=[2,-2]$, \quad $\vc{v}=[-3,-1]$. \quad Compute $\vc{u}-\vc{v}$.
-\end{enumerate}
-
-\medskip
-\noindent\emph{Optional:} compute the norm of each resultant.
+%------------------------------------------------------------------------------
+\subsection{The three properties}
+%------------------------------------------------------------------------------
+\begin{quote}
+For all $\vc{u},\vc{v}\in\R^{2}$ and all $\alpha\in\R$:
 
 \smallskip
-\noindent Watch the signs in P4: both inputs have a negative component, so
-$2-(-3)=5$ and $-2-(-1)=-1$.
+\textbf{N1. Positive definiteness.}
+\[
+  \norm{\vc{v}}\ge 0,
+  \qquad\text{and}\qquad
+  \norm{\vc{v}}=0 \iff \vc{v}=\vc{0}.
+\]
 
-\subsection*{Answer key}
-\begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}c c c c c@{}}
-\toprule
-\textbf{\#} & $\vc{u}$ & $\vc{v}$ & \textbf{Result} & $\norm{\text{result}}$ \\
-\midrule
-P1 & $[3,1]$   & $[1,2]$    & $\vc{u}+\vc{v}=[4,3]$   & $5$ \\
-P2 & $[4,1]$   & $[1,3]$    & $\vc{u}-\vc{v}=[3,-2]$  & $\sqrt{13}$ \\
-P3 & $[-2,3]$  & $[3,1]$    & $\vc{u}+\vc{v}=[1,4]$   & $\sqrt{17}$ \\
-P4 & $[2,-2]$  & $[-3,-1]$  & $\vc{u}-\vc{v}=[5,-1]$  & $\sqrt{26}$ \\
-\bottomrule
-\end{tabular}
-\end{center}
+\smallskip
+\textbf{N2. Absolute homogeneity.}
+\[
+  \norm{\alpha\vc{v}} = \lvert\alpha\rvert\,\norm{\vc{v}} .
+\]
+
+\smallskip
+\textbf{N3. Triangle inequality} (also called \emph{subadditivity}).
+\[
+  \norm{\vc{u}+\vc{v}} \;\le\; \norm{\vc{u}}+\norm{\vc{v}} .
+\]
+\end{quote}
+
+\noindent None of these should be new. \textbf{N2} is the scaling rule we
+established in \S8 --- the size $\lvert\alpha\rvert$ sets the length and the sign
+is discarded, which is exactly why the absolute value appears. \textbf{N3} is
+\S7.2, first justified by a triangle and later derived from Cauchy--Schwarz in
+\S12.7. What \S14 adds is the recognition that these are not three assorted
+facts about the Euclidean norm; they are the \emph{definition} of length, and any
+function satisfying them earns the name.
+
+\begin{rmk}[Which parts are doing real work]
+Exactly as with the metric axioms of \S13.1, the list is not minimal.
+Homogeneity with $\alpha=0$ gives $\norm{\vc{0}}=\lvert 0\rvert\norm{\vc{v}}=0$,
+so half of \textbf{N1} is free. And non-negativity follows from the other two:
+\[
+  0 = \norm{\vc{0}} = \norm{\vc{v}+(-\vc{v})}
+    \le \norm{\vc{v}}+\norm{-\vc{v}}
+    = \norm{\vc{v}}+\lvert-1\rvert\norm{\vc{v}}
+    = 2\norm{\vc{v}} ,
+\]
+so $\norm{\vc{v}}\ge0$. What cannot be derived, and is therefore the real
+content of \textbf{N1}, is the converse direction: $\norm{\vc{v}}=0$ forces
+$\vc{v}=\vc{0}$. Drop it and the function sending \emph{every} vector to $0$
+would qualify as a norm --- it satisfies \textbf{N2} and \textbf{N3} perfectly.
+That is why the property is called positive \emph{definiteness} rather than
+merely non-negativity: it is the clause that stops a norm from collapsing.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The family passes}
+%------------------------------------------------------------------------------
+Two of the three are quick to confirm for every $p$ at once.
+
+\smallskip
+\noindent\textbf{N1.} $\norm{\vc{v}}_p=0$ forces
+$\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}=0$. That is a sum of two
+non-negative numbers, so both vanish, so $v_1=v_2=0$. \hfill$\checkmark$
+
+\smallskip
+% keep the statement, the display, and its tick mark on one page
+\Needspace*{8\baselineskip}
+\noindent\textbf{N2.} Pull the scalar out one coordinate at a time:
+\[
+  \norm{\alpha\vc{v}}_p
+  = \bigl(\lvert\alpha v_1\rvert^{p}+\lvert\alpha v_2\rvert^{p}\bigr)^{1/p}
+  = \bigl(\lvert\alpha\rvert^{p}
+     \bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}\bigr)\bigr)^{1/p}
+  = \lvert\alpha\rvert
+     \bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}\bigr)^{1/p}
+  = \lvert\alpha\rvert\,\norm{\vc{v}}_p .
+\]
+\hfill$\checkmark$
+
+\smallskip
+\noindent\textbf{N3} is the hard one, and it is precisely where the restriction
+$p\ge1$ earns its keep --- recall the $p=\tfrac12$ counterexample of \S13.6. The
+two ends of the family are easy. For $p=1$, apply the scalar inequality
+$\lvert a+b\rvert\le\lvert a\rvert+\lvert b\rvert$ in each coordinate:
+\[
+  \norm{\vc{u}+\vc{v}}_1
+  = \lvert u_1+v_1\rvert+\lvert u_2+v_2\rvert
+  \le \lvert u_1\rvert+\lvert v_1\rvert+\lvert u_2\rvert+\lvert v_2\rvert
+  = \norm{\vc{u}}_1+\norm{\vc{v}}_1 .
+\]
+For $p=\infty$, the same scalar inequality inside a maximum:
+\[
+  \norm{\vc{u}+\vc{v}}_\infty
+  = \max_i\lvert u_i+v_i\rvert
+  \le \max_i\bigl(\lvert u_i\rvert+\lvert v_i\rvert\bigr)
+  \le \max_i\lvert u_i\rvert+\max_i\lvert v_i\rvert
+  = \norm{\vc{u}}_\infty+\norm{\vc{v}}_\infty .
+\]
+For $p$ strictly between, the inequality is a genuine theorem with a name ---
+\textbf{Minkowski's inequality} --- whose proof needs machinery beyond this
+course. We will use it, and record that it holds for every $p\ge1$ and fails for
+every $p<1$.
+
+%------------------------------------------------------------------------------
+\subsection{Cauchy--Schwarz, generalised}
+%------------------------------------------------------------------------------
+In \S12.7 we proved
+$\lvert\langle\vc{u},\vc{v}\rangle\rvert\le\norm{\vc{u}}\norm{\vc{v}}$, with both
+norms Euclidean. Now that other norms exist, the natural question is what
+replaces it.
+
+\begin{rmk}[The obvious guess is false]
+One might hope for
+$\lvert\langle\vc{u},\vc{v}\rangle\rvert\le\norm{\vc{u}}_p\norm{\vc{v}}_p$ with
+the \emph{same} $p$ on both factors. Test it at $p=\infty$ with
+$\vc{u}=\vc{v}=[\,1,\,1\,]$: then $\langle\vc{u},\vc{v}\rangle=2$, while
+$\norm{\vc{u}}_\infty\norm{\vc{v}}_\infty=1\cdot1=1$. The bound would claim
+$2\le1$. So the two exponents cannot be equal in general.
+\end{rmk}
+
+\noindent The correct statement pairs each exponent with a partner.
+
+\begin{quote}
+\textbf{H\"older's inequality.} Let $p,q\ge1$ satisfy
+\[
+  \frac{1}{p}+\frac{1}{q} = 1 .
+\]
+Then for all $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \bigl\lvert\langle\vc{u},\vc{v}\rangle\bigr\rvert
+  \;\le\; \norm{\vc{u}}_p\,\norm{\vc{v}}_q .
+\]
+\end{quote}
+
+\noindent Such a $p$ and $q$ are called \textbf{conjugate exponents}. Three
+pairings matter in practice:
+\[
+  (p,q)=(2,2), \qquad (p,q)=(1,\infty), \qquad (p,q)=(\infty,1),
+\]
+where the convention $1/\infty=0$ makes the middle two legitimate. And notice
+the first: $\tfrac12+\tfrac12=1$, so $p=q=2$ is conjugate to itself, and
+H\"older reads
+\[
+  \bigl\lvert\langle\vc{u},\vc{v}\rangle\bigr\rvert
+  \le \norm{\vc{u}}_2\,\norm{\vc{v}}_2 ,
+\]
+which is Cauchy--Schwarz exactly. So Cauchy--Schwarz was never a standalone
+result; it is the self-conjugate case of a family, and the reason it looks
+symmetric is that $2$ is the one exponent that partners with itself. Re-running
+the failed example above with the correct pairing $(\infty,1)$ gives
+$\norm{\vc{u}}_\infty\norm{\vc{v}}_1=1\cdot2=2$, and $2\le2$ holds --- with
+equality.
+
+%------------------------------------------------------------------------------
+\subsection{Norms beyond \texorpdfstring{$\R^{2}$}{R2}: quaternions}
+%------------------------------------------------------------------------------
+Nothing in \textbf{N1}--\textbf{N3} mentioned the dimension, or even that the
+objects were arrows in a plane. Anything with a sensible notion of addition and
+scaling can carry a norm. The quaternions of the complex numbers lecture are a
+convenient example: a quaternion
+\[
+  q = a+bi+cj+dk
+\]
+carries four real numbers, so it behaves like a vector in $\R^{4}$, and its
+modulus is the Euclidean norm of that $4$-vector:
+\[
+  \lvert q\rvert = \sqrt{a^{2}+b^{2}+c^{2}+d^{2}}
+  = \bigl\lVert [\,a,\,b,\,c,\,d\,]\bigr\rVert_2 .
+\]
+All three properties come for free, because it \emph{is} a Euclidean norm: a sum
+of four squares vanishes only when every term does (\textbf{N1}), a real scalar
+factors out in absolute value (\textbf{N2}), and \textbf{N3} is the triangle
+inequality in $\R^{4}$.
+
+\begin{ex}
+For $q=1+i+j+k$, $\lvert q\rvert=\sqrt{1+1+1+1}=2$. For $q=3+4i$ --- a complex
+number, viewed as a quaternion with $c=d=0$ --- $\lvert q\rvert=\sqrt{9+16}=5$,
+agreeing with the modulus we would have computed in $\mathbb{C}$.
+\end{ex}
+
+\begin{rmk}[One property vectors do not have]
+The quaternion norm is \textbf{multiplicative}:
+$\lvert q_1q_2\rvert=\lvert q_1\rvert\lvert q_2\rvert$. Check it on the product
+computed in the complex numbers lecture, $q=1+i$ and $p=1+j$, whose product was
+$qp=1+i+j+k$:
+\[
+  \lvert q\rvert\,\lvert p\rvert = \sqrt2\cdot\sqrt2 = 2
+  = \lvert 1+i+j+k\rvert = \lvert qp\rvert . \quad\checkmark
+\]
+No such statement is available for vectors in $\R^{2}$, for the simple reason
+that there is nothing to put on the left: two vectors have no product that
+returns a vector. Multiplicativity is a property of the extra algebraic
+structure, not of the norm.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Why this matters}
+%------------------------------------------------------------------------------
+Norms are among the most heavily used operations in computational science, and
+they will recur throughout this course --- rarely as an object of study in their
+own right, and almost always as the thing being measured, minimised, or bounded.
+A norm is how we say that an approximation is close to an answer, that an
+algorithm has converged, that an error is small enough to stop, or that one
+matrix is nearly another.
+
+\lookahead Three appearances worth anticipating. Least squares is stated as
+$\min_{\vc{x}}\norm{A\vc{x}-\vc{b}}_2$ --- a norm being minimised, and the choice
+of $p=2$ is exactly what makes the problem solvable by the geometry of \S12.6.
+Every iterative method needs a stopping rule of the form ``halt when
+$\norm{\text{residual}}$ drops below a tolerance,'' so the norm sets the meaning
+of \emph{done}. And the notion of a norm extends from vectors to matrices,
+giving the condition number that measures how badly a linear system amplifies
+error.
+
+\lookahead A last remark on the unit-ball pictures of \S13.8, which are less
+decorative than they look. The $1$-norm's diamond has its corners \emph{on the
+axes}, where one coordinate is zero; the $2$-norm's circle has no corners at all.
+When a norm is minimised subject to a constraint, solutions tend to land at
+corners --- so minimising with $\norm{\cdot}_1$ tends to produce answers with
+zero entries, while $\norm{\cdot}_2$ does not. That single geometric difference
+is the reason $\ell_1$ penalties are used to force sparse solutions in modern
+statistics and machine learning. The shape of the ball is the whole explanation.
 
 \end{document}
