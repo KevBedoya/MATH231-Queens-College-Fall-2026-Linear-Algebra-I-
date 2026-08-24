@@ -35,7 +35,21 @@
 %        8.3 subtraction revisited as u + (-v)
 %     9  when two vectors are equal (displacement, head minus tail)
 %    10  relative orientation: 10.1 parallel, 10.2 orthogonal, 10.3 the angle
-%    11  practice set
+%    11  dot product & cosine similarity: 11.1 law of cosines, 11.2 the triangle
+%        and the derivation, 11.3 the dot product, 11.4 cosine similarity,
+%        11.5 numerical similarity, 11.6 cos(u,u) and <u,u> = ||u||^2,
+%        11.7 the orthogonality test, 11.8 practice
+%    12  practice set (addition and subtraction)
+%
+%  TWO CORRECTIONS made against the drafted outline for Sec. 11, both
+%  deliberate:
+%   (a) the identity is u1*v1 + u2*v2 = ||u|| ||v|| cos(theta).  The outline
+%       read "u1*u2 + v1*v2", which pairs each vector's own components together
+%       instead of pairing across the two vectors.
+%   (b) cos(u,v) = cos(v,u) is SYMMETRY, not reflexivity.  Reflexivity concerns
+%       f(u,u); here that property is cos(u,u) = 1, handled in 11.6.  Sec. 11.4
+%       carries a short remark distinguishing the two words, since students meet
+%       both and swap them.
 %
 %  Compile with pdflatex (standard TeX Live packages only; uses tikz).
 %==============================================================================
@@ -94,8 +108,8 @@
 }
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Applied Linear Algebra}\\[4pt]
-       {\large\sffamily Lecture 1 \textbullet\ Vectors: Magnitude, Direction,
-        and the Geometry of $\mathbb{R}^{2}$}\\[2pt]
+       {\large\sffamily Lecture 1 \textbullet\ Vectors: Operations and the
+        Geometry of $\mathbb{R}^{2}$}\\[2pt]
        {\normalsize\sffamily Tuesday, September 1, 2026 \textbullet\
         Kiely Hall 326 \textbullet\ Instructor: Kevin Bedoya}}
 \author{}
@@ -112,8 +126,11 @@ operation; distinguish vector quantities from scalar quantities; add and
 subtract vectors both componentwise and geometrically, using the parallelogram
 rule and the triangle inequality; scale a vector by a real number and say what
 $\alpha=-1$ does to it; decide when two vectors drawn in different places are
-the \emph{same} vector; and say what it means for two vectors to be parallel or
-orthogonal, in terms of the angle $\theta$ between them.
+the \emph{same} vector; say what it means for two vectors to be parallel or
+orthogonal, in terms of the angle $\theta$ between them; derive
+$\langle\vc{u},\vc{v}\rangle=\norm{\vc{u}}\norm{\vc{v}}\cos\theta$ from the law
+of cosines; compute dot products and cosine similarities; and test two vectors
+for orthogonality with a single dot product.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -1135,13 +1152,520 @@ $\theta=\pi$                & opposite directions           & antiparallel \\
 measure $\theta$ off the page with a protractor. What we cannot yet do is
 \emph{compute} it from the components $[u_1,u_2]$ and $[v_1,v_2]$ --- nothing we
 have built so far turns four numbers into an angle. The tool that does it is the
-\emph{inner product}, and it is the next thing we construct. It will collapse
-the whole table above into arithmetic: in particular, testing two vectors for
-orthogonality will become a single multiplication-and-addition, with no
-protractor, no slopes, and no exceptions for vertical vectors.
+\emph{inner product}, and \S11 constructs it. It will collapse the whole table
+above into arithmetic: in particular, testing two vectors for orthogonality will
+become a single multiplication-and-addition, with no protractor, no slopes, and
+no exceptions for vertical vectors.
 
 %==============================================================================
-\section{Practice set}
+\section{The dot product and cosine similarity}
+%==============================================================================
+Section~10 left us in an awkward position. We can \emph{say} precisely what
+parallel, antiparallel and orthogonal mean --- they are $\theta=0$,
+$\theta=\pi$ and $\theta=\pi/2$ --- but $\theta$ is not something the world
+hands us. Vectors arrive as pairs of numbers, not as angles, and no amount of
+staring at $[u_1,u_2]$ and $[v_1,v_2]$ produces a protractor. So:
+
+\begin{quote}
+Given only the components of two vectors, how do we decide \emph{numerically}
+whether they are parallel, antiparallel, or orthogonal?
+\end{quote}
+
+\noindent The answer comes from a theorem you already know, applied to a
+triangle we already know how to build.
+
+%------------------------------------------------------------------------------
+\subsection{Review: the law of cosines}
+%------------------------------------------------------------------------------
+The law of cosines generalises Pythagoras to triangles that have no right angle.
+
+\begin{quote}
+\textbf{Law of cosines.} In a triangle with two sides of lengths $a$ and $b$
+meeting at an angle $\gamma$, the third side --- the one \emph{opposite}
+$\gamma$ --- has length $c$ given by
+\[
+  c^{2} \;=\; a^{2}+b^{2}-2ab\cos\gamma .
+\]
+\end{quote}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \draw[thick,gray!85] (0,0) -- (3.4,0.6) -- (1.0,2.6) -- cycle;
+  \draw[gray!75,thin] (10.0:0.8) arc (10.0:69.0:0.8);
+  \node[font=\small] at (39.5:1.12) {$\gamma$};
+  \node[below,font=\small]      at (1.7,0.24) {$a$};
+  \node[left,font=\small]       at (0.44,1.34) {$b$};
+  \node[above right,font=\small] at (2.2,1.6)  {$c$};
+  \fill (0,0) circle (1.6pt);
+\end{tikzpicture}
+\end{center}
+
+\noindent Taking $\gamma=\pi/2$ gives $\cos\gamma=0$ and the formula collapses to
+$c^{2}=a^{2}+b^{2}$ --- Pythagoras is the right-angled special case. The extra
+term $-2ab\cos\gamma$ is exactly the correction for the angle not being right.
+
+%------------------------------------------------------------------------------
+\subsection{The triangle built from \texorpdfstring{$\vc u$, $\vc v$ and $\vc u-\vc v$}{u, v and u - v}}
+%------------------------------------------------------------------------------
+Now build a triangle out of two vectors. Draw $\vc{u}$ and $\vc{v}$ from a
+common tail at the origin. Their two heads, together with that shared tail, are
+three points --- a triangle. Two of its sides are the vectors themselves. And
+the third side, the one joining the two heads, is something we identified back
+in \S7.3: it is $\vc{u}-\vc{v}$.
+
+So the triangle has side lengths
+\[
+  a=\norm{\vc{u}},
+  \qquad
+  b=\norm{\vc{v}},
+  \qquad
+  c=\norm{\vc{u}-\vc{v}},
+\]
+and the angle where sides $a$ and $b$ meet --- at the common tail --- is exactly
+$\theta$, the angle between $\vc{u}$ and $\vc{v}$ from \S10.3. The side of
+length $c$ sits opposite it. That is precisely the configuration the law of
+cosines describes, with $\gamma=\theta$:
+\begin{equation}
+  \norm{\vc{u}-\vc{v}}^{2}
+  \;=\;
+  \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}-2\norm{\vc{u}}\norm{\vc{v}}\cos\theta .
+  \label{eq:loc}
+\end{equation}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \lattice{-1}{4}{-1}{4}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (3,1);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,3);
+  \draw[vecarr,BrickRed]    (1,3) -- (3,1);
+  \draw[gray!75,thin] (18.435:1.15) arc (18.435:71.565:1.15);
+  \node[font=\small] at (45:1.48) {$\theta$};
+  \node[below right,font=\scriptsize,RoyalBlue]  at (2.1,0.66) {$\norm{\vc{u}}$};
+  \node[left,font=\scriptsize,ForestGreen]       at (0.52,1.7) {$\norm{\vc{v}}$};
+  \node[above right,font=\scriptsize,BrickRed]   at (2.05,2.05){$\norm{\vc{u}-\vc{v}}$};
+  \node[right,font=\small,RoyalBlue]   at (3.04,1.02) {$\vc{u}$};
+  \node[above,font=\small,ForestGreen] at (1,3.08)    {$\vc{v}$};
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{The derivation}
+Equation~\eqref{eq:loc} is pure geometry: it contains $\theta$ but no
+components. Now compute the same left-hand side \emph{algebraically}, from the
+components, and compare. With $\vc{u}=[u_1,u_2]$ and $\vc{v}=[v_1,v_2]$ we have
+$\vc{u}-\vc{v}=[\,u_1-v_1,\;u_2-v_2\,]$, so
+\begin{align*}
+  \norm{\vc{u}-\vc{v}}^{2}
+   &= (u_1-v_1)^{2}+(u_2-v_2)^{2} \\[2pt]
+   &= \bigl(u_1^{2}-2u_1v_1+v_1^{2}\bigr)
+      +\bigl(u_2^{2}-2u_2v_2+v_2^{2}\bigr) \\[2pt]
+   &= \underbrace{\bigl(u_1^{2}+u_2^{2}\bigr)}_{\textstyle \norm{\vc{u}}^{2}}
+      +\underbrace{\bigl(v_1^{2}+v_2^{2}\bigr)}_{\textstyle \norm{\vc{v}}^{2}}
+      -2\bigl(u_1v_1+u_2v_2\bigr) \\[2pt]
+   &= \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}-2\bigl(u_1v_1+u_2v_2\bigr).
+\end{align*}
+Set this equal to the geometric expression \eqref{eq:loc}:
+\[
+  \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}-2\bigl(u_1v_1+u_2v_2\bigr)
+  \;=\;
+  \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}-2\norm{\vc{u}}\norm{\vc{v}}\cos\theta .
+\]
+The squared norms cancel from both sides, and dividing by $-2$ leaves the
+identity we were after:
+\begin{equation}
+  \boxed{\;u_1v_1+u_2v_2 \;=\; \norm{\vc{u}}\,\norm{\vc{v}}\cos\theta\;}
+  \label{eq:dot}
+\end{equation}
+\emph{where $\theta$ is the angle between $\vc{u}$ and $\vc{v}$.} That last
+clause is not decoration: the identity is false for any other angle, and every
+use we make of \eqref{eq:dot} depends on $\theta$ being the angle between the
+two vectors in question.
+
+Look at what \eqref{eq:dot} accomplishes. The left side is built from
+\emph{components alone} --- two multiplications and one addition, no geometry.
+The right side contains $\theta$. The equation is a bridge between the two, and
+it is the bridge \S10.3 said we were missing.
+
+%------------------------------------------------------------------------------
+\subsection{The dot product}
+%------------------------------------------------------------------------------
+The left-hand side of \eqref{eq:dot} is important enough to name.
+
+\begin{defn}[Dot product / inner product in $\R^2$]
+For $\vc{u}=[u_1,u_2]$ and $\vc{v}=[v_1,v_2]$ in $\R^{2}$, the
+\textbf{dot product} --- equivalently the \textbf{inner product} --- of $\vc{u}$
+and $\vc{v}$ is
+\[
+  \langle \vc{u},\vc{v}\rangle
+  \;=\; \vc{u}\cdot\vc{v}
+  \;=\; u_1v_1+u_2v_2 .
+\]
+\end{defn}
+
+\noindent Both notations are standard and we will use both: $\vc{u}\cdot\vc{v}$
+is common in applied writing, $\langle\vc{u},\vc{v}\rangle$ in pure linear
+algebra. With the name in place, \eqref{eq:dot} becomes the statement we will
+quote constantly:
+\[
+  \langle \vc{u},\vc{v}\rangle \;=\; \norm{\vc{u}}\,\norm{\vc{v}}\cos\theta ,
+  \qquad \theta = \text{the angle between } \vc{u} \text{ and } \vc{v}.
+\]
+
+\begin{rmk}[A notation trap]
+Do \emph{not} write $\vc{u}\times\vc{v}$ for this. That symbol denotes the
+\textbf{cross product}, a completely different operation: it is defined in
+$\R^{3}$ rather than $\R^{2}$, and it returns a \emph{vector} rather than a
+scalar. Writing $\times$ when you mean $\cdot$ is one of the most common
+notational errors in a first linear algebra course. Use $\cdot$ or
+$\langle\,\cdot\,,\cdot\,\rangle$, and reserve $\times$ for the cross product.
+\end{rmk}
+
+\subsubsection*{Where it sits among our operations}
+The dot product is our newest \textbf{binary operator} --- two vectors in, one
+result out. But notice what makes it structurally new: it is the first binary
+operator that \emph{leaves} $\R^{2}$.
+\[
+  \langle\,\cdot\,,\cdot\,\rangle\;:\;\R^{2}\times\R^{2}\to\R .
+\]
+Two vectors go in and a \emph{scalar} comes out. Addition and subtraction were
+binary and stayed inside $\R^{2}$; the norm left $\R^{2}$ but was unary. The dot
+product is the first operation to do both at once.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Operation} & \textbf{Signature} & \textbf{Arity} & \textbf{Returns} \\
+\midrule
+Norm $\norm{\,\cdot\,}$ (\S2)                & $\R^{2}\to\R$                    & unary            & scalar \\
+Addition $+$ (\S7)                           & $\R^{2}\times\R^{2}\to\R^{2}$    & binary           & vector \\
+Subtraction $-$ (\S7)                        & $\R^{2}\times\R^{2}\to\R^{2}$    & binary           & vector \\
+Scalar multiplication (\S8)                  & $\R\times\R^{2}\to\R^{2}$        & binary (mixed)   & vector \\
+Dot product $\langle\,\cdot\,,\cdot\,\rangle$ (\S11) & $\R^{2}\times\R^{2}\to\R$ & binary          & scalar \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{Cosine similarity}
+%------------------------------------------------------------------------------
+Solve \eqref{eq:dot} for the cosine. Since $\theta\in[0,\pi]$ by \S10.3, and
+cosine is decreasing from $\cos 0=1$ to $\cos\pi=-1$ across that interval, we
+know in advance that
+\[
+  \cos\theta\in[-1,1].
+\]
+Dividing \eqref{eq:dot} by $\norm{\vc{u}}\norm{\vc{v}}$ --- legal whenever
+neither vector is the zero vector --- gives
+\[
+  \frac{\langle \vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}}
+  \;=\; \cos\theta .
+\]
+The left-hand side is computable from components. So we may as well promote it
+to a function in its own right.
+
+\begin{defn}[Cosine similarity]
+For nonzero $\vc{u},\vc{v}\in\R^{2}$, define
+\[
+  \cos(\vc{u},\vc{v})
+  \;:=\;
+  \frac{\langle \vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}} .
+\]
+This is a function taking \emph{two} vectors in $\R^{2}$ and returning a real
+number in $[-1,1]$. It is called the \textbf{cosine similarity} of $\vc{u}$ and
+$\vc{v}$, and by the identity above it equals $\cos\theta$, where $\theta$ is
+the angle between $\vc{u}$ and $\vc{v}$.
+\end{defn}
+
+\noindent The name earns itself twice over. ``Cosine,'' because the output
+\emph{is} the cosine of the angle between the two vectors. ``Similarity,''
+because that output is a score: the closer the two vectors point in the same
+direction, the closer it is to $1$.
+
+\begin{rmk}[Order does not matter]
+Cosine similarity is \textbf{symmetric}:
+\[
+  \cos(\vc{u},\vc{v})=\cos(\vc{v},\vc{u}).
+\]
+Both the dot product and the product of norms are unchanged when the two
+vectors swap places, and \S10.3 already established that $\theta$ is a property
+of the \emph{pair} with no preferred starting vector.
+
+A word on the terminology, since the adjectives are easy to swap: a
+two-argument function is \emph{symmetric} when the \emph{order} of its inputs
+does not matter, which is what the display above says. \emph{Reflexive} is a
+different property --- it concerns what happens when both inputs are the
+\emph{same} object. Cosine similarity has a clean property of that kind too,
+and we compute it in \S11.6.
+\end{rmk}
+
+\begin{rmk}[Scale does not matter either]
+Because $\cos(\vc{u},\vc{v})$ depends only on $\theta$, stretching either vector
+by a positive factor leaves it unchanged: $\cos(\alpha\vc{u},\vc{v})
+=\cos(\vc{u},\vc{v})$ for every $\alpha>0$. Cosine similarity measures
+\emph{direction agreement only} and is blind to magnitude --- which is exactly
+what you want from a similarity score, and exactly what distinguishes it from
+the dot product itself.
+\end{rmk}
+
+\begin{rmk}[Similarity kernels]
+In computational mathematics a function that takes two objects and returns a
+scalar score of how alike they are is called a \textbf{similarity kernel}.
+Cosine similarity is the first one we meet, and it is by far the most widely
+used in practice. The objects need not be vectors in $\R^{2}$ --- kernels are
+built for text documents, images, graphs, and molecules --- and we will meet
+other kernels later in the course.
+\end{rmk}
+
+\subsubsection*{Reading the three special values}
+Cosine similarity answers the question this section opened with. Each of the
+three named arrangements corresponds to one exact value, and the correspondence
+is made by inverting the cosine on $[0,\pi]$, where $\arccos$ is defined and
+single-valued:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item $\cos(\vc{u},\vc{v})=1$. Then $\theta=\arccos(1)=0$: the two vectors
+        open up no angle at all, so they point the same way. $\vc{u}$ and
+        $\vc{v}$ are \textbf{parallel}.
+  \item $\cos(\vc{u},\vc{v})=0$. Then $\theta=\arccos(0)=\pi/2$: the two vectors
+        form a right angle. $\vc{u}$ and $\vc{v}$ are \textbf{orthogonal}.
+  \item $\cos(\vc{u},\vc{v})=-1$. Then $\theta=\arccos(-1)=\pi$: the opening is
+        a straight line, so the vectors point in exactly opposite directions.
+        $\vc{u}$ and $\vc{v}$ are \textbf{antiparallel}.
+\end{itemize}
+
+\noindent Compare this against the table in \S10.3. Every row of that table,
+which we could then only describe, is now a number we can compute from four
+components.
+
+%------------------------------------------------------------------------------
+\subsection{When are two vectors numerically similar?}
+%------------------------------------------------------------------------------
+The three special values are the exact cases. What makes cosine similarity
+useful in practice is everything in between: two vectors are said to be
+\textbf{numerically similar} when $\cos(\vc{u},\vc{v})\approx 1$ --- close to
+pointing the same way, without being exactly parallel.
+
+\begin{ex}[A ladder of similarity]
+Take $\vc{u}=[\,1,\,0\,]$, so $\norm{\vc{u}}=1$, and compare it against
+several partners.
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+$\vc{v}$ & $\langle\vc{u},\vc{v}\rangle$ & $\cos(\vc{u},\vc{v})$ & \textbf{Reading} \\
+\midrule
+$[\,7,\,1\,]$   & $7$   & $7/\sqrt{50}\approx 0.990$   & nearly the same direction \\
+$[\,3,\,1\,]$   & $3$   & $3/\sqrt{10}\approx 0.949$   & similar \\
+$[\,1,\,1\,]$   & $1$   & $1/\sqrt{2}\approx 0.707$    & $45^{\circ}$ apart \\
+$[\,0,\,1\,]$   & $0$   & $0$                          & orthogonal --- unrelated \\
+$[\,-7,\,1\,]$  & $-7$  & $-7/\sqrt{50}\approx -0.990$ & nearly opposite \\
+\bottomrule
+\end{tabular}
+\end{center}
+The first two rows are what ``numerically similar'' means. The fourth is the
+neutral case. The last is as dissimilar as two vectors get.
+\end{ex}
+
+\begin{ex}[Similar but nowhere near equal]
+$\vc{u}=[\,3,\,4\,]$ and $\vc{v}=[\,300,\,400\,]$ have
+$\langle\vc{u},\vc{v}\rangle=900+1600=2500$, $\norm{\vc{u}}=5$ and
+$\norm{\vc{v}}=500$, so
+\[
+  \cos(\vc{u},\vc{v})=\frac{2500}{5\cdot 500}=1 .
+\]
+They are perfectly similar --- \emph{parallel} --- even though one is a hundred
+times longer than the other. This is the blindness to magnitude at work: by \S9
+these are emphatically \emph{not} equal vectors, but their directions agree
+exactly, and direction is all cosine similarity looks at.
+\end{ex}
+
+\begin{center}
+\begin{tabular}{@{}c@{\hspace{0.75cm}}c@{\hspace{0.75cm}}c@{\hspace{0.75cm}}c@{}}
+\begin{tikzpicture}[scale=0.5]
+  \baxes{-2.5}{2.6}{-0.9}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,0);
+  \draw[vecarr,ForestGreen] (0,0) -- (1.980,0.283);
+  \draw[gray!70,thin] (0:0.75) arc (0:8.13:0.75);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.5]
+  \baxes{-2.5}{2.6}{-0.9}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,0);
+  \draw[vecarr,ForestGreen] (0,0) -- (1.414,1.414);
+  \draw[gray!70,thin] (0:0.75) arc (0:45:0.75);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.5]
+  \baxes{-2.5}{2.6}{-0.9}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,0);
+  \draw[vecarr,ForestGreen] (0,0) -- (0,2);
+  \draw[gray!70,thin] (0.42,0) -- (0.42,0.42) -- (0,0.42);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.5]
+  \baxes{-2.5}{2.6}{-0.9}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,0);
+  \draw[vecarr,ForestGreen] (0,0) -- (-1.980,0.283);
+  \draw[gray!70,thin] (0:0.75) arc (0:171.87:0.75);
+\end{tikzpicture}
+\\[3pt]
+{\footnotesize $\cos\approx 0.99$} &
+{\footnotesize $\cos\approx 0.71$} &
+{\footnotesize $\cos = 0$} &
+{\footnotesize $\cos\approx -0.99$}
+\end{tabular}
+\end{center}
+
+\noindent In each panel $\vc{u}$ is the horizontal arrow and $\vc{v}$ is the
+other one. Both are drawn at the same length on purpose: cosine similarity
+cannot see length, only the opening between them.
+
+%------------------------------------------------------------------------------
+\subsection{A vector against itself}
+%------------------------------------------------------------------------------
+Before computing anything, guess. What should $\cos(\vc{u},\vc{u})$ be?
+
+A vector is as similar to itself as anything could possibly be, and it opens no
+angle at all with itself, so $\theta=0$ and we expect
+\[
+  \cos(\vc{u},\vc{u}) \;=\; 1 .
+\]
+Now verify it algebraically, straight from the definition. For
+$\vc{u}=[u_1,u_2]$ nonzero,
+\[
+  \cos(\vc{u},\vc{u})
+  = \frac{\langle\vc{u},\vc{u}\rangle}{\norm{\vc{u}}\,\norm{\vc{u}}}
+  = \frac{u_1u_1+u_2u_2}{\norm{\vc{u}}^{2}}
+  = \frac{u_1^{2}+u_2^{2}}{\norm{\vc{u}}^{2}} .
+\]
+And now look at that numerator. By the definition of the norm in \S2,
+$\norm{\vc{u}}=\sqrt{u_1^{2}+u_2^{2}}$, so $u_1^{2}+u_2^{2}$ is exactly
+$\norm{\vc{u}}^{2}$. The numerator and denominator are the same number:
+\[
+  \cos(\vc{u},\vc{u}) = \frac{\norm{\vc{u}}^{2}}{\norm{\vc{u}}^{2}} = 1,
+\]
+as intuition promised. But the observation we made along the way is worth more
+than the result:
+
+\begin{quote}
+\textbf{Identity.} For every $\vc{u}\in\R^{2}$,
+\[
+  \langle \vc{u},\vc{u}\rangle \;=\; \norm{\vc{u}}^{2},
+  \qquad\text{equivalently}\qquad
+  \norm{\vc{u}} \;=\; \sqrt{\langle \vc{u},\vc{u}\rangle} .
+\]
+\end{quote}
+
+\noindent Dotting a vector with itself returns its squared length. This will do
+a great deal of work for us in computations and proofs later in the course: it
+is what lets us convert a statement about lengths into a statement about dot
+products, and back again, whenever a proof needs one form rather than the other.
+It is also the first hint of something deeper --- that the norm was never
+independent of the inner product, but a consequence of it.
+
+%------------------------------------------------------------------------------
+\subsection{The orthogonality test}
+%------------------------------------------------------------------------------
+One special case is used so often that it deserves to be separated from the rest.
+
+Suppose $\vc{u}$ and $\vc{v}$ are nonzero and orthogonal. Then $\theta=\pi/2$,
+and $\cos(\pi/2)=0$, so \eqref{eq:dot} reads
+\[
+  \langle \vc{u},\vc{v}\rangle
+  = \norm{\vc{u}}\,\norm{\vc{v}}\cos\!\left(\tfrac{\pi}{2}\right)
+  = \norm{\vc{u}}\,\norm{\vc{v}}\cdot 0
+  = 0 .
+\]
+Conversely, if $\langle\vc{u},\vc{v}\rangle=0$ with both vectors nonzero, then
+$\norm{\vc{u}}\norm{\vc{v}}\cos\theta=0$; the two norms are strictly positive,
+so $\cos\theta=0$, and the only angle in $[0,\pi]$ with zero cosine is
+$\theta=\pi/2$. The implication runs both ways.
+
+\begin{quote}
+\textbf{Orthogonality test.} For nonzero $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \vc{u} \text{ and } \vc{v} \text{ are orthogonal}
+  \qquad\Longleftrightarrow\qquad
+  \langle \vc{u},\vc{v}\rangle = 0 .
+\]
+\end{quote}
+
+\noindent This is the payoff promised in \S10.3. To test two vectors for
+orthogonality you do \emph{not} need the angle, the cosine similarity, the
+norms, or a protractor --- and none of the slope-test exceptions apply. Two
+multiplications, one addition, and check whether the answer is zero.
+
+\begin{ex}[The test in action]
+Are $[\,2,\,1\,]$ and $[\,-1,\,2\,]$ orthogonal? Compute
+$\langle[2,1],[-1,2]\rangle = 2(-1)+1(2) = -2+2 = 0$. Yes. This confirms by
+arithmetic what \S10.2 argued with slopes --- and unlike the slope test, it
+would work just as well against the vertical vector $[\,0,\,1\,]$:
+$\langle[1,0],[0,1]\rangle = 0$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Practice: computing cosine similarity}
+%------------------------------------------------------------------------------
+Let
+\[
+  \vc{u}=[\,1,\,2\,],
+  \qquad
+  \vc{v}=[\,2,\,4\,],
+  \qquad
+  \vc{w}=[\,-2,\,1\,],
+  \qquad
+  \vc{z}=[\,-3,\,-6\,].
+\]
+Compute $\cos(\vc{u},\vc{v})$, $\cos(\vc{u},\vc{w})$ and $\cos(\vc{u},\vc{z})$,
+and in each case name the arrangement. Then compute $\cos(\vc{v},\vc{w})$.
+
+\medskip
+\noindent The norms you will need:
+$\norm{\vc{u}}=\sqrt5$, $\norm{\vc{v}}=\sqrt{20}=2\sqrt5$,
+$\norm{\vc{w}}=\sqrt5$, $\norm{\vc{z}}=\sqrt{45}=3\sqrt5$.
+
+\subsubsection*{Answer key}
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Pair} & \textbf{Dot product} & \textbf{Cosine similarity} & \textbf{Arrangement} \\
+\midrule
+$\vc{u},\vc{v}$
+  & $1(2)+2(4)=10$
+  & $\dfrac{10}{\sqrt5\cdot 2\sqrt5}=\dfrac{10}{10}=1$
+  & parallel \\
+$\vc{u},\vc{w}$
+  & $1(-2)+2(1)=0$
+  & $\dfrac{0}{\sqrt5\cdot\sqrt5}=0$
+  & orthogonal \\
+$\vc{u},\vc{z}$
+  & $1(-3)+2(-6)=-15$
+  & $\dfrac{-15}{\sqrt5\cdot 3\sqrt5}=\dfrac{-15}{15}=-1$
+  & antiparallel \\
+\midrule
+$\vc{v},\vc{w}$
+  & $2(-2)+4(1)=0$
+  & $\dfrac{0}{2\sqrt5\cdot\sqrt5}=0$
+  & orthogonal \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{rmk}[Why four vectors and not three?]
+Because three cannot exhibit all three arrangements. To realise ``parallel'' or
+``antiparallel'' at all, two of the three vectors must lie on a common line
+through the origin --- and once they do, a third vector's relation to one of
+them determines its relation to the other. That is exactly what the last row
+above illustrates: $\vc{v}=2\vc{u}$ lies on $\vc{u}$'s line, so $\vc{w}$, being
+orthogonal to $\vc{u}$, has no choice but to be orthogonal to $\vc{v}$ as well.
+Two of the three pairs therefore always carry the same label, and
+$\{$parallel, antiparallel, orthogonal$\}$ can never appear once each. A fourth
+vector is the minimum needed.
+\end{rmk}
+
+%==============================================================================
+\section{Practice set: addition and subtraction}
 %==============================================================================
 For each pair below: \textbf{(a)} draw $\vc{u}$ and $\vc{v}$ on one set of axes,
 tails at the origin, arrowheads marked; \textbf{(b)} compute the indicated sum
