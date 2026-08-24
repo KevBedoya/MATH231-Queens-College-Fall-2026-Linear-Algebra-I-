@@ -2,12 +2,7 @@
 %  MATH 231 -- Applied Linear Algebra (Queens College, Fall 2026)
 %  LECTURE 1 -- Tuesday, September 1, 2026
 %
-%  Section 1: "Vectors: Magnitude, Direction, and the First Vector Operations"
-%
-%  OPERATION ARITY is a running thread: the norm (Sec. 2) is unary, addition
-%  and subtraction (Sec. 7) are binary on two vectors, and scalar
-%  multiplication (Sec. 8) is binary on a scalar and a vector.  Keep the three
-%  framings parallel.
+%  Section 1: "Vectors: Magnitude, Direction, and the Geometry of R^2"
 %
 %  AUDIENCE: this document is distributed to students.  Keep it free of
 %  instructor-facing apparatus -- time budgets, pacing notes, teaching cues,
@@ -16,9 +11,31 @@
 %  NOTATION ORDER: R^2 is introduced in Section 6 and must not appear before
 %  it.  Sections 1-5 refer to "the plane" instead.
 %
-%  STATUS: in progress.  This document currently contains the FIRST content
-%  section of Lecture 1 only; further sections will be appended below the
-%  practice set as the lecture is built out.
+%  OPERATION ARITY is a running thread: the norm (Sec. 2) is unary, addition
+%  and subtraction (Sec. 7) are binary on two vectors, and scalar
+%  multiplication (Sec. 8) is binary on a scalar and a vector.  Keep the three
+%  framings parallel.
+%
+%  ORDERING DEPENDENCY: the geometric reading of u - v as u + (-v) needs -v,
+%  i.e. scalar multiplication by -1, so it lives in Sec. 8.3 and NOT in Sec. 7.
+%  Sec. 7.3 gives the between-the-heads reading, which needs no scaling.
+%  Equality of vectors (Sec. 9) is what licenses the head-to-tail picture in
+%  Sec. 7.1; that debt is flagged forward where it is incurred.
+%
+%  SECTION MAP
+%     1  vector, magnitude, direction, the plane, tail/head
+%     2  the Euclidean norm (unary)
+%     3  the derivative as a vector quantity
+%     4  vector vs. scalar quantities
+%     5  one-dimensional vectors
+%     6  notation; R^2 introduced here
+%     7  addition & subtraction (binary): 7.1 parallelogram rule,
+%        7.2 triangle inequality, 7.3 subtraction between the heads
+%     8  scalar multiplication: 8.1 geometry of scaling, 8.2 mirroring by -1,
+%        8.3 subtraction revisited as u + (-v)
+%     9  when two vectors are equal (displacement, head minus tail)
+%    10  relative orientation: 10.1 parallel, 10.2 orthogonal, 10.3 the angle
+%    11  practice set
 %
 %  Compile with pdflatex (standard TeX Live packages only; uses tikz).
 %==============================================================================
@@ -46,6 +63,7 @@
 \newtheorem{ex}{Example}
 \theoremstyle{remark}
 \newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
 
 % Honest forward references: things we are simplifying on purpose today and
 % will come back to later in the course.
@@ -69,10 +87,15 @@
   \draw[axisline] (#1,0) -- (#2+0.45,0) node[right,font=\scriptsize,black]{$x$};
   \draw[axisline] (0,#3) -- (0,#4+0.45) node[above,font=\scriptsize,black]{$y$};
 }
+% bare axes, for the small orientation panels
+\newcommand{\baxes}[4]{%
+  \draw[axisline] (#1,0) -- (#2,0);
+  \draw[axisline] (0,#3) -- (0,#4);
+}
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Applied Linear Algebra}\\[4pt]
        {\large\sffamily Lecture 1 \textbullet\ Vectors: Magnitude, Direction,
-        and the First Vector Operations}\\[2pt]
+        and the Geometry of $\mathbb{R}^{2}$}\\[2pt]
        {\normalsize\sffamily Tuesday, September 1, 2026 \textbullet\
         Kiely Hall 326 \textbullet\ Instructor: Kevin Bedoya}}
 \author{}
@@ -84,19 +107,22 @@
 
 \noindent\textbf{What you should be able to do afterwards.} State what a vector
 is in terms of magnitude and direction; identify the tail and head of a vector
-in the plane; compute the Euclidean norm of a vector and explain why it is a
-\emph{unary} operation; distinguish vector quantities from scalar quantities;
-read all three notational conventions for a vector; add and subtract vectors in
-the plane both componentwise and geometrically; and scale a vector by a real
-number, saying what the scaling does to its magnitude and direction.
+in the plane; compute the Euclidean norm and explain why it is a \emph{unary}
+operation; distinguish vector quantities from scalar quantities; add and
+subtract vectors both componentwise and geometrically, using the parallelogram
+rule and the triangle inequality; scale a vector by a real number and say what
+$\alpha=-1$ does to it; decide when two vectors drawn in different places are
+the \emph{same} vector; and say what it means for two vectors to be parallel or
+orthogonal, in terms of the angle $\theta$ between them.
 
 \medskip
 \noindent\textbf{Further reading.}
 Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra}, Ch.~1
-(vectors, addition, scalar multiplication) and Ch.~3 (norm and distance);
+(vectors, addition, scalar multiplication) and Ch.~3 (norm, distance, angle);
 Strang, \emph{Linear Algebra and Its Applications}, Ch.~1;
 Axler, \emph{Linear Algebra Done Right}, Ch.~1;
-Trefethen \& Bau, \emph{Numerical Linear Algebra}, Lec.~2--3 (norms).
+Trefethen \& Bau, \emph{Numerical Linear Algebra}, Lec.~2--3 (norms,
+orthogonality).
 
 %==============================================================================
 \section{Vectors: magnitude, direction, and the space they live in}
@@ -373,12 +399,11 @@ We write a vector in brackets, listing its coordinates in order:
 \]
 Order matters: $[1,2]\neq[2,1]$.
 
-\lookahead At this stage of the course, a vector \emph{is} a point of the plane
-together with the convention that its tail sits at the origin: the head is
-$(x,y)$ and the arrow is drawn from $(0,0)$. This is a temporary simplification
-and we will discard it once you are fluent --- a vector is really a
-\emph{displacement}, so the same vector may be drawn with its tail anywhere,
-which is precisely what makes the head-to-tail picture in \S7 legitimate.
+\lookahead For now we draw every vector with its tail at the origin, so that its
+head sits at $(x,y)$. That is a convention, not a restriction: in \S9 we will
+see that a vector is really a \emph{displacement}, so the same vector may be
+drawn with its tail anywhere in the plane. That fact is what makes the
+head-to-tail picture of \S7.1 legitimate.
 
 %==============================================================================
 \section{Addition and subtraction}
@@ -423,50 +448,178 @@ And since we know how to take a norm: $\norm{\vc{u}+\vc{v}}=\sqrt{9+16}=5$ ---
 the clean vector from \S2, arrived at by addition.
 \end{ex}
 
-\subsection*{What the pictures say}
-\textbf{Addition} is the \emph{parallelogram rule}: place $\vc{u}$ and $\vc{v}$
-tail-to-tail at the origin, complete the parallelogram, and $\vc{u}+\vc{v}$ is
-the diagonal from the origin. Equivalently --- \emph{head to tail} --- walk
-along $\vc{u}$, then from where you land walk along $\vc{v}$; the sum is the
-single arrow from start to finish.
+%------------------------------------------------------------------------------
+\subsection{The parallelogram rule}
+%------------------------------------------------------------------------------
+Componentwise arithmetic tells you \emph{what} the sum is. Geometry tells you
+\emph{where} it is.
 
-\textbf{Subtraction} is addition of the opposite, $\vc{u}-\vc{v}=\vc{u}+(-\vc{v})$,
-and it has its own reading: $\vc{u}-\vc{v}$ is the arrow \emph{from the head of
-$\vc{v}$ to the head of $\vc{u}$}. It is the displacement that takes you from
-$\vc{v}$ to $\vc{u}$, which is why differences of vectors are how we will
-measure how far apart two vectors are.
+\begin{quote}
+\textbf{Parallelogram rule.} Place $\vc{u}$ and $\vc{v}$ tail-to-tail at the
+origin. They span a parallelogram: the two given arrows are one pair of sides,
+and the copies of them drawn from the opposite corners are the other pair. Then
+$\vc{u}+\vc{v}$ is the \textbf{diagonal of that parallelogram} running from the
+common tail to the far corner.
+\end{quote}
+
+\noindent There is a second reading of the same picture, and it is the one to
+carry around in your head:
+
+\begin{quote}
+\textbf{Head to tail.} Walk along $\vc{u}$. From where you land, walk along
+$\vc{v}$. The sum $\vc{u}+\vc{v}$ is the single arrow from where you started to
+where you finished.
+\end{quote}
+
+\noindent The two readings agree because the far corner of the parallelogram is
+reached either way. Notice what the head-to-tail reading quietly does: it draws
+$\vc{v}$ with its tail at the head of $\vc{u}$ rather than at the origin. That
+is legitimate --- it is the same vector $\vc{v}$, just drawn elsewhere --- and
+\S9 is where we make that precise.
+
+In the figure below, the solid arrows are $\vc{u}$, $\vc{v}$ and their sum from
+the origin; the dashed arrows are the translated copies that close the
+parallelogram. Follow the blue solid arrow and then the green dashed one: you
+arrive at $[3,4]$, which is the head of the red diagonal.
 
 \begin{center}
-% both lattices share the same extent so the two pictures align side by side
-\begin{tikzpicture}[scale=0.78]
-  \lattice{-1}{4}{-2}{5}
-  \draw[ForestGreen,dashed] (2,1) -- (3,4);
-  \draw[RoyalBlue,dashed]   (1,3) -- (3,4);
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-1}{4}{-1}{5}
+  \draw[ForestGreen,dashed,thinarr] (2,1) -- (3,4);
+  \draw[RoyalBlue,dashed,thinarr]   (1,3) -- (3,4);
   \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
   \draw[vecarr,ForestGreen] (0,0) -- (1,3);
   \draw[vecarr,BrickRed]    (0,0) -- (3,4);
-  \node[below right,font=\small,RoyalBlue]  at (2,0.95) {$\vc{u}$};
-  \node[left,font=\small,ForestGreen]       at (0.95,3.1) {$\vc{v}$};
-  \node[right,font=\small,BrickRed]         at (3.08,4.32) {$\vc{u}+\vc{v}$};
+  \node[below right,font=\small,RoyalBlue]     at (2,0.95)   {$\vc{u}$};
+  \node[left,font=\small,ForestGreen]          at (0.95,3.1) {$\vc{v}$};
+  \node[right,font=\small,BrickRed]            at (3.06,4.3) {$\vc{u}+\vc{v}$};
+  \node[right,font=\scriptsize,ForestGreen]    at (2.55,2.5) {copy of $\vc{v}$};
+  \node[left,font=\scriptsize,RoyalBlue]       at (2.2,3.72) {copy of $\vc{u}$};
 \end{tikzpicture}
-\hspace{1.0cm}
-\begin{tikzpicture}[scale=0.78]
-  \lattice{-1}{4}{-2}{5}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{The triangle inequality}
+%------------------------------------------------------------------------------
+Take the head-to-tail picture and ignore the parallelogram: what is left is a
+\emph{triangle}. Its three sides have lengths $\norm{\vc{u}}$, $\norm{\vc{v}}$
+and $\norm{\vc{u}+\vc{v}}$. And a triangle can never have one side longer than
+the other two combined --- walking straight from start to finish cannot be
+longer than detouring via a third point.
+
+\begin{quote}
+\textbf{Triangle inequality.} For all $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \norm{\vc{u}+\vc{v}} \;\le\; \norm{\vc{u}}+\norm{\vc{v}}.
+\]
+\end{quote}
+
+\noindent Equality holds in exactly one situation: when $\vc{u}$ and $\vc{v}$
+point in the \emph{same} direction (or one of them is the zero vector). Then the
+``triangle'' has collapsed flat onto a single line, the detour is no detour at
+all, and the two sides lie end to end along the third.
+
+\begin{ex}[Strict inequality]
+With $\vc{u}=[2,1]$ and $\vc{v}=[1,3]$ from above, $\vc{u}+\vc{v}=[3,4]$ and
+\[
+  \norm{\vc{u}+\vc{v}}=5,
+  \qquad
+  \norm{\vc{u}}+\norm{\vc{v}}=\sqrt5+\sqrt{10}\approx 2.236+3.162=5.398 .
+\]
+Indeed $5<5.398$. The two vectors point in genuinely different directions, so
+the detour costs something.
+\end{ex}
+
+\begin{ex}[Equality]
+Let $\vc{u}=[1,2]$ and $\vc{v}=[2,4]$. Here $\vc{v}$ is just $\vc{u}$ made
+twice as long --- same direction --- so we expect equality. And
+$\vc{u}+\vc{v}=[3,6]$, so
+\[
+  \norm{\vc{u}+\vc{v}}=\sqrt{9+36}=\sqrt{45}=3\sqrt5,
+  \qquad
+  \norm{\vc{u}}+\norm{\vc{v}}=\sqrt5+2\sqrt5=3\sqrt5 .
+\]
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-1}{4}{-1}{5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
+  \draw[vecarr,ForestGreen] (2,1) -- (3,4);
+  \draw[vecarr,BrickRed]    (0,0) -- (3,4);
+  \node[below right,font=\scriptsize,RoyalBlue]  at (0.95,0.42) {$\norm{\vc{u}}=\sqrt5$};
+  \node[right,font=\scriptsize,ForestGreen]      at (2.55,2.5)  {$\norm{\vc{v}}=\sqrt{10}$};
+  \node[left,font=\scriptsize,BrickRed]          at (1.42,2.3)  {$\norm{\vc{u}+\vc{v}}=5$};
+\end{tikzpicture}
+\end{center}
+
+\noindent This inequality is not a curiosity. It is one of the two or three
+properties that \emph{define} what it means to be a norm at all, and it is the
+reason distances behave the way our intuition expects.
+
+%------------------------------------------------------------------------------
+\subsection{Subtraction: the arrow between the heads}
+%------------------------------------------------------------------------------
+Subtraction has its own picture, and it needs no new machinery.
+
+\begin{quote}
+\textbf{Between the heads.} Draw $\vc{u}$ and $\vc{v}$ from the origin. Then
+$\vc{u}-\vc{v}$ is the arrow joining the two heads, pointing \emph{from} the
+head of $\vc{v}$ \emph{to} the head of $\vc{u}$.
+\end{quote}
+
+\noindent It is the displacement that carries you from $\vc{v}$ to $\vc{u}$ ---
+which is why differences of vectors are how we will measure how far apart two
+vectors are.
+
+\smallskip
+\noindent That leaves one thing to get right, and it is the step students most
+often reverse: \emph{which way does the arrowhead go?} Here is a rule that never
+fails.
+
+\begin{quote}
+\textbf{Reading a difference as a journey.} Read $\vc{v}-\vc{u}$ from right to
+left: \emph{start at $\vc{u}$, end at $\vc{v}$}. So $\vc{v}-\vc{u}$ points
+\emph{at} $\vc{v}$, and $\vc{u}-\vc{v}$ points \emph{at} $\vc{u}$. The arrowhead
+always lands on the head of whichever vector is written \emph{first}.
+\end{quote}
+
+\noindent And a numerical check, in case the picture ever betrays you: compute
+the components and read off their signs. For $\vc{v}-\vc{u}$, the first
+coordinate tells you whether the arrow travels right (positive) or left
+(negative), and the second tells you up (positive) or down (negative).
+
+\begin{ex}[Both directions on one pair]
+Take $\vc{u}=[2,1]$ and $\vc{v}=[1,3]$ again.
+\[
+  \vc{u}-\vc{v}=[\,1,\,-2\,],
+  \qquad
+  \vc{v}-\vc{u}=[\,-1,\,2\,].
+\]
+By the journey rule, $\vc{u}-\vc{v}$ starts at the head of $\vc{v}$, namely
+$(1,3)$, and ends at the head of $\vc{u}$, namely $(2,1)$ --- one step right and
+two steps down, matching $[\,1,-2\,]$. The other difference,
+$\vc{v}-\vc{u}=[-1,2]$, is the same segment travelled backwards: one step left
+and two steps up. The two are opposite arrows on the same line.
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-1}{4}{-3}{4}
   \draw[BrickRed,dashed,thinarr] (1,3) -- (2,1);
   \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
   \draw[vecarr,ForestGreen] (0,0) -- (1,3);
   \draw[vecarr,BrickRed]    (0,0) -- (1,-2);
-  \node[below right,font=\small,RoyalBlue] at (2,0.95) {$\vc{u}$};
-  \node[left,font=\small,ForestGreen]      at (0.95,3.1) {$\vc{v}$};
-  \node[right,font=\small,BrickRed]        at (1.05,-1.9) {$\vc{u}-\vc{v}$};
-  \node[right,font=\scriptsize,BrickRed]   at (1.6,2.35) {same arrow};
+  \node[below right,font=\small,RoyalBlue] at (2,0.95)     {$\vc{u}$};
+  \node[left,font=\small,ForestGreen]      at (0.95,3.1)   {$\vc{v}$};
+  \node[right,font=\small,BrickRed]        at (1.05,-1.9)  {$\vc{u}-\vc{v}$};
+  \node[right,font=\scriptsize,BrickRed]   at (1.62,2.3)   {same arrow};
 \end{tikzpicture}
 \end{center}
 
-\noindent In the right-hand figure the dashed arrow and the solid arrow labelled
-$\vc{u}-\vc{v}$ are the \emph{same vector} drawn in two places: same magnitude,
-same direction, different tail. That is the translation-invariance flagged in
-\S6, seen for the first time.
+\noindent The dashed arrow and the solid arrow labelled $\vc{u}-\vc{v}$ are the
+\emph{same vector} drawn in two places: same magnitude, same direction,
+different tail. \S9 is where that claim gets its definition.
 
 %==============================================================================
 \section{Scalar multiplication}
@@ -550,6 +703,442 @@ nothing else.
   \node[left,font=\scriptsize,BrickRed]      at (-1.04,-2.02) {$-\vc{v}=[-1,-2]$};
 \end{tikzpicture}
 \end{center}
+
+%------------------------------------------------------------------------------
+\subsection{What scaling does to the picture}
+%------------------------------------------------------------------------------
+The algebra is one line; the geometry is worth tabulating, because the
+\emph{sign} and the \emph{size} of $\alpha$ do two independent jobs. The size
+$\lvert\alpha\rvert$ decides the length; the sign decides the direction.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Scalar} & \textbf{Effect on length} & \textbf{Effect on direction} \\
+\midrule
+$\alpha>1$          & stretched                        & unchanged \\
+$\alpha=1$          & unchanged                        & unchanged \\
+$0<\alpha<1$        & shrunk                           & unchanged \\
+$\alpha=0$          & collapses to the zero vector     & destroyed \\
+$-1<\alpha<0$       & shrunk                           & reversed \\
+$\alpha=-1$         & unchanged                        & reversed \\
+$\alpha<-1$         & stretched                        & reversed \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The figure above showed three of these rows on $\vc{v}=[1,2]$:
+$\alpha=2$ stretched it, $\alpha=\tfrac12$ shrank it, $\alpha=-1$ reversed it.
+The row still missing a picture is the last one --- reversing \emph{and}
+stretching at once --- so here it is on a flatter vector, to make the point that
+none of this is special to $[1,2]$.
+
+\begin{ex}[Reversing and stretching together]
+Let $\vc{w}=[\,2,\,1\,]$, so $\norm{\vc{w}}=\sqrt5$. Then
+\[
+  2\vc{w}=[\,4,\,2\,],
+  \qquad
+  -\vc{w}=[\,-2,\,-1\,],
+  \qquad
+  -2\vc{w}=[\,-4,\,-2\,].
+\]
+Read the last one geometrically: $\alpha=-2$ is negative, so the arrow turns
+around; and $\lvert\alpha\rvert=2$, so it comes out twice as long. All four
+arrows lie on one line through the origin --- the two positive multiples on one
+side, the two negative multiples on the other.
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.62]
+  \lattice{-5}{5}{-3}{3}
+  \draw[gray!45,dashed] (-4.7,-2.35) -- (4.7,2.35);
+  \draw[vecarr,RoyalBlue!45] (0,0) -- (4,2);
+  \draw[vecarr,BrickRed!45]  (0,0) -- (-4,-2);
+  \draw[vecarr,RoyalBlue]    (0,0) -- (2,1);
+  \draw[vecarr,BrickRed]     (0,0) -- (-2,-1);
+  \node[above,font=\scriptsize,RoyalBlue!60]   at (4,2.14)      {$2\vc{w}=[4,2]$};
+  \node[below right,font=\scriptsize,RoyalBlue] at (2.06,0.9)    {$\vc{w}=[2,1]$};
+  \node[above left,font=\scriptsize,BrickRed]  at (-2.06,-0.9)  {$-\vc{w}=[-2,-1]$};
+  \node[below,font=\scriptsize,BrickRed!65]    at (-4,-2.14)    {$-2\vc{w}=[-4,-2]$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The table also runs backwards, which is often how you will use it: if
+you can \emph{see} two arrows on a common line through the origin, you can read
+off the scalar that relates them without computing anything.
+
+\begin{ex}[Reading the scalar off a picture]
+An arrow is drawn on the same line through the origin as $\vc{v}=[1,2]$. It
+points the \emph{opposite} way, and it is \emph{three times as long}. Which
+multiple of $\vc{v}$ is it?
+
+Opposite direction forces $\alpha<0$; three times as long forces
+$\lvert\alpha\rvert=3$. Together, $\alpha=-3$, so the arrow is
+\[
+  -3\vc{v}=[\,-3,\,-6\,].
+\]
+Checking against the algebra:
+$\norm{-3\vc{v}}=\sqrt{9+36}=\sqrt{45}=3\sqrt5=3\norm{\vc{v}}$, as the picture
+promised.
+\end{ex}
+
+\begin{ex}[Scaling a physical vector]
+Recall from \S4 that velocity is a vector quantity. Let $\vc{v}$ be the velocity
+of a car travelling northeast at $30$ mph. Then:
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=3pt]
+  \item $2\vc{v}$ is northeast at $60$ mph --- same heading, twice the speed;
+  \item $\tfrac12\vc{v}$ is northeast at $15$ mph --- same heading, half the speed;
+  \item $-\vc{v}$ is southwest at $30$ mph --- same speed, reversed heading;
+  \item $0\vc{v}$ is the car at rest, with no heading at all.
+\end{itemize}
+Scaling changes the speed and, if the scalar is negative, the heading --- but it
+never turns the car onto a new bearing that is neither the original nor its
+exact reverse.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Multiplication by $-1$: mirroring}
+%------------------------------------------------------------------------------
+The case $\alpha=-1$ deserves a name of its own, because it is the one you will
+use constantly.
+
+\begin{quote}
+\textbf{Mirroring.} $-\vc{v}=(-1)\vc{v}$ is the \textbf{mirror image of
+$\vc{v}$ through the origin}: same line, same length, opposite direction. Every
+coordinate flips sign.
+\end{quote}
+
+\noindent In the figure above, $\vc{v}=[1,2]$ and $-\vc{v}=[-1,-2]$ sit on
+opposite sides of the origin along the same dashed line, at equal distances from
+it. The origin is the midpoint of the segment joining their two heads.
+
+\begin{rmk}
+Be precise about which mirror. Reflecting \emph{through the origin} --- a point
+--- flips \emph{both} coordinates: $[1,2]\mapsto[-1,-2]$. Reflecting
+\emph{across an axis} --- a line --- flips only one: across the $x$-axis,
+$[1,2]\mapsto[1,-2]$. Multiplication by $-1$ is the first of these, not the
+second. Equivalently, it is a half-turn: rotation by $\pi$ about the origin.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Subtraction revisited: \texorpdfstring{$\vc{u}+(-\vc{v})$}{u + (-v)}}
+%------------------------------------------------------------------------------
+In \S7.3 we read $\vc{u}-\vc{v}$ off the picture as the arrow between the two
+heads. Now that we own the mirror, a second reading opens up --- and it lets us
+reuse the parallelogram rule instead of learning a separate recipe.
+
+Subtraction is nothing but addition of the mirror image:
+\[
+  \vc{u}-\vc{v} \;=\; \vc{u}+(-\vc{v}).
+\]
+So to subtract geometrically: \textbf{mirror $\vc{v}$ through the origin to get
+$-\vc{v}$, then add $\vc{u}$ and $-\vc{v}$ by the parallelogram rule of \S7.1.}
+No new geometry at all --- one reflection, then the rule you already have.
+
+\begin{ex}[The same difference, computed two ways]
+Take $\vc{u}=[2,1]$ and $\vc{v}=[1,3]$ once more. Mirroring gives
+$-\vc{v}=[-1,-3]$, and the parallelogram rule on $\vc{u}$ and $-\vc{v}$ produces
+the diagonal
+\[
+  \vc{u}+(-\vc{v})=[\,2+(-1),\;\;1+(-3)\,]=[\,1,\,-2\,],
+\]
+which is exactly the $\vc{u}-\vc{v}$ we found in \S7.3. Two different pictures,
+one vector.
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \lattice{-2}{4}{-4}{4}
+  % parallelogram on u and -v
+  \draw[ForestGreen,dashed,thinarr] (2,1) -- (1,-2);
+  \draw[RoyalBlue,dashed,thinarr]   (-1,-3) -- (1,-2);
+  \draw[gray!45,dashed] (1,3) -- (-1,-3);
+  \draw[vecarr,RoyalBlue]        (0,0) -- (2,1);
+  \draw[vecarr,ForestGreen!45]   (0,0) -- (1,3);
+  \draw[vecarr,ForestGreen]      (0,0) -- (-1,-3);
+  \draw[vecarr,BrickRed]         (0,0) -- (1,-2);
+  \node[above right,font=\small,RoyalBlue]      at (1.9,1.02)   {$\vc{u}$};
+  \node[left,font=\scriptsize,ForestGreen!70]   at (0.94,3.02)  {$\vc{v}$};
+  \node[left,font=\small,ForestGreen]           at (-1.04,-3.0) {$-\vc{v}$};
+  \node[right,font=\small,BrickRed]             at (1.06,-2.06) {$\vc{u}-\vc{v}$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The faint green arrow is the original $\vc{v}$; the solid green one is
+its mirror image $-\vc{v}$, and the faint dashed line through the origin shows
+that the two really do lie on a common line. The red diagonal of the
+parallelogram spanned by $\vc{u}$ and $-\vc{v}$ is $\vc{u}-\vc{v}$.
+
+%==============================================================================
+\section{When are two vectors equal?}
+%==============================================================================
+We have twice now drawn ``the same vector'' in two different places and asked
+you to believe it. Time to define it.
+
+\begin{defn}[Equality of vectors]
+Two vectors are \textbf{equal} when they have the same magnitude \emph{and} the
+same direction. In components, for $\vc{u}=[u_1,u_2]$ and $\vc{v}=[v_1,v_2]$,
+\[
+  \vc{u}=\vc{v}
+  \qquad\Longleftrightarrow\qquad
+  u_1=v_1 \;\;\text{and}\;\; u_2=v_2 .
+\]
+\end{defn}
+
+\noindent Notice what the definition does \emph{not} mention: where the arrow
+is. A vector is a magnitude together with a direction --- a
+\emph{displacement} --- and a displacement does not care where you start it.
+
+\subsection*{Components from any tail: head minus tail}
+So how do you read the components off an arrow that does not start at the
+origin? Subtract.
+
+\begin{quote}
+An arrow with tail $A=(a_1,a_2)$ and head $B=(b_1,b_2)$ is the vector
+\[
+  [\,b_1-a_1,\;\;b_2-a_2\,]
+  \qquad\text{---}\qquad
+  \textbf{head minus tail}.
+\]
+\end{quote}
+
+\noindent This is not a new rule; it is the subtraction of \S7.3 seen from the
+other side. Two arrows are the same vector precisely when their
+head-minus-tail differences agree, no matter how far apart the arrows are
+drawn. Every vector therefore has infinitely many drawings, called
+\emph{representatives}, and exactly one of them has its tail at the origin ---
+that one is said to be in \textbf{standard position}, and it is the drawing we
+have been defaulting to since \S1.
+
+\begin{ex}[Three drawings, one vector]
+Each of these arrows is the vector $[\,2,\,1\,]$:
+\begin{enumerate}[label=(\roman*),leftmargin=2.4em,itemsep=2pt,topsep=3pt]
+  \item tail $(0,0)$, head $(2,1)$: \quad $[\,2-0,\;1-0\,]=[\,2,\,1\,]$;
+  \item tail $(1,3)$, head $(3,4)$: \quad $[\,3-1,\;4-3\,]=[\,2,\,1\,]$;
+  \item tail $(-3,-1)$, head $(-1,0)$: \quad $[\,-1-(-3),\;0-(-1)\,]=[\,2,\,1\,]$.
+\end{enumerate}
+They sit in three different places on the page. They are the same vector: each
+one says ``two steps right, one step up.''
+\end{ex}
+
+\begin{ex}[Same magnitude is not enough]
+$[\,1,\,2\,]$ and $[\,2,\,1\,]$ both have norm $\sqrt5$, so they are equally
+long --- but the first climbs steeply and the second runs flat. Different
+directions, so they are \emph{different vectors}.
+\end{ex}
+
+\begin{ex}[Same direction is not enough either]
+$[\,1,\,2\,]$ and $[\,2,\,4\,]$ point exactly the same way --- the second is
+$2$ times the first, so by \S8 they lie on one line through the origin --- but
+their norms are $\sqrt5$ and $2\sqrt5$. Different magnitudes, so again
+\emph{different vectors}.
+\end{ex}
+
+\begin{ex}[Mirrors are not equal]
+$[\,1,\,2\,]$ and $[\,-1,\,-2\,]$ have the same norm $\sqrt5$ and lie on the
+same line, but they point opposite ways. By \S8.2 the second is the mirror image
+of the first, and a mirror image is a \emph{different vector} --- unless the
+vector is $[\,0,\,0\,]$, which is its own mirror.
+\end{ex}
+
+\noindent Equality needs \emph{both} attributes to match. The last three
+examples fail on exactly one apiece.
+
+\begin{warn}
+An arrow drawn near the top of the page and an arrow drawn near the bottom
+\emph{look} like two different objects, and it is tempting to treat them as two
+different vectors. They are not, so long as head minus tail comes out the same
+for both. Conversely, two arrows can start at the very same point and still be
+different vectors. Position on the page is not part of the data; magnitude and
+direction are.
+\end{warn}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+  \lattice{-4}{4}{-2}{5}
+  \draw[vecarr,RoyalBlue] (0,0)   -- (2,1);
+  \draw[vecarr,RoyalBlue] (1,3)   -- (3,4);
+  \draw[vecarr,RoyalBlue] (-3,-1) -- (-1,0);
+  \draw[vecarr,BrickRed]  (-3,3)  -- (-2,5);
+  \node[below right,font=\scriptsize,RoyalBlue] at (0.9,0.44)  {(i)};
+  \node[below right,font=\scriptsize,RoyalBlue] at (1.9,3.44)  {(ii)};
+  \node[below right,font=\scriptsize,RoyalBlue] at (-2.1,-0.56){(iii)};
+  \node[left,font=\scriptsize,BrickRed]         at (-2.9,4.1)  {(iv)};
+\end{tikzpicture}
+\end{center}
+
+\noindent Arrows (i), (ii) and (iii) are the three representatives of
+$[\,2,\,1\,]$ from the example above: parallel, equally long, all pointing the
+same way, and therefore \emph{one and the same vector}. Arrow (iv) is
+$[\,1,\,2\,]$; it has the same length $\sqrt5$ as the others but a different
+direction, so it is a different vector.
+
+%==============================================================================
+\section{Relative orientation: parallel, orthogonal, and the angle between}
+%==============================================================================
+Two vectors sitting in $\R^{2}$ have a relationship beyond their individual
+magnitudes and directions: how they are oriented \emph{with respect to each
+other}. Two arrangements are special enough to be named.
+
+%------------------------------------------------------------------------------
+\subsection{Parallel vectors}
+%------------------------------------------------------------------------------
+\begin{quote}
+\textbf{Parallel (geometric definition).} Two nonzero vectors are
+\textbf{parallel} when, drawn from a common tail, they lie along one and the
+same straight line. Equivalently: the lines containing their arrows are parallel
+lines, so the arrows never tilt away from each other --- they either point the
+same way or exactly opposite ways.
+\end{quote}
+
+\noindent \S8 already drew this picture without naming it: every scalar multiple
+of $\vc{v}$ lands on the single line through the origin and the head of
+$\vc{v}$. That is precisely the algebraic version of the definition.
+
+\begin{quote}
+\textbf{Parallel (algebraic test).} Nonzero $\vc{u}$ and $\vc{v}$ are parallel
+exactly when one is a scalar multiple of the other: $\vc{v}=\alpha\vc{u}$ for
+some $\alpha\neq0$. If $\alpha>0$ they point the \emph{same} way; if $\alpha<0$
+they point \emph{opposite} ways, and the pair is often called
+\textbf{antiparallel}.
+\end{quote}
+
+\begin{ex}[Parallel, both signs]
+$[\,1,\,2\,]$ and $[\,3,\,6\,]$ are parallel and point the same way, since
+$[3,6]=3[1,2]$ with $\alpha=3>0$. \\
+$[\,1,\,2\,]$ and $[\,-2,\,-4\,]$ are parallel and antiparallel in direction,
+since $[-2,-4]=(-2)[1,2]$ with $\alpha=-2<0$. \\
+$[\,1,\,2\,]$ and $[\,2,\,1\,]$ are \emph{not} parallel: no single $\alpha$
+satisfies both $2=\alpha\cdot1$ and $1=\alpha\cdot2$.
+\end{ex}
+
+\noindent The zero vector is excluded from the definition on purpose: it has no
+direction, so asking whether it is parallel to anything is asking a question
+with no content.
+
+%------------------------------------------------------------------------------
+\subsection{Orthogonal vectors}
+%------------------------------------------------------------------------------
+\begin{quote}
+\textbf{Orthogonal.} Two nonzero vectors are \textbf{orthogonal} when, drawn
+from a common tail, they meet at a right angle. ``Orthogonal'' is the word we
+will use throughout the course; ``perpendicular'' means the same thing.
+\end{quote}
+
+\noindent The cleanest example is the pair of coordinate directions themselves:
+$[\,1,\,0\,]$ and $[\,0,\,1\,]$ meet at a right angle at the origin. A less
+obvious pair is $[\,2,\,1\,]$ and $[\,-1,\,2\,]$: each is the other turned a
+quarter turn, and both have norm $\sqrt5$.
+
+\begin{rmk}
+You already own one test for that last claim: from precalculus, two lines are
+perpendicular when their slopes multiply to $-1$. The arrows $[2,1]$ and
+$[-1,2]$ have slopes $\tfrac12$ and $-2$, and $\tfrac12\cdot(-2)=-1$. But notice
+how brittle this test is. It says nothing at all when one of the vectors is
+vertical --- slope undefined --- it does not extend to three dimensions or
+beyond, and it answers only the yes/no question. It cannot tell you how far from
+perpendicular two vectors are when they are not.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The angle between two vectors}
+%------------------------------------------------------------------------------
+``Parallel'' and ``orthogonal'' are the two extreme cases of a single underlying
+quantity, and everything in between has been left unnamed. To measure relative
+orientation \emph{numerically}, in a way that covers all cases at once, we need
+the \textbf{angle between the vectors}.
+
+% keep the definition of theta with the figure that shows it
+\Needspace*{18\baselineskip}
+\begin{defn}[The angle $\theta$]
+Let $\vc{u}$ and $\vc{v}$ be nonzero vectors in $\R^{2}$, drawn from a common
+tail. Write $\theta$ for the angle they open up at that shared tail, measured so
+that
+\[
+  \theta\in[\,0,\,\pi\,].
+\]
+\end{defn}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \lattice{-1}{4}{-1}{4}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (3,1);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,3);
+  \draw[gray!75,thin] (18.435:1.35) arc (18.435:71.565:1.35);
+  \node[font=\small] at (45:1.72) {$\theta$};
+  \node[right,font=\small,RoyalBlue]   at (3.04,1.02) {$\vc{u}$};
+  \node[above,font=\small,ForestGreen] at (1,3.08)    {$\vc{v}$};
+\end{tikzpicture}
+\end{center}
+
+\noindent \textbf{Why that range?} Two rays leaving a common point cut the plane
+into two angles, and those two angles add up to $2\pi$. One of them is the
+opening \emph{between} the rays; the other is the reflex angle going the long way
+around outside. Restricting $\theta$ to $[0,\pi]$ always selects the first one.
+Two consequences, both of which we want:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt]
+  \item $\theta$ is genuinely the angle \emph{between} the two vectors, never the
+        one sweeping around behind them;
+  \item $\theta$ does not depend on which vector you start from --- the angle
+        from $\vc{u}$ to $\vc{v}$ equals the angle from $\vc{v}$ to $\vc{u}$. It
+        is a property of the \emph{pair}, with no orientation or sign attached.
+\end{itemize}
+
+\noindent With $\theta$ in hand, both named arrangements become single numbers,
+and the unnamed middle ground gets a scale:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Angle} & \textbf{Arrangement} & \textbf{Name} \\
+\midrule
+$\theta=0$                  & same direction                & parallel \\
+$0<\theta<\tfrac{\pi}{2}$   & opening less than a right angle & acute \\
+$\theta=\tfrac{\pi}{2}$     & right angle                   & \textbf{orthogonal} \\
+$\tfrac{\pi}{2}<\theta<\pi$ & opening more than a right angle & obtuse \\
+$\theta=\pi$                & opposite directions           & antiparallel \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{@{}c@{\hspace{1.0cm}}c@{\hspace{1.0cm}}c@{}}
+\begin{tikzpicture}[scale=0.62]
+  \baxes{-2.6}{2.9}{-1.7}{2.5}
+  \draw[vecarr,ForestGreen] (0,0) -- (2.4,1.2);
+  \draw[vecarr,RoyalBlue]   (0,0) -- (1.2,0.6);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.62]
+  \baxes{-2.6}{2.9}{-1.7}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2.0,1.0);
+  \draw[vecarr,ForestGreen] (0,0) -- (-1.0,2.0);
+  \draw[gray!75,thin] (0.447,0.224) -- (0.224,0.671) -- (-0.224,0.447);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=0.62]
+  \baxes{-2.6}{2.9}{-1.7}{2.5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2.0,1.0);
+  \draw[vecarr,ForestGreen] (0,0) -- (-2.0,-1.0);
+\end{tikzpicture}
+\\[3pt]
+{\small $\theta=0$: parallel} &
+{\small $\theta=\pi/2$: orthogonal} &
+{\small $\theta=\pi$: antiparallel}
+\end{tabular}
+\end{center}
+
+\lookahead We can now \emph{say} what relative orientation means, and we could
+measure $\theta$ off the page with a protractor. What we cannot yet do is
+\emph{compute} it from the components $[u_1,u_2]$ and $[v_1,v_2]$ --- nothing we
+have built so far turns four numbers into an angle. The tool that does it is the
+\emph{inner product}, and it is the next thing we construct. It will collapse
+the whole table above into arithmetic: in particular, testing two vectors for
+orthogonality will become a single multiplication-and-addition, with no
+protractor, no slopes, and no exceptions for vertical vectors.
 
 %==============================================================================
 \section{Practice set}
