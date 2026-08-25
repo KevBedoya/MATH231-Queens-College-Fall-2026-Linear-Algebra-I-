@@ -133,7 +133,9 @@ of $\R^{2}$ as a linear combination of them; say what \emph{span} and
 unique; set up the problem of finding coordinates as a linear system; say what
 the dimension of a space is and why it agrees with the degrees-of-freedom count
 of \S1; produce bases other than the standard one; recognise when two vectors
-fail to span the plane; and define linear independence and dependence.
+fail to span the plane; define linear independence and dependence; prove that an
+independent pair spans $\R^{2}$; tell a spanning set from a basis; and say what
+a subspace is and list every subspace of the plane.
 
 %==============================================================================
 \section{The standard basis of \texorpdfstring{$\R^{2}$}{R2}}
@@ -832,5 +834,300 @@ time it has decided the same question: nonzero means the pair spans the plane,
 zero means it collapses. A number that detects independence by a single
 arithmetic test is worth having a name, and it has one. We will meet it properly
 later, along with the reason the same idea keeps working in higher dimensions.
+
+%------------------------------------------------------------------------------
+\subsection{Question 2: what the dependent pair is a basis for}
+%------------------------------------------------------------------------------
+Return to the pair that failed,
+\[
+  \vc{u}=[\,1,\,2\,],
+  \qquad
+  \vc{v}=[\,2,\,4\,] .
+\]
+It does not span $\R^{2}$, but \S18.2 showed it does not span nothing either:
+every combination lands on the line through the origin with slope $2$. So
+$\{\vc{u},\vc{v}\}$ is doing \emph{some} job. The question is what job, and with
+how many vectors.
+
+\subsubsection*{One of the two is redundant}
+Because $\vc{v}=2\vc{u}$, the second vector contributes nothing the first did not
+already contribute. The computation of \S18.2 says it exactly:
+\[
+  \alpha\vc{u} + \beta\vc{v}
+  = \alpha\vc{u} + \beta(2\vc{u})
+  = (\alpha+2\beta)\,\vc{u} ,
+\]
+so every combination of the two is already a multiple of $\vc{u}$ alone. That
+gives $\spanop\{\vc{u},\vc{v}\}\subseteq\spanop\{\vc{u}\}$; and the reverse
+inclusion is immediate, since $\alpha\vc{u}=\alpha\vc{u}+0\vc{v}$. Hence
+\[
+  \spanop\{\vc{u},\vc{v}\} \;=\; \spanop\{\vc{u}\} .
+\]
+Dropping $\vc{v}$ costs us nothing at all. So keep one of them --- take
+$\vc{u}=[\,1,\,2\,]$ --- and write
+\[
+  \bas = \bigl\{\,[\,1,\,2\,]\,\bigr\} .
+\]
+
+\subsubsection*{What that one vector spans}
+By definition the span of a single vector is the set of its scalar multiples:
+\[
+  L \;=\; \spanop\bas
+    \;=\; \bigl\{\, \alpha[\,1,\,2\,] \;\bigm|\; \alpha\in\R \,\bigr\}
+    \;=\; \bigl\{\,(x,y)\in\R^{2} \;\bigm|\; y=2x \,\bigr\} .
+\]
+Every vector in $L$ is a scalar multiple of $[\,1,\,2\,]$, and every scalar
+multiple of $[\,1,\,2\,]$ is in $L$. Geometrically $L$ is the line through the
+origin in the direction of $[\,1,\,2\,]$ --- the dotted line of \S18.2, now
+named.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-3}{4}{-3}{5}
+  \draw[gray!65,dotted,thick] (-1.55,-3.1) -- (2.55,5.1);
+  \draw[vecarr,RoyalBlue] (0,0) -- (1,2);
+  \fill[ForestGreen] (2,4)    circle (2.1pt);
+  \fill[ForestGreen] (0.5,1)  circle (2.1pt);
+  \fill[ForestGreen] (-1,-2)  circle (2.1pt);
+  \node[left,font=\scriptsize,RoyalBlue]   at (0.72,2.10) {$\vc{u}=[1,2]$};
+  \node[right,font=\scriptsize,ForestGreen] at (2.08,4.02) {$2\vc{u}$};
+  \node[right,font=\scriptsize,ForestGreen] at (0.58,1.0)  {$\tfrac12\vc{u}$};
+  \node[right,font=\scriptsize,ForestGreen] at (-0.9,-2.0) {$-\vc{u}$};
+  \node[right,font=\scriptsize,gray]        at (2.5,4.92)  {$L=\spanop\bas$};
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{And it is a basis for that line}
+$\bas$ spans $L$ by construction. It also has no redundancy, which for a
+one-element set is the statement that the vector is linearly independent on its
+own: if $\alpha[\,1,\,2\,]=\vc{0}$ then $\alpha\cdot1=0$, so $\alpha=0$, and the
+only combination giving the zero vector is the trivial one. So
+\[
+  \bas=\bigl\{[\,1,\,2\,]\bigr\}
+  \quad\text{is a basis for}\quad L ,
+  \qquad\text{and}\qquad
+  \dim L = 1 ,
+\]
+since a basis for $L$ has one vector in it. One basis vector, one independent
+direction, one free number $\alpha$ needed to say where on the line you are ---
+the three counts agree, exactly as \S17 said they must.
+
+\smallskip
+\noindent That answers \textbf{Q2}. The pair $[\,1,\,2\,]$ and $[\,2,\,4\,]$ is
+not a basis for anything: it is dependent, so it fails the no-redundancy
+requirement wherever you point it. What it is, is a \emph{spanning set} for the
+line $L$ --- enough to reach every point of $L$, but with one vector more than
+necessary. Discard the surplus and $\{[\,1,\,2\,]\}$ is a basis for $L$, a
+one-dimensional line sitting inside the two-dimensional plane.
+
+\begin{rmk}[Spanning set and basis are not the same thing]
+This is the distinction the failed pair exposes. A \textbf{spanning set} reaches
+everything; a \textbf{basis} reaches everything \emph{and} carries no
+passengers. Every basis is a spanning set, but not conversely --- and the gap
+between the two is exactly linear dependence. Compare \S16.3, where adding
+$[\,3,\,5\,]$ to $\{\ivec,\jvec\}$ left a spanning set that had stopped being a
+basis.
+\end{rmk}
+
+\begin{rmk}[The choice of which vector to keep is arbitrary]
+Nothing forced us to keep $[\,1,\,2\,]$ rather than $[\,2,\,4\,]$. The set
+$\bas'=\{[\,2,\,4\,]\}$ spans the same line, because
+$\alpha[\,2,\,4\,]=2\alpha[\,1,\,2\,]$ and $2\alpha$ runs over all of $\R$ as
+$\alpha$ does. So $\bas$ and $\bas'$ are different bases for the same line $L$.
+A space does not have \emph{the} basis; it has many, and we choose whichever is
+convenient. Hold on to that observation --- it is most of the answer to
+\textbf{Q3}.
+\end{rmk}
+
+\begin{rmk}[Every span contains the origin]
+Taking all scalars to be $0$ gives the zero vector, so $\vc{0}$ lies in the span
+of any collection whatsoever. In particular $L$ passes through the origin, and a
+line that misses the origin --- $y=2x+1$, say --- is not the span of anything.
+Spans are anchored at $\vc{0}$.
+\end{rmk}
+
+\noindent Note the pattern the two questions have produced. An independent pair
+gives a basis of dimension $2$ and spans the whole plane; a dependent pair
+collapses to dimension $1$ and spans a line. In both cases what we end up
+holding is a set with its own basis and its own dimension, sitting inside
+$\R^{2}$. That object is worth isolating, and \S19 does so. \textbf{Q3} remains.
+
+%==============================================================================
+\section{Subspaces}
+%==============================================================================
+We have now met two rather different things and treated them the same way. One
+is $\R^{2}$, with basis $\{\ivec,\jvec\}$ and dimension $2$. The other is the
+line $L=\spanop\{[1,2]\}$, with basis $\{[1,2]\}$ and dimension $1$. The second
+sits inside the first, and yet everything we did with $\R^{2}$ --- pick a basis,
+count it, write vectors in coordinates --- worked verbatim on $L$.
+
+That is suspicious in a productive way. If a proper subset of $\R^{2}$ supports
+the whole apparatus, then the apparatus was never really about $\R^{2}$; it was
+about some property that $\R^{2}$ and $L$ share. This section finds the
+property.
+
+%------------------------------------------------------------------------------
+\subsection{What \texorpdfstring{$\R^{2}$}{R2} and the line have in common}
+%------------------------------------------------------------------------------
+Ask what you are allowed to \emph{do} inside each. In $\R^{2}$ you may add two
+vectors, or scale one, and the result is again in $\R^{2}$. The same is true in
+$L$: adding two multiples of $[1,2]$ gives another multiple of $[1,2]$, and
+scaling a multiple of $[1,2]$ gives another one. Neither operation can carry you
+out of the set you started in.
+
+Call that property \textbf{closure}. It is easy to state and easy to fail, and
+the failures are the fastest way to see that it is saying something.
+
+\begin{ex}[A line that misses the origin]
+Let $S=\{(x,y)\mid y=2x+1\}$ --- the line of $L$, shifted up by one. The points
+$(0,1)$ and $(1,3)$ both lie on it. Their sum is $(1,4)$, and
+$2\cdot1+1=3\neq4$, so the sum has left $S$. Closure under addition fails.
+Notice also that $\vc{0}=(0,0)$ is not in $S$, since $2\cdot0+1=1\neq0$.
+\end{ex}
+
+\begin{ex}[The first quadrant]
+Let $S=\{(x,y)\mid x\ge0 \text{ and } y\ge0\}$. Adding two vectors with
+non-negative entries gives a vector with non-negative entries, so closure under
+\emph{addition} holds. But scaling breaks it: $[\,2,\,1\,]$ is in $S$ and
+$(-1)[\,2,\,1\,]=[\,-2,\,-1\,]$ is not. One of the two operations is enough to
+disqualify it.
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.78,baseline=(current bounding box.center)]
+  \lattice{-1}{3}{-1}{5}
+  \draw[BrickRed,dashed,thick] (-1,-1) -- (2.1,5.2);
+  \fill[RoyalBlue] (0,1) circle (2.2pt);
+  \fill[RoyalBlue] (1,3) circle (2.2pt);
+  \fill[BrickRed]  (1,4) circle (2.2pt);
+  \node[left,font=\scriptsize,RoyalBlue] at (-0.06,1)   {$(0,1)$};
+  \node[right,font=\scriptsize,RoyalBlue] at (1.08,2.9) {$(1,3)$};
+  \node[right,font=\scriptsize,BrickRed]  at (1.08,4.1) {$(1,4)$ --- off};
+  \node[right,font=\scriptsize,BrickRed]  at (2.0,5.05) {$y=2x+1$};
+\end{tikzpicture}
+\hspace{0.9cm}
+\begin{tikzpicture}[scale=0.78,baseline=(current bounding box.center)]
+  \lattice{-3}{3}{-3}{3}
+  \fill[ForestGreen!14] (0,0) rectangle (3,3);
+  \draw[vecarr,ForestGreen] (0,0) -- (2,1);
+  \draw[vecarr,BrickRed]    (0,0) -- (-2,-1);
+  \node[above,font=\scriptsize,ForestGreen] at (1.6,1.05)   {$[2,1]$};
+  \node[below,font=\scriptsize,BrickRed]    at (-1.6,-1.08) {$-[2,1]$ --- off};
+\end{tikzpicture}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{Spans are automatically closed}
+%------------------------------------------------------------------------------
+Here is why the property is worth naming rather than merely noticing: it is not
+a coincidence that $\R^{2}$ and $L$ both have it. \emph{Every} span has it, and
+the check is three lines.
+
+Take any $\vc{u},\vc{v}\in\R^{2}$ and let $S=\spanop\{\vc{u},\vc{v}\}$. Two
+elements of $S$ look like
+\[
+  \vc{w}_1 = \alpha_1\vc{u}+\beta_1\vc{v},
+  \qquad
+  \vc{w}_2 = \alpha_2\vc{u}+\beta_2\vc{v} .
+\]
+Adding them and collecting terms,
+\[
+  \vc{w}_1+\vc{w}_2 = (\alpha_1+\alpha_2)\vc{u} + (\beta_1+\beta_2)\vc{v} ,
+\]
+which is again a linear combination of $\vc{u}$ and $\vc{v}$, hence again in
+$S$. Scaling by $\gamma\in\R$,
+\[
+  \gamma\vc{w}_1 = (\gamma\alpha_1)\vc{u} + (\gamma\beta_1)\vc{v} ,
+\]
+likewise in $S$. Nothing about the argument used the number of vectors, so the
+same holds for $\spanop\{\vc{u}\}$ --- which is how $L$ came by the property ---
+and would hold for a span of ten vectors.
+
+So spans are closed, always. And that suggests the definition should be built
+around closure.
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Subspace of $\R^{2}$]
+A subset $S\subseteq\R^{2}$ is a \textbf{subspace} of $\R^{2}$ when
+\begin{enumerate}[label=\textbf{S\arabic*.},leftmargin=3.0em,itemsep=3pt,
+                  topsep=3pt]
+  \item $S$ is non-empty;
+  \item $S$ is closed under addition: if $\vc{w}_1,\vc{w}_2\in S$ then
+        $\vc{w}_1+\vc{w}_2\in S$;
+  \item $S$ is closed under scalar multiplication: if $\vc{w}\in S$ and
+        $\gamma\in\R$ then $\gamma\vc{w}\in S$.
+\end{enumerate}
+\end{defn}
+
+\begin{rmk}[Every subspace contains the origin]
+$\vc{0}$ is never mentioned in the definition, and never needs to be. Since $S$
+is non-empty, pick any $\vc{w}\in S$; then \textbf{S3} with $\gamma=0$ puts
+$0\vc{w}=\vc{0}$ in $S$. So the origin is forced, which matches the remark in
+\S18.6 that every span contains $\vc{0}$ --- and it is precisely what the
+shifted line $y=2x+1$ failed. In practice this is the fastest disqualifier
+available: if a set misses the origin, stop, it is not a subspace.
+\end{rmk}
+
+\noindent By \S19.2, $\spanop\{\vc{u},\vc{v}\}$ and $\spanop\{\vc{u}\}$ are
+subspaces, so both objects we started with qualify: $\R^{2}$ is a subspace of
+itself, and the line $L$ is a subspace of $\R^{2}$. The apparatus of bases,
+coordinates and dimension was never about $\R^{2}$ specifically --- it works for
+any subspace, which is why it worked on $L$ without modification.
+
+%------------------------------------------------------------------------------
+\subsection{All of them}
+%------------------------------------------------------------------------------
+In the plane the definition is restrictive enough that we can list every
+subspace there is, and the argument is one we have already done all the work
+for.
+
+\begin{quote}
+\textbf{Claim.} The subspaces of $\R^{2}$ are exactly: the single point
+$\{\vc{0}\}$; every line through the origin; and $\R^{2}$ itself.
+\end{quote}
+
+\noindent Let $S$ be a subspace. Either it contains a nonzero vector or it does
+not.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item If it does not, then $S=\{\vc{0}\}$, since the origin is forced to be
+        there and nothing else is.
+  \item Otherwise pick $\vc{u}\in S$ with $\vc{u}\neq\vc{0}$. Closure under
+        scaling puts every multiple of $\vc{u}$ in $S$, so
+        $\spanop\{\vc{u}\}\subseteq S$: the whole line through $\vc{u}$ is
+        already inside. If that is all of $S$, then $S$ is a line through the
+        origin.
+  \item If not, there is some $\vc{v}\in S$ lying off that line. Then $\vc{u}$
+        and $\vc{v}$ are linearly independent --- $\vc{v}$ is nonzero, and it is
+        not a multiple of $\vc{u}$, which by \S18.4 is exactly independence for
+        a pair. So \S18.5 gives $\spanop\{\vc{u},\vc{v}\}=\R^{2}$; and closure
+        keeps every one of those combinations inside $S$. Hence $S=\R^{2}$.
+\end{itemize}
+
+\noindent That shows every subspace is one of the three. The converse needs no
+new work: each of the three is a span, and spans are subspaces by \S19.2 ---
+$\{\vc{0}\}=\spanop\{\vc{0}\}$, a line through the origin is $\spanop\{\vc{u}\}$
+for any $\vc{u}$ on it, and $\R^{2}=\spanop\{\ivec,\jvec\}$. So the list is
+complete in both directions, which is what ``exactly'' claimed.
+
+Reading off the dimensions, the three cases have dimension $0$, $1$
+and $2$ --- nothing in between, and nothing above. A subspace of the plane
+cannot have dimension $\tfrac32$, and it cannot have dimension $3$.
+
+\begin{rmk}
+The dimension of $\{\vc{0}\}$ is $0$ by the same counting rule as everywhere
+else: a basis is a spanning set with no redundancy, and $\{\vc{0}\}$ is spanned
+by no vectors at all --- the empty collection --- because the one vector it
+contains would be redundant. A basis with nothing in it has size $0$.
+\end{rmk}
+
+\lookahead Notice what the classification did \emph{not} use: any picture. It
+used closure, the definition of independence, and the spanning theorem of
+\S18.5. That is the pattern to expect --- as the dimension grows the pictures
+give out long before the arguments do, and in $\R^{3}$ the subspaces will turn
+out to be the origin, the lines through it, the planes through it, and the whole
+space, proved the same way.
 
 \end{document}
