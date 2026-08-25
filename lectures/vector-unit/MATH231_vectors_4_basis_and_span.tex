@@ -681,4 +681,156 @@ version asks the same question of any collection --- when is the zero vector
 reachable only by taking nothing of everything? --- and that is the version we
 will need once we leave the plane. Q2 and Q3 remain open.
 
+%------------------------------------------------------------------------------
+\subsection{Independent vectors really do span the plane}
+%------------------------------------------------------------------------------
+The last line of \S18.4 was an assertion, not a proof. We claimed that two
+linearly independent vectors form a basis for $\R^{2}$, on the strength of two
+examples and a picture. It is worth proving, because the proof is short, because
+it produces a formula we can use, and because it is the first time in this unit
+that independence does genuine work rather than merely being defined.
+
+\begin{quote}
+\textbf{Claim.} Let $\vc{u},\vc{v}\in\R^{2}$ be linearly independent. Then
+\[
+  \spanop\{\vc{u},\vc{v}\} = \R^{2} .
+\]
+\end{quote}
+
+\noindent Two sets are equal when each contains the other, so there are two
+things to show. Write $\vc{u}=[\,u_1,\,u_2\,]$ and $\vc{v}=[\,v_1,\,v_2\,]$
+throughout.
+
+\subsubsection*{Step 1: every combination lands in \texorpdfstring{$\R^{2}$}{R2}}
+This direction needs no hypothesis at all. For any $\alpha,\beta\in\R$,
+\[
+  \alpha\vc{u} + \beta\vc{v}
+  = [\,\alpha u_1 + \beta v_1,\;\; \alpha u_2 + \beta v_2\,] .
+\]
+Each entry is built from real numbers by multiplication and addition, so each
+entry is a real number, so the result is an ordered pair of reals --- an element
+of $\R^{2}$ by the definition in \S6. Hence
+\[
+  \spanop\{\vc{u},\vc{v}\} \subseteq \R^{2} .
+\]
+
+\subsubsection*{Step 2: every element of \texorpdfstring{$\R^{2}$}{R2} is such a combination}
+This is the direction that needs independence. Let $\vc{w}=[\,w_1,\,w_2\,]$ be
+any vector in $\R^{2}$. We must produce scalars $\alpha,\beta$ with
+$\alpha\vc{u}+\beta\vc{v}=\vc{w}$, which componentwise is the linear system
+\begin{equation}
+  \begin{aligned}
+    \alpha u_1 + \beta v_1 &= w_1, \\
+    \alpha u_2 + \beta v_2 &= w_2 .
+  \end{aligned}
+  \label{eq:span}
+\end{equation}
+Eliminate one unknown at a time. Multiplying the first equation by $v_2$, the
+second by $v_1$, and subtracting, the $\beta$ terms cancel and leave
+\[
+  \alpha\,(u_1v_2 - u_2v_1) = w_1v_2 - w_2v_1 .
+\]
+Multiplying the first by $u_2$, the second by $u_1$, and subtracting, the
+$\alpha$ terms cancel and leave
+\[
+  \beta\,(u_2v_1 - u_1v_2) = u_2w_1 - u_1w_2,
+  \qquad\text{that is}\qquad
+  \beta\,(u_1v_2 - u_2v_1) = u_1w_2 - u_2w_1 .
+\]
+The same quantity governs both, so give it a name:
+\[
+  D = u_1v_2 - u_2v_1 .
+\]
+If $D\neq0$ we may divide, and the system is solved outright:
+\begin{equation}
+  \alpha = \frac{w_1v_2 - w_2v_1}{D},
+  \qquad
+  \beta  = \frac{u_1w_2 - u_2w_1}{D} .
+  \label{eq:coords}
+\end{equation}
+So everything turns on whether $D$ can be zero. That is exactly what
+independence rules out.
+
+\subsubsection*{The step where independence is used}
+\begin{quote}
+\textbf{Lemma.} If $\vc{u}$ and $\vc{v}$ are linearly independent, then
+$D\neq0$.
+\end{quote}
+
+\noindent We prove the contrapositive: if $D=0$, then $\vc{u}$ and $\vc{v}$ are
+linearly \emph{dependent}. So suppose $u_1v_2-u_2v_1=0$, and consider the two
+combinations
+\[
+  v_1\vc{u} - u_1\vc{v} = [\,0,\;v_1u_2 - u_1v_2\,] = [\,0,\,-D\,] = \vc{0},
+\]
+\[
+  v_2\vc{u} - u_2\vc{v} = [\,v_2u_1 - u_2v_1,\;0\,] = [\,D,\,0\,] = \vc{0},
+\]
+both of which vanish precisely because $D=0$. Each is a combination of $\vc{u}$
+and $\vc{v}$ producing the zero vector, so we need only exhibit one whose
+scalars are not both zero.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item If $v_1$ and $u_1$ are not both $0$, the first combination does it.
+  \item If $v_2$ and $u_2$ are not both $0$, the second does.
+  \item Otherwise all four of $u_1,u_2,v_1,v_2$ are $0$, so
+        $\vc{u}=\vc{v}=\vc{0}$ --- and then $1\cdot\vc{u}+0\cdot\vc{v}=\vc{0}$
+        with a nonzero scalar.
+\end{itemize}
+
+\noindent In every case $\vc{u}$ and $\vc{v}$ are dependent, which proves the
+contrapositive and hence the lemma. \hfill$\blacksquare$
+
+\subsubsection*{Finishing}
+Since $\vc{u}$ and $\vc{v}$ were assumed independent, the lemma gives $D\neq0$,
+so \eqref{eq:coords} defines genuine real numbers, and those numbers solve
+\eqref{eq:span} --- that is, $\alpha\vc{u}+\beta\vc{v}=\vc{w}$. As $\vc{w}$ was
+arbitrary,
+$\R^{2}\subseteq\spanop\{\vc{u},\vc{v}\}$. Combined with Step 1,
+\[
+  \boxed{\;\spanop\{\vc{u},\vc{v}\} = \R^{2}\;}
+\]
+which is the claim. \hfill$\blacksquare$
+
+\begin{rmk}[And the coordinates are unique]
+Spanning makes $\{\vc{u},\vc{v}\}$ enough to reach everything; independence also
+makes the reaching unambiguous, so the pair is a genuine basis. If
+$\alpha\vc{u}+\beta\vc{v}=\alpha'\vc{u}+\beta'\vc{v}$, then rearranging gives
+\[
+  (\alpha-\alpha')\vc{u} + (\beta-\beta')\vc{v} = \vc{0},
+\]
+and independence forces both scalars to vanish, so $\alpha=\alpha'$ and
+$\beta=\beta'$. Note that this argument never mentions coordinates or
+components: it is the \S16.4 uniqueness proof again, but now valid for
+\emph{any} independent pair rather than only for the standard basis.
+\end{rmk}
+
+\begin{ex}[The formula, checked against work already done]
+For $\vc{u}=[1,2]$ and $\vc{v}=[2,3]$ we get $D = 1\cdot3 - 2\cdot2 = -1$, which
+is nonzero, so the pair spans $\R^{2}$. Taking $\vc{w}=[\,1,\,0\,]$,
+formula~\eqref{eq:coords} gives
+\[
+  \alpha = \frac{1\cdot3 - 0\cdot2}{-1} = -3,
+  \qquad
+  \beta  = \frac{1\cdot0 - 2\cdot1}{-1} = 2 ,
+\]
+which is exactly the answer we obtained by hand in \S18.1. The general formula
+reproduces the specific computation, as it must.
+
+For $\vc{u}=[2,3]$ and $\vc{v}=[3,4]$, $D = 2\cdot4 - 3\cdot3 = -1$, again
+nonzero. And for the pair that failed, $\vc{u}=[1,2]$ and $\vc{v}=[2,4]$,
+\[
+  D = 1\cdot4 - 2\cdot2 = 0 ,
+\]
+so the division in \eqref{eq:coords} is unavailable --- which is the algebra
+registering what \S18.2 saw geometrically, that those two vectors never leave
+their line.
+\end{ex}
+
+\lookahead The quantity $D=u_1v_2-u_2v_1$ has appeared three times now, and each
+time it has decided the same question: nonzero means the pair spans the plane,
+zero means it collapses. A number that detects independence by a single
+arithmetic test is worth having a name, and it has one. We will meet it properly
+later, along with the reason the same idea keeps working in higher dimensions.
+
 \end{document}
