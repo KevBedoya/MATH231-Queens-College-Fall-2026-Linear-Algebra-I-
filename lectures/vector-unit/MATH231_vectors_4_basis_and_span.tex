@@ -73,7 +73,7 @@
 \newcommand{\ivec}{\vec{\imath}}
 \newcommand{\jvec}{\vec{\jmath}}
 \newcommand{\bas}{\mathcal{B}}
-\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\spanop}{span}   % \dim is already standard, so not declared
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
@@ -130,7 +130,10 @@ what it means for two vectors to be parallel (\S10.1).
 standard basis vectors and verify that they are orthonormal; express any vector
 of $\R^{2}$ as a linear combination of them; say what \emph{span} and
 \emph{basis} mean; explain what the coordinates of a vector are and why they are
-unique; and set up the problem of finding coordinates as a linear system.
+unique; set up the problem of finding coordinates as a linear system; say what
+the dimension of a space is and why it agrees with the degrees-of-freedom count
+of \S1; produce bases other than the standard one; recognise when two vectors
+fail to span the plane; and define linear independence and dependence.
 
 %==============================================================================
 \section{The standard basis of \texorpdfstring{$\R^{2}$}{R2}}
@@ -417,5 +420,265 @@ general problem of linear systems --- how to state it, when it has a solution,
 how many solutions there can be, and how to compute them --- and it will occupy
 a substantial part of this course. The trivial case above is worth remembering
 as the one you are always trying to get back to.
+
+%==============================================================================
+\section{Dimension}
+%==============================================================================
+A basis carries a number with it, and that number turns out to be one we have
+been using informally since \S1.
+
+\begin{defn}[Dimension]
+The \textbf{dimension} of a space is the number of vectors in a basis for it.
+\end{defn}
+
+\noindent Our basis $\bas=\{\ivec,\jvec\}$ contains two vectors, so
+\[
+  \dim\R^{2} = 2 .
+\]
+The superscript in $\R^{2}$ was telling us the dimension all along.
+
+\subsection*{Why this agrees with what we already meant}
+In \S1 we described dimension as a \emph{degree of freedom} with respect to
+spatial coordinates: how many independent numbers must you supply to pin down a
+position? The two accounts are the same account. Supplying a position in
+$\R^{2}$ means supplying its two coordinates $\alpha$ and $\beta$ --- one per
+basis vector --- so the count of free numbers and the count of basis vectors are
+forced to agree.
+
+Read geometrically, the dimension counts \textbf{independent directions}. The
+basis $\bas$ offers two: along the $x$-axis and along the $y$-axis. Neither can
+be obtained from the other, and once both are available, nothing further is
+needed.
+
+\begin{warn}
+``Two independent directions'' does not mean the basis represents only two
+directions. It represents \emph{every} direction in the plane --- the vector
+$3\ivec+2\jvec$ points in a direction that is neither of the two axes. What the
+number $2$ counts is how many directions you must be \emph{given} before all the
+rest come free. Two is the number of directions that are independent, not the
+number that are reachable.
+\end{warn}
+
+%==============================================================================
+\section{Other bases, and linear independence}
+%==============================================================================
+Nothing in \S16.3 said the standard basis is the \emph{only} basis for $\R^{2}$.
+It is merely the most convenient one. Once we go looking for others, a question
+appears that the standard basis was too well behaved to raise: which pairs of
+vectors work, and which fail?
+
+%------------------------------------------------------------------------------
+\subsection{Bases other than the standard one}
+%------------------------------------------------------------------------------
+Consider the pairs
+\[
+  \vc{u}=[\,1,\,2\,],\ \vc{v}=[\,2,\,3\,]
+  \qquad\text{and}\qquad
+  \vc{u}=[\,2,\,3\,],\ \vc{v}=[\,3,\,4\,] .
+\]
+Neither pair looks anything like $\{\ivec,\jvec\}$ --- the vectors are not unit
+length, not orthogonal, not aligned with the axes --- and yet each pair is a
+perfectly good basis for $\R^{2}$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85,baseline=(current bounding box.center)]
+  \lattice{-1}{4}{-1}{5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (1,2);
+  \draw[vecarr,ForestGreen] (0,0) -- (2,3);
+  \node[left,font=\scriptsize,RoyalBlue]    at (0.94,2.06) {$\vc{u}=[1,2]$};
+  \node[right,font=\scriptsize,ForestGreen] at (2.06,3.02) {$\vc{v}=[2,3]$};
+\end{tikzpicture}
+\hspace{1.1cm}
+\begin{tikzpicture}[scale=0.85,baseline=(current bounding box.center)]
+  \lattice{-1}{4}{-1}{5}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,3);
+  \draw[vecarr,ForestGreen] (0,0) -- (3,4);
+  \node[left,font=\scriptsize,RoyalBlue]    at (1.94,3.06) {$\vc{u}=[2,3]$};
+  \node[right,font=\scriptsize,ForestGreen] at (3.06,4.02) {$\vc{v}=[3,4]$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Being a basis costs something, though: the coordinates are no longer
+free to read off.
+
+\begin{ex}[Coordinates against a non-standard basis]
+Take the basis $\{\vc{u},\vc{v}\}$ with $\vc{u}=[1,2]$ and $\vc{v}=[2,3]$, and
+ask for the coordinates of $\vc{w}=[\,1,\,0\,]$. We need $\alpha,\beta$ with
+$\alpha\vc{u}+\beta\vc{v}=\vc{w}$, which componentwise is
+\[
+  \begin{aligned}
+    \alpha\cdot 1 + \beta\cdot 2 &= 1, \\
+    \alpha\cdot 2 + \beta\cdot 3 &= 0 .
+  \end{aligned}
+\]
+No zeros this time, so nothing collapses. The second equation gives
+$\alpha=-\tfrac32\beta$; substituting into the first,
+$-\tfrac32\beta+2\beta=\tfrac12\beta=1$, so $\beta=2$ and $\alpha=-3$. Checking:
+\[
+  -3[\,1,\,2\,] + 2[\,2,\,3\,] = [\,-3,\,-6\,]+[\,4,\,6\,] = [\,1,\,0\,] .
+  \quad\checkmark
+\]
+So $\vc{w}$ has coordinates $-3$ and $2$ in this basis, where in the standard
+basis it had coordinates $1$ and $0$. Same vector, different numbers --- exactly
+what the remark in \S16.4 warned. And this is the situation \S16.5 pointed at:
+away from the standard basis, finding coordinates is a genuine linear system
+that has to be solved.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{When two vectors do not span the plane}
+%------------------------------------------------------------------------------
+Now try
+\[
+  \vc{u}=[\,1,\,2\,],
+  \qquad
+  \vc{v}=[\,2,\,4\,] .
+\]
+Plot them and something is visibly wrong: both arrows lie along one and the same
+line through the origin.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \lattice{-3}{4}{-3}{5}
+  % the line spanned by u -- every combination of u and v lands on it
+  \draw[gray!65,dotted,thick] (-1.55,-3.1) -- (2.55,5.1);
+  \draw[vecarr,ForestGreen] (0,0) -- (2,4);
+  \draw[vecarr,RoyalBlue]   (0,0) -- (1,2);
+  % keep the labels clear of the line the two vectors sit on
+  \node[left,font=\scriptsize,RoyalBlue]   at (0.72,2.10) {$\vc{u}=[1,2]$};
+  \node[left,font=\scriptsize,ForestGreen] at (1.72,4.20) {$\vc{v}=[2,4]$};
+  \node[right,font=\scriptsize,gray]       at (2.5,4.92)  {$y=2x$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The reason is immediate: $\vc{v}=2\vc{u}$. And that single fact
+collapses every linear combination onto the same line:
+\[
+  \alpha\vc{u} + \beta\vc{v}
+  = \alpha\vc{u} + \beta(2\vc{u})
+  = (\alpha+2\beta)\,\vc{u} ,
+\]
+which is a scalar multiple of $\vc{u}$ --- and by \S8 every scalar multiple of
+$\vc{u}$ lies on the line through the origin and the head of $\vc{u}$. Whatever
+$\alpha$ and $\beta$ you choose, you never leave that line.
+
+So there is no way to assign coordinates to a point off the line: the point is
+simply not reachable. These two vectors span only a \emph{subset} of the plane,
+and therefore
+\[
+  \spanop\{\vc{u},\vc{v}\} \neq \R^{2}
+  \qquad\text{when}\qquad
+  \vc{u}=[1,2],\ \vc{v}=[2,4].
+\]
+Two vectors are not automatically a basis for $\R^{2}$. Having the right
+\emph{number} of vectors is not enough; they have to stand in the right
+relationship to one another.
+
+%------------------------------------------------------------------------------
+\subsection{Three questions}
+%------------------------------------------------------------------------------
+That failure is worth more than the successes, because it tells us there is
+something to characterise. Three questions follow, and we take them one at a
+time.
+
+\begin{enumerate}[label=\textbf{Q\arabic*.},leftmargin=3.0em,itemsep=5pt,
+                  topsep=5pt]
+  \item Which pairs of vectors form a basis for $\R^{2}$ --- that is, which
+        pairs span $\R^{2}$?
+  \item The pair $[\,1,\,2\,]$ and $[\,2,\,4\,]$ failed to span $\R^{2}$, but
+        they clearly span \emph{something}. What kind of basis do they form?
+  \item How many different bases does $\R^{2}$ have?
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection{Question 1: linear independence}
+%------------------------------------------------------------------------------
+Q1 is better asked as a question about a \emph{relationship}: what must be true
+of two vectors, with respect to each other, for them to form a basis?
+
+The two examples answer it geometrically. The vectors $[2,3]$ and $[3,4]$ point
+in genuinely different directions, and no amount of stretching turns one into
+the other: there is no scalar $\alpha$ with $\alpha[2,3]=[3,4]$, since the first
+coordinate demands $\alpha=\tfrac32$ and the second then gives
+$\tfrac32\cdot3=\tfrac92\neq4$. The pair $[1,2]$ and $[2,4]$ fails exactly here:
+$2\cdot[1,2]=[2,4]$, so one \emph{is} a stretch of the other, and that is what
+flattened their span onto a line.
+
+So the property we want is ``neither vector is a scalar multiple of the other''
+--- which is the \emph{not parallel} of \S10.1. That phrasing is correct, but it
+is awkward: it treats the two vectors asymmetrically, and it does not generalise
+past two. The standard formulation fixes both problems by asking instead about
+combinations that produce the zero vector:
+\[
+  \alpha[\,2,\,3\,] + \beta[\,3,\,4\,] = \vc{0}
+  \qquad\Longleftrightarrow\qquad
+  \alpha=\beta=0 .
+\]
+Read the left-to-right direction as the real content: the \emph{only} way to
+combine these two vectors and land back at the origin is to take nothing of
+either.
+
+\begin{defn}[Linear independence and dependence in $\R^{2}$]
+Two vectors $\vc{u},\vc{v}\in\R^{2}$ are \textbf{linearly independent} when the
+only scalars $\alpha,\beta\in\R$ satisfying
+\[
+  \alpha\vc{u} + \beta\vc{v} = \vc{0}
+\]
+are $\alpha=0$ and $\beta=0$.
+
+They are \textbf{linearly dependent} when they are not --- that is, when there
+exist scalars $\alpha,\beta$, \emph{not both zero}, with
+$\alpha\vc{u}+\beta\vc{v}=\vc{0}$.
+\end{defn}
+
+\begin{rmk}[Why ``not both zero'' cannot be dropped]
+The choice $\alpha=\beta=0$ always works, for any two vectors whatsoever, since
+$0\vc{u}+0\vc{v}=\vc{0}$ is automatic. It carries no information. So a
+definition of dependence reading ``there exist $\alpha,\beta$ with
+$\alpha\vc{u}+\beta\vc{v}=\vc{0}$'' would be satisfied by every pair and would
+say nothing at all. The clause \emph{not both zero} is what gives the definition
+teeth --- and for the same reason, independence is stated as
+$\alpha=\beta=0$ being the \emph{only} solution.
+\end{rmk}
+
+\begin{ex}[The two pairs, checked]
+For $\vc{u}=[1,2]$ and $\vc{v}=[2,4]$, take $\alpha=2$ and $\beta=-1$:
+\[
+  2[\,1,\,2\,] + (-1)[\,2,\,4\,] = [\,2,\,4\,] - [\,2,\,4\,] = \vc{0} ,
+\]
+and those scalars are not both zero. So the pair is linearly
+\textbf{dependent} --- and we have already seen the consequence: their span is a
+line, not the plane.
+
+For $\vc{u}=[2,3]$ and $\vc{v}=[3,4]$, suppose
+$\alpha[2,3]+\beta[3,4]=\vc{0}$. Componentwise that is $2\alpha+3\beta=0$ and
+$3\alpha+4\beta=0$. The first gives $\alpha=-\tfrac32\beta$; substituting into
+the second, $-\tfrac92\beta+4\beta=-\tfrac12\beta=0$, so $\beta=0$ and then
+$\alpha=0$. The only solution is the trivial one, so the pair is linearly
+\textbf{independent}.
+\end{ex}
+
+\begin{rmk}[For two vectors, dependence is exactly parallelism]
+When $\vc{u}$ and $\vc{v}$ are both nonzero, linear dependence says nothing more
+than what \S10.1 called parallel. If $\alpha\vc{u}+\beta\vc{v}=\vc{0}$ with, say,
+$\alpha\neq0$, then $\vc{u}=-\tfrac{\beta}{\alpha}\vc{v}$, so each is a scalar
+multiple of the other; and conversely a multiple relation rearranges into such a
+combination. The one wrinkle is the zero vector: $\{\vc{0},\vc{v}\}$ is always
+dependent, since $1\cdot\vc{0}+0\cdot\vc{v}=\vc{0}$ uses a nonzero scalar --- yet
+\S10.1 deliberately excluded $\vc{0}$ from the word ``parallel'' because it has
+no direction. The combination formulation handles that case without special
+pleading, which is one more reason it is the definition of record.
+\end{rmk}
+
+\noindent This answers Q1, at least for pairs: \textbf{two vectors form a basis
+for $\R^{2}$ precisely when they are linearly independent.} Independence is what
+guarantees the two arrows genuinely open the plane out, instead of collapsing it
+onto a line.
+
+\lookahead The definition above was written for two vectors so that it can be
+checked by hand, but nothing in it depends on there being two. The general
+version asks the same question of any collection --- when is the zero vector
+reachable only by taking nothing of everything? --- and that is the version we
+will need once we leave the plane. Q2 and Q3 remain open.
 
 \end{document}
