@@ -1,0 +1,518 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  VECTOR UNIT, PART 5 -- Orthogonality, Independence, and Subspaces
+%
+%  This is one of the documents covering the vector unit. Section numbering
+%  runs CONTINUOUSLY across all parts, so that every cross-reference in the
+%  unit means the same thing no matter which part it appears in:
+%
+%      Part 1  MATH231_vectors_1_definition_and_arithmetic  Sections 1-9
+%      Part 2  MATH231_vectors_2_dot_product_and_projection Sections 10-12
+%      Part 3  MATH231_vectors_3_norms_and_metrics          Sections 13-15
+%      Part 4  MATH231_vectors_4_basis_and_span             Sections 16-20
+%      Part 5  MATH231_vectors_5_orthogonality_and_subspaces Section 21-
+%
+%  Hence the \setcounter{section}{20} below: this part opens at Section 21.
+%
+%  STATUS: in progress.  Further sections will be appended.
+%
+%  AUDIENCE: distributed to students.  Keep it free of instructor-facing
+%  apparatus -- time budgets, pacing notes, teaching cues.
+%
+%  TWO PRECISIONS against the drafted outline, both deliberate:
+%
+%   (a) The lemma needs the vectors to be NONZERO.  The zero vector is
+%       orthogonal to everything, so {0, v} is vacuously "mutually orthogonal"
+%       yet dependent and spans only a line.  Sec. 21.3 states the hypothesis.
+%
+%   (b) "Mutually orthogonal vectors in R^3 span R^3" needs THREE of them, and
+%       its proof needs "three independent vectors in R^3 span R^3" -- the
+%       general form of Sec. 18.5, which was proved only for n = 2.  Sec. 21.4
+%       proves the independence half in full and flags the spanning half as
+%       owed, rather than passing it off as done.
+%
+%  Sec. 21.1 finally states linearity of the dot product.  It was not needed
+%  before -- Sec. 12.6 was done in components on purpose -- but the proof in
+%  21.2 is the one that survives into R^n, and it needs it.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses tikz).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Sph}[1]{\mathbb{S}^{#1}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\ivec}{\vec{\imath}}
+\newcommand{\jvec}{\vec{\jmath}}
+\newcommand{\kvec}{\vec{k}}
+\newcommand{\bas}{\mathcal{B}}
+\DeclareMathOperator{\spanop}{span}
+
+%------------------------------------------------------------- tikz helpers --
+\tikzset{
+  vecarr/.style   = {-{Stealth[length=2.6mm,width=2.0mm]},very thick},
+  thinarr/.style  = {-{Stealth[length=2.2mm,width=1.7mm]},thick},
+  axisline/.style = {->,gray!75,thin}
+}
+\newcommand{\lattice}[4]{%
+  \draw[step=1cm,gray!25,very thin] (#1,#3) grid (#2,#4);
+  \draw[axisline] (#1,0) -- (#2+0.45,0) node[right,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,#3) -- (0,#4+0.45) node[above,font=\scriptsize,black]{$y$};
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Vector Unit, Part 5 \textbullet\ Orthogonality,
+        Independence, and Subspaces}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{20}  % this part opens at Section 21; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This is Part 5 of the vector unit.
+Section numbering runs continuously through all parts, so a reference such as
+\S18.5 points into Part 4 and means exactly what it says:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Part} & \textbf{Sections} & \textbf{Subject} \\
+\midrule
+1 & \S1--\S9    & vectors, notation, addition, scaling, equality \\
+2 & \S10--\S12  & orientation, the dot product, projection \\
+3 & \S13--\S15  & Cauchy--Schwarz, metrics, norms \\
+4 & \S16--\S20  & the standard basis, span, coordinates, $\R^{3}$ \\
+5 & \S21--      & orthogonality, independence, subspaces \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Assumed from Parts 1--4.} The dot product and the
+orthogonality test $\langle\vc{u},\vc{v}\rangle=0$ (\S11.7); the identity
+$\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$ (\S11.6); projections (\S12.4);
+span, basis, coordinates and dimension (\S16--\S17); linear independence
+(\S18.4) and the fact that an independent pair spans $\R^{2}$ (\S18.5);
+subspaces (\S19).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} State and use
+linearity of the dot product; prove that mutually orthogonal nonzero vectors are
+linearly independent, both geometrically and algebraically; state the lemma that
+such vectors span; explain why the converse fails; compute coordinates against
+an orthogonal basis by projection alone; and describe the subspaces of $\R^{2}$
+and $\R^{3}$ as lines and planes through the origin.
+
+%==============================================================================
+\section{Orthogonality and independence}
+%==============================================================================
+Part 4 asked which pairs of vectors form a basis and answered: the independent
+ones. But independence is a slightly awkward condition to check --- you set up a
+combination equal to $\vc{0}$ and solve a system. This section shows there is a
+sufficient condition that is far easier to test, one we have had since \S11.7.
+
+%------------------------------------------------------------------------------
+\subsection{A property of the dot product we now need}
+%------------------------------------------------------------------------------
+Until now every dot-product computation has been done by expanding into
+coordinates; \S12.6 verified an orthogonality claim that way on purpose. The
+argument in \S21.2 is different, because it is the one that keeps working in
+dimensions we cannot draw, and it needs the dot product to interact with
+addition and scaling. It does, and the verification is immediate.
+
+\begin{quote}
+\textbf{Linearity of the dot product.} For all
+$\vc{u},\vc{v},\vc{w}\in\R^{2}$ and all $\alpha\in\R$,
+\[
+  \langle \vc{u},\ \vc{v}+\vc{w}\rangle
+    = \langle\vc{u},\vc{v}\rangle + \langle\vc{u},\vc{w}\rangle ,
+  \qquad
+  \langle \vc{u},\ \alpha\vc{v}\rangle
+    = \alpha\,\langle\vc{u},\vc{v}\rangle .
+\]
+\end{quote}
+
+\noindent Both follow from the definition in one step:
+\[
+  \langle\vc{u},\vc{v}+\vc{w}\rangle
+  = u_1(v_1+w_1) + u_2(v_2+w_2)
+  = \bigl(u_1v_1+u_2v_2\bigr) + \bigl(u_1w_1+u_2w_2\bigr)
+  = \langle\vc{u},\vc{v}\rangle + \langle\vc{u},\vc{w}\rangle ,
+\]
+\[
+  \langle\vc{u},\alpha\vc{v}\rangle
+  = u_1(\alpha v_1) + u_2(\alpha v_2)
+  = \alpha\bigl(u_1v_1+u_2v_2\bigr)
+  = \alpha\,\langle\vc{u},\vc{v}\rangle .
+\]
+Neither step used the number of coordinates, so both hold verbatim in $\R^{3}$
+and beyond. And since the dot product is symmetric (\S11.4), the same two rules
+hold in the \emph{first} argument as well. A function linear in each argument
+separately is called \textbf{bilinear}, and that is what the dot product is.
+
+\noindent Combining them, the form we will use repeatedly:
+\[
+  \bigl\langle \vc{u},\ \alpha\vc{v}+\beta\vc{w}\bigr\rangle
+  = \alpha\langle\vc{u},\vc{v}\rangle + \beta\langle\vc{u},\vc{w}\rangle .
+\]
+
+%------------------------------------------------------------------------------
+\subsection{Orthogonal vectors are independent}
+%------------------------------------------------------------------------------
+\begin{quote}
+\textbf{Claim.} If $\vc{u}$ and $\vc{v}$ are nonzero and orthogonal, then they
+are linearly independent.
+\end{quote}
+
+\subsubsection*{The intuition}
+Take the geometric route first, because it is a single sentence. Two nonzero
+vectors are dependent exactly when they are parallel (\S18.4), and parallel
+means the angle between them is $\theta=0$ or $\theta=\pi$. Orthogonal means
+$\theta=\pi/2$. A pair cannot have two different angles, so an orthogonal pair
+cannot be a parallel pair, and therefore cannot be dependent.
+
+Put less formally: dependence means one vector is a stretched copy of the other,
+so it lies entirely \emph{along} it. Orthogonal vectors lie entirely
+\emph{across} each other --- neither has any component in the other's direction
+at all, which is what a zero dot product says. Stretching something that points
+due east will never produce something pointing due north.
+
+\subsubsection*{The proof that survives into higher dimensions}
+The geometric argument leans on $\theta$, which is a picture. Here is the same
+fact without one. Suppose
+\[
+  \alpha\vc{u} + \beta\vc{v} = \vc{0} .
+\]
+Take the dot product of both sides with $\vc{u}$. The right side gives
+$\langle\vc{u},\vc{0}\rangle=0$, and the left side expands by \S21.1:
+\[
+  \bigl\langle \vc{u},\ \alpha\vc{u}+\beta\vc{v}\bigr\rangle
+  = \alpha\langle\vc{u},\vc{u}\rangle + \beta\langle\vc{u},\vc{v}\rangle
+  = \alpha\norm{\vc{u}}^{2} + \beta\cdot 0
+  = \alpha\norm{\vc{u}}^{2} ,
+\]
+using $\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$ from \S11.6 and
+orthogonality to kill the cross term. So $\alpha\norm{\vc{u}}^{2}=0$; and since
+$\vc{u}\neq\vc{0}$ we have $\norm{\vc{u}}^{2}>0$, forcing $\alpha=0$. Dotting
+instead with $\vc{v}$ gives $\beta\norm{\vc{v}}^{2}=0$ and hence $\beta=0$.
+
+The only combination producing $\vc{0}$ is the trivial one, so $\vc{u}$ and
+$\vc{v}$ are independent. \hfill$\blacksquare$
+
+\begin{rmk}[Where each hypothesis was used]
+Orthogonality killed the cross terms; being nonzero let us divide by
+$\norm{\vc{u}}^{2}$. Drop the second hypothesis and the claim is false:
+$\vc{0}$ is orthogonal to every vector, since
+$\langle\vc{0},\vc{v}\rangle=0$ always, so $\{\vc{0},\vc{v}\}$ is
+``mutually orthogonal'' --- and it is dependent, because
+$1\cdot\vc{0}+0\cdot\vc{v}=\vc{0}$ uses a nonzero scalar. The word
+\emph{nonzero} in the claim is not decoration.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The lemma: orthogonal vectors span the plane}
+%------------------------------------------------------------------------------
+\begin{quote}
+\textbf{Lemma.} Let $\vc{u},\vc{v}\in\R^{2}$ be nonzero and mutually
+orthogonal. Then
+\[
+  \spanop\{\vc{u},\vc{v}\} = \R^{2} ,
+\]
+and $\{\vc{u},\vc{v}\}$ is a basis for $\R^{2}$.
+\end{quote}
+
+\noindent\emph{Proof.} By \S21.2 the pair is linearly independent. By \S18.5, an
+independent pair in $\R^{2}$ spans $\R^{2}$; and by the uniqueness remark there,
+it is a basis. \hfill$\blacksquare$
+
+\smallskip
+\noindent Two sentences, because both halves were already in hand. The content
+of the lemma is entirely in the link: a condition you can check with one
+multiplication-and-addition (\S11.7) delivers a basis.
+
+\begin{ex}
+$\vc{u}=[\,1,\,1\,]$ and $\vc{v}=[\,1,\,-1\,]$ are nonzero, and
+$\langle\vc{u},\vc{v}\rangle = 1(1)+1(-1) = 0$. So without solving anything, they
+form a basis for $\R^{2}$.
+\end{ex}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \lattice{-1}{4}{-2}{3}
+  \draw[gray!70] (0.212,0.212) -- (0.424,0) -- (0.212,-0.212);
+  \draw[ForestGreen,dashed,thinarr] (2,2) -- (3,1);
+  \draw[RoyalBlue!45,dashed] (0,0) -- (2,2);
+  \draw[vecarr,RoyalBlue]   (0,0) -- (1,1);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,-1);
+  \draw[vecarr,BrickRed]    (0,0) -- (3,1);
+  \node[above left,font=\scriptsize,RoyalBlue]   at (1.02,1.0)  {$\vc{u}=[1,1]$};
+  \node[below,font=\scriptsize,ForestGreen]      at (1.1,-1.04) {$\vc{v}=[1,-1]$};
+  \node[above right,font=\scriptsize,BrickRed]   at (2.9,1.05)  {$\vc{w}=[3,1]$};
+  \node[above,font=\scriptsize,RoyalBlue!70]     at (1.55,1.6)  {$2\vc{u}$};
+\end{tikzpicture}
+\end{center}
+
+\begin{rmk}[Two is the most you can have]
+In $\R^{2}$ there is no such thing as three mutually orthogonal nonzero vectors.
+Suppose $\vc{u},\vc{v},\vc{w}$ were three of them. By the lemma
+$\spanop\{\vc{u},\vc{v}\}=\R^{2}$, so $\vc{w}=\alpha\vc{u}+\beta\vc{v}$ for some
+scalars. Dot that with $\vc{w}$ itself:
+\[
+  \norm{\vc{w}}^{2}
+  = \langle\vc{w},\vc{w}\rangle
+  = \alpha\langle\vc{w},\vc{u}\rangle + \beta\langle\vc{w},\vc{v}\rangle
+  = 0 ,
+\]
+since $\vc{w}$ is orthogonal to both. So $\vc{w}=\vc{0}$, contradicting that it
+was nonzero. The dimension of the space caps how many mutually orthogonal
+directions it can hold --- at $2$ here, and at $n$ in $\R^{n}$.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The same principle in \texorpdfstring{$\R^{3}$}{R3}}
+%------------------------------------------------------------------------------
+Nothing in \S21.2 mentioned the number of coordinates. Run the identical
+argument on three vectors: if $\vc{u},\vc{v},\vc{w}\in\R^{3}$ are nonzero and
+mutually orthogonal, and
+\[
+  \alpha\vc{u} + \beta\vc{v} + \gamma\vc{w} = \vc{0} ,
+\]
+then dotting with $\vc{u}$ annihilates the $\beta$ and $\gamma$ terms and leaves
+$\alpha\norm{\vc{u}}^{2}=0$, so $\alpha=0$. Dotting with $\vc{v}$ gives
+$\beta=0$, and with $\vc{w}$ gives $\gamma=0$. So the three are linearly
+independent, by exactly the same three lines.
+
+\begin{ex}
+The standard basis $\{\ivec,\jvec,\kvec\}$ of \S20.1 is mutually orthogonal and
+each vector is nonzero, so it is independent --- which we had assumed rather
+than checked. A less obvious triple:
+\[
+  \vc{u}=[\,1,\,2,\,2\,],\quad
+  \vc{v}=[\,2,\,-2,\,1\,],\quad
+  \vc{w}=[\,2,\,1,\,-2\,] ,
+\]
+where $\langle\vc{u},\vc{v}\rangle=2-4+2=0$,
+$\langle\vc{u},\vc{w}\rangle=2+2-4=0$ and
+$\langle\vc{v},\vc{w}\rangle=4-2-2=0$. All three have norm $3$. Mutually
+orthogonal and nonzero, hence independent.
+\end{ex}
+
+\begin{rmk}[What is still owed]
+Independence we have proved outright. To conclude that such a triple
+\emph{spans} $\R^{3}$ we would need the $\R^{3}$ version of \S18.5 --- that any
+three independent vectors in $\R^{3}$ span it --- and \S18.5 was proved only for
+two vectors in $\R^{2}$, by an elimination that used the $2\times2$ quantity
+$D=u_1v_2-u_2v_1$. The general statement, that $n$ independent vectors in
+$\R^{n}$ form a basis, is true and we will prove it once we have the machinery
+for $n\times n$ systems. Until then, treat the spanning half in $\R^{3}$ as
+announced rather than established; the independence half is fully proved above
+and is the part the rest of this section uses.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The converse fails}
+%------------------------------------------------------------------------------
+Orthogonality gives independence. The reverse implication does not hold, and one
+example settles it.
+
+\begin{ex}
+Let $\vc{u}=[\,1,\,0\,]$ and $\vc{v}=[\,1,\,1\,]$. They are independent: no
+scalar $\alpha$ satisfies $\alpha[1,0]=[1,1]$, since the second coordinate would
+need $\alpha\cdot0=1$. But
+\[
+  \langle\vc{u},\vc{v}\rangle = 1(1)+0(1) = 1 \neq 0 ,
+\]
+so they are not orthogonal --- indeed
+$\cos(\vc{u},\vc{v}) = 1/(1\cdot\sqrt2) = 1/\sqrt2$, an angle of $45^{\circ}$.
+The basis $\{[1,2],[2,3]\}$ of \S18.1 is another: independent, but
+$\langle[1,2],[2,3]\rangle = 2+6 = 8 \neq 0$.
+\end{ex}
+
+\noindent So the two conditions are not equivalent:
+\[
+  \text{mutually orthogonal (and nonzero)}
+  \;\Longrightarrow\;
+  \text{linearly independent},
+\]
+but not conversely. Orthogonality is the \emph{strictly stronger} condition, and
+it is worth being precise about what the extra strength buys. Independence says
+no vector is redundant --- none can be built from the others. Orthogonality says
+something sharper: no vector has \emph{any} overlap with the others, not even a
+partial one. In the language of \S12.4, the projection of one onto another is
+the zero vector. Independent-but-not-orthogonal vectors do lean on each other
+somewhat; they simply do not lean completely.
+
+%------------------------------------------------------------------------------
+\subsection{Why an orthogonal basis is worth having}
+%------------------------------------------------------------------------------
+Here is the practical payoff, and it is the reason orthogonality is pursued
+rather than merely noticed.
+
+Against a general basis $\{\vc{u},\vc{v}\}$, finding the coordinates of a vector
+$\vc{w}$ means solving a linear system --- that was the work of \S18.1. Against
+an \emph{orthogonal} basis, no system is needed. Write
+$\vc{w}=\alpha\vc{u}+\beta\vc{v}$ and dot with $\vc{u}$; the $\beta$ term dies,
+exactly as in \S21.2, leaving
+\[
+  \langle\vc{u},\vc{w}\rangle = \alpha\norm{\vc{u}}^{2},
+  \qquad\text{so}\qquad
+  \alpha = \frac{\langle\vc{u},\vc{w}\rangle}{\norm{\vc{u}}^{2}} ,
+\]
+and symmetrically $\beta=\langle\vc{v},\vc{w}\rangle/\norm{\vc{v}}^{2}$. Each
+coordinate is computed \emph{independently of the other}, by one dot product and
+one division.
+
+Compare that expression with \S12.4: it is precisely the coefficient appearing
+in $\proj{\vc{u}}{\vc{w}}$. So for an orthogonal basis,
+\[
+  \vc{w} = \proj{\vc{u}}{\vc{w}} + \proj{\vc{v}}{\vc{w}} ,
+\]
+a vector is the sum of its own shadows on the basis directions. This is the
+general form of the remark in \S16.4 about why coordinates were free to read off
+against $\{\ivec,\jvec\}$: that basis was orthogonal, and orthogonality was
+doing the work all along --- being aligned with the axes was incidental.
+
+\begin{ex}
+Take the orthogonal basis $\vc{u}=[\,1,\,1\,]$, $\vc{v}=[\,1,\,-1\,]$ from
+\S21.3 and the vector $\vc{w}=[\,3,\,1\,]$. Then $\norm{\vc{u}}^{2}=2$ and
+$\norm{\vc{v}}^{2}=2$, so
+\[
+  \alpha = \frac{\langle\vc{u},\vc{w}\rangle}{2} = \frac{3+1}{2} = 2,
+  \qquad
+  \beta  = \frac{\langle\vc{v},\vc{w}\rangle}{2} = \frac{3-1}{2} = 1 .
+\]
+Checking: $2[\,1,\,1\,] + 1[\,1,\,-1\,] = [\,2,\,2\,]+[\,1,\,-1\,]
+= [\,3,\,1\,]$. \checkmark\ No system was solved --- just two dot products,
+which is the head-to-tail walk drawn in \S21.3.
+\end{ex}
+
+\lookahead If an orthogonal basis is this convenient, the obvious question is
+whether one can always be manufactured: given any basis, can it be converted
+into an orthogonal one spanning the same space? It can, and the procedure is
+built out of exactly the piece we already have --- subtract off the projection,
+as in \S12.6, so that what remains is orthogonal to what came before. Repeating
+that step down a list of vectors is the Gram--Schmidt procedure.
+
+%==============================================================================
+\section{Subspaces as lines and planes}
+%==============================================================================
+With orthogonality settled, return to the subspaces of \S19. The classification
+there was stated algebraically; it is worth saying what the answers look like.
+
+%------------------------------------------------------------------------------
+\subsection{In \texorpdfstring{$\R^{2}$}{R2}: lines}
+%------------------------------------------------------------------------------
+Section~19.4 found exactly three kinds of subspace of $\R^{2}$: the single point
+$\{\vc{0}\}$, the whole plane, and everything in between --- which turned out to
+be the lines through the origin. Two of those are degenerate: $\{\vc{0}\}$ has
+dimension $0$ and $\R^{2}$ is not a proper subset. So the only interesting
+subspace of the plane is a \textbf{line through the origin}, of dimension $1$,
+and it is $\spanop\{\vc{u}\}$ for any nonzero $\vc{u}$ lying on it. That was the
+line $L$ of \S18.6.
+
+%------------------------------------------------------------------------------
+\subsection{In \texorpdfstring{$\R^{3}$}{R3}: lines and planes}
+%------------------------------------------------------------------------------
+One dimension up, a new possibility appears. A subspace of $\R^{3}$ can be
+spanned by \emph{two} independent vectors, and what they sweep out is a
+\textbf{plane through the origin}, of dimension $2$.
+
+We have already met one. The floor of \S20.2 is $\spanop\{\ivec,\jvec\}$: a
+plane through the origin, a subspace of $\R^{3}$, with basis $\{\ivec,\jvec\}$
+and dimension $2$. Nothing about it was special to the axes --- any two
+independent vectors in $\R^{3}$ span a plane through the origin, tilted however
+those two vectors happen to lie.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.35]
+  \fill[RoyalBlue!10] (0,0) -- (-1.1,-0.8) -- (0.9,-0.8) -- (2,0) -- cycle;
+  \draw[RoyalBlue!45] (0,0) -- (-1.1,-0.8) -- (0.9,-0.8) -- (2,0) -- cycle;
+  \draw[axisline] (0,0) -- (-1.35,-0.98) node[left,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,0) -- (2.55,0) node[right,font=\scriptsize,black]{$y$};
+  \draw[axisline] (0,0) -- (0,1.95) node[above,font=\scriptsize,black]{$z$};
+  \draw[BrickRed,dotted,thick] (-0.72,-0.96) -- (0.72,0.96);
+  \draw[vecarr,RoyalBlue]   (0,0) -- (-0.55,-0.4);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,0);
+  \fill (0,0) circle (1.5pt);
+  \node[below,font=\scriptsize,RoyalBlue]   at (-0.58,-0.42) {$\ivec$};
+  \node[above,font=\scriptsize,ForestGreen] at (1,0.03)      {$\jvec$};
+  \node[font=\scriptsize,RoyalBlue!75]      at (1.2,-0.58)
+        {a plane: $\dim=2$};
+  \node[right,font=\scriptsize,BrickRed]    at (0.74,0.94)   {a line: $\dim=1$};
+\end{tikzpicture}
+\end{center}
+
+\noindent So the picture to carry is:
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Dimension} & \textbf{Subspace of $\R^{2}$} & \textbf{Subspace of $\R^{3}$} \\
+\midrule
+$0$ & the origin            & the origin \\
+$1$ & a line through origin & a line through the origin \\
+$2$ & all of $\R^{2}$       & a plane through the origin \\
+$3$ & ---                   & all of $\R^{3}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Read across: the same dimension means the same kind of object; what
+changes is whether that object exhausts the space it sits in. A plane is
+everything in $\R^{2}$ and a thin slice of $\R^{3}$.
+
+\begin{warn}
+``Line'' and ``plane'' here always mean \emph{through the origin}. The line
+$y=2x+1$ and the plane $z=1$ are not subspaces, for the reason given in \S19.3:
+a subspace must contain $\vc{0}$, since scaling any of its elements by $0$
+produces it. A line or plane that misses the origin is a perfectly good
+geometric object, but it is not the span of anything and none of the machinery
+of this unit applies to it.
+\end{warn}
+
+\lookahead The classification of subspaces of $\R^{3}$ --- origin, lines,
+planes, everything --- is proved exactly as \S19.4 proved the $\R^{2}$ case:
+take a nonzero vector, its span is already inside; if that is not everything,
+take a vector outside it and enlarge; repeat. The only step not yet available is
+the one flagged in \S21.4, that three independent vectors in $\R^{3}$ must span
+it. Once that is in place, the argument runs unchanged, and it will keep running
+in $\R^{n}$, where the subspaces are the origin, the lines, the planes, and so
+on up through dimension $n$.
+
+\end{document}
