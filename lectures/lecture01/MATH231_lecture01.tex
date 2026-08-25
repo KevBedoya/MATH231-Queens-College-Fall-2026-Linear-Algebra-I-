@@ -28,7 +28,10 @@
 %     3  the derivative as a vector quantity
 %     4  vector vs. scalar quantities
 %     5  one-dimensional vectors
-%     6  notation; R^2 introduced here
+%     6  notation; R^2 introduced here, and the signature notation f : A -> B
+%        (domain/codomain, Cartesian products for two-argument operations, and
+%        the placeholder dot).  This MUST stay ahead of Sec. 7, which is the
+%        first place an arrow signature is written.
 %     7  addition & subtraction (binary): 7.1 parallelogram rule,
 %        7.2 triangle inequality, 7.3 subtraction between the heads,
 %        7.4 practice (kept here, immediately after the operations it drills,
@@ -451,6 +454,55 @@ We write a vector in brackets, listing its coordinates in order:
   \vc{v}=[\,1,\,2\,].
 \]
 Order matters: $[1,2]\neq[2,1]$.
+
+\subsection*{Naming a function by what it takes and what it returns}
+A steady stream of operations starts in \S7, and we will want a compact way to
+record what each one consumes and what it produces --- before saying a word
+about how it computes. The standard device is an arrow:
+\[
+  f : A \to B ,
+\]
+read ``$f$ from $A$ to $B$'' or ``$f$ maps $A$ to $B$.'' It asserts that $f$
+accepts an input drawn from the set $A$ and returns an output lying in the set
+$B$. The set $A$ is called the \textbf{domain}, the set $B$ the
+\textbf{codomain}, and the statement $f:A\to B$ as a whole is the
+\textbf{signature} of $f$.
+
+Notice what a signature deliberately leaves out: the rule. It is a statement
+about \emph{types} --- what goes in, what comes out --- and two operations that
+compute completely different things may share one.
+
+\smallskip
+\noindent\textbf{Two inputs.} Some operations take a pair of arguments rather
+than one, and the Cartesian product above is exactly what is needed to say so.
+Just as $\R^{2}=\R\times\R$ meant ``ordered pairs of real numbers,''
+\[
+  \R^{2}\times\R^{2}
+  \quad\text{means}\quad
+  \text{``ordered pairs of vectors.''}
+\]
+So an operation swallowing two vectors and returning a vector has signature
+$\R^{2}\times\R^{2}\to\R^{2}$, and one swallowing a number and a vector has
+signature $\R\times\R^{2}\to\R^{2}$. The number of slots on the left is the
+number of arguments.
+
+\smallskip
+\noindent\textbf{The placeholder dot.} An operation written with a symbol rather
+than a letter needs some way to show its empty argument slots, and the
+convention is a centred dot, one per slot. The norm of \S2, for instance, has
+signature
+\[
+  \norm{\,\cdot\,} \;:\; \R^{2}\to\R ,
+\]
+where the dot marks the place a vector will go. Read it aloud: ``the norm takes
+a vector in $\R^{2}$ and returns a real number.'' That is exactly what \S2 said
+in words --- one vector in, one number out --- so the notation is not new
+content, only a shorthand for something you already know.
+
+It also shows the limits of the device. \S2 also told us the output is never
+negative, and the signature cannot say so: its codomain is $\R$, not the
+non-negative reals. A signature records the shape of an operation, not its
+finer properties.
 
 \lookahead For now we draw every vector with its tail at the origin, so that its
 head sits at $(x,y)$. That is a convention, not a restriction: in \S9 we will
