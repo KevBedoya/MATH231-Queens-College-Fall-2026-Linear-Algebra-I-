@@ -15,7 +15,9 @@
 %  Definitions and examples are numbered BY SECTION so that they too are unique
 %  across the whole unit.  References to Sections 1-15 point into Parts 1-3.
 %
-%  STATUS: in progress.  Further sections will be appended.
+%  STATUS: complete.  Sections 16-20.  Q3 of Sec. 18.3 (how many bases does
+%  R^2 have?) is deliberately left open at the end of Sec. 18.6, which supplies
+%  most of the answer without stating it.
 %
 %  AUDIENCE: distributed to students.  Keep it free of instructor-facing
 %  apparatus -- time budgets, pacing notes, teaching cues.
@@ -72,6 +74,7 @@
 \newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
 \newcommand{\ivec}{\vec{\imath}}
 \newcommand{\jvec}{\vec{\jmath}}
+\newcommand{\kvec}{\vec{k}}
 \newcommand{\bas}{\mathcal{B}}
 \DeclareMathOperator{\spanop}{span}   % \dim is already standard, so not declared
 
@@ -135,7 +138,9 @@ the dimension of a space is and why it agrees with the degrees-of-freedom count
 of \S1; produce bases other than the standard one; recognise when two vectors
 fail to span the plane; define linear independence and dependence; prove that an
 independent pair spans $\R^{2}$; tell a spanning set from a basis; and say what
-a subspace is and list every subspace of the plane.
+a subspace is and list every subspace of the plane; and carry every operation of
+the unit --- norms, metrics, dot products, cosine similarity, projections ---
+across into $\R^{3}$.
 
 %==============================================================================
 \section{The standard basis of \texorpdfstring{$\R^{2}$}{R2}}
@@ -1129,5 +1134,289 @@ used closure, the definition of independence, and the spanning theorem of
 give out long before the arguments do, and in $\R^{3}$ the subspaces will turn
 out to be the origin, the lines through it, the planes through it, and the whole
 space, proved the same way.
+
+%==============================================================================
+\section{Stepping up: \texorpdfstring{$\R^{3}$}{R3}}
+%==============================================================================
+Return to the standard basis $\{\ivec,\jvec\}$ and ask a new question. What
+happens if we introduce a genuinely new independent direction --- one that no
+combination of $\ivec$ and $\jvec$ can produce --- and lengthen every vector by a
+third coordinate to make room for it?
+
+%------------------------------------------------------------------------------
+\subsection{A third direction}
+%------------------------------------------------------------------------------
+\begin{defn}[The standard basis of $\R^{3}$]
+Write
+\[
+  \ivec = [\,1,\,0,\,0\,],
+  \qquad
+  \jvec = [\,0,\,1,\,0\,],
+  \qquad
+  \kvec = [\,0,\,0,\,1\,] ,
+\]
+vectors in
+$\R^{3}=\{(x,y,z)\mid x,y,z\in\R\}$. The set $\{\ivec,\jvec,\kvec\}$ is the
+\textbf{standard basis} of $\R^{3}$.
+\end{defn}
+
+\noindent Everything \S16 said carries over with a third slot appended. A linear
+combination is
+\[
+  \alpha\ivec + \beta\jvec + \gamma\kvec = [\,\alpha,\,\beta,\,\gamma\,] ,
+\]
+so any choice of three scalars lands in $\R^{3}$; and conversely any
+$\vc{v}=[\,v_1,\,v_2,\,v_3\,]$ is reached by taking $\alpha=v_1$, $\beta=v_2$,
+$\gamma=v_3$. Hence
+\[
+  \spanop\{\ivec,\jvec,\kvec\} = \R^{3},
+  \qquad
+  \dim\R^{3} = 3 .
+\]
+Three basis vectors, three independent directions, three free numbers. The
+counting rule of \S17 has not changed; only the count has.
+
+The three are still orthonormal, by the same one-line checks as before: each has
+norm $1$, and every pair has dot product zero, since in each product every term
+has a $0$ in it. In particular $\langle\ivec,\kvec\rangle=0$ and
+$\langle\jvec,\kvec\rangle=0$.
+
+%------------------------------------------------------------------------------
+\subsection{The floor, and a subspace we already know}
+%------------------------------------------------------------------------------
+Picture $\ivec$ and $\jvec$ as lying flat --- they span a horizontal plane, the
+\emph{floor} --- and $\kvec$ as pointing straight up out of it.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.35]
+  % the floor: the plane spanned by i and j, drawn in projection
+  \fill[RoyalBlue!10] (0,0) -- (-1.1,-0.8) -- (0.9,-0.8) -- (2,0) -- cycle;
+  \draw[RoyalBlue!45] (0,0) -- (-1.1,-0.8) -- (0.9,-0.8) -- (2,0) -- cycle;
+  \draw[axisline] (0,0) -- (-1.35,-0.98) node[left,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,0) -- (2.55,0) node[right,font=\scriptsize,black]{$y$};
+  \draw[axisline] (0,0) -- (0,1.95) node[above,font=\scriptsize,black]{$z$};
+  \draw[vecarr,RoyalBlue]   (0,0) -- (-0.55,-0.4);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,0);
+  \draw[vecarr,BrickRed]    (0,0) -- (0,1);
+  \node[below,font=\small,RoyalBlue]        at (-0.60,-0.40) {$\ivec$};
+  \node[above,font=\small,ForestGreen]      at (1,0.03)      {$\jvec$};
+  \node[right,font=\small,BrickRed]         at (0.05,1)      {$\kvec$};
+  \node[font=\scriptsize,RoyalBlue!75]      at (1.15,-0.55)
+        {the floor: $\spanop\{\ivec,\jvec\}$};
+\end{tikzpicture}
+\end{center}
+
+\noindent That floor is not a new kind of object. It is
+$\spanop\{\ivec,\jvec\}$, so by \S19.2 it is a \emph{subspace} of $\R^{3}$ ---
+closed under addition and scaling, containing the origin, with basis
+$\{\ivec,\jvec\}$ and dimension $2$. A two-dimensional subspace sitting inside a
+three-dimensional space, exactly as the line $L$ of \S18.6 was a
+one-dimensional subspace sitting inside the plane.
+
+And $\kvec$ is what makes the third dimension real: it lies off the floor, so it
+is not in $\spanop\{\ivec,\jvec\}$, and adjoining it is what takes us from a
+subspace of dimension $2$ up to the whole of $\R^{3}$. That is the same move as
+in the classification of \S19.4 --- find a vector outside what you have, and the
+span grows.
+
+%------------------------------------------------------------------------------
+\subsection{Everything generalizes}
+%------------------------------------------------------------------------------
+This is the point of the whole unit, and it is worth stating plainly: almost
+nothing we built in $\R^{2}$ was really about $\R^{2}$. The definitions were
+written in terms of coordinates and they extend by appending a term. Some
+formulas do not even change, because they were written in terms of the ones that
+did.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Object} & \textbf{in $\R^{2}$} & \textbf{in $\R^{3}$} \\
+\midrule
+Norm (\S2)
+  & $\sqrt{v_1^{2}+v_2^{2}}$
+  & $\sqrt{v_1^{2}+v_2^{2}+v_3^{2}}$ \\
+Dot product (\S11.3)
+  & $u_1v_1+u_2v_2$
+  & $u_1v_1+u_2v_2+u_3v_3$ \\
+$p$-norm (\S14.6)
+  & $\bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}\bigr)^{1/p}$
+  & $\bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}+\lvert v_3\rvert^{p}\bigr)^{1/p}$ \\
+\midrule
+Cosine similarity (\S11.4)
+  & $\dfrac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}\norm{\vc{v}}}$
+  & \emph{unchanged} \\
+Projection (\S12.4)
+  & $\dfrac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u}$
+  & \emph{unchanged} \\
+Metric (\S14.2)
+  & $\norm{\vc{x}-\vc{y}}$
+  & \emph{unchanged} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The split in that table is the whole story. The top three are defined
+directly from coordinates, so each gains a term. The bottom three are defined
+from the top three, so they are \emph{character for character identical} --- the
+projection formula does not know or care how many coordinates a vector has.
+Every theorem proved from those formulas transfers as well: Cauchy--Schwarz, the
+triangle inequality, the orthogonality test, the fact that
+$\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$.
+
+\subsubsection*{Worked examples}
+Throughout, take
+\[
+  \vc{u} = [\,1,\,2,\,2\,],
+  \qquad
+  \vc{v} = [\,2,\,2,\,1\,],
+  \qquad
+  \vc{w} = [\,2,\,-2,\,1\,] .
+\]
+
+\begin{ex}[Operations]
+$\vc{u}+\vc{v}=[\,3,\,4,\,3\,]$ and $\vc{u}-\vc{v}=[\,-1,\,0,\,1\,]$, both
+componentwise as in \S7. Scaling, $3\vc{u}=[\,3,\,6,\,6\,]$. In basis form,
+$\vc{u}=\ivec+2\jvec+2\kvec$.
+\end{ex}
+
+\begin{ex}[Norms]
+$\norm{\vc{u}}=\sqrt{1+4+4}=\sqrt9=3$, and likewise $\norm{\vc{v}}=3$ and
+$\norm{\vc{w}}=3$. The other members of the family behave as \S14 promised:
+\[
+  \norm{\vc{u}}_1 = 1+2+2 = 5,
+  \qquad
+  \norm{\vc{u}}_2 = 3,
+  \qquad
+  \norm{\vc{u}}_\infty = \max\{1,2,2\} = 2 ,
+\]
+and indeed $2\le3\le5$, the ordering
+$\norm{\vc{u}}_\infty\le\norm{\vc{u}}_2\le\norm{\vc{u}}_1$ of \S14.8. Homogeneity
+also survives: $\norm{3\vc{u}}=\sqrt{9+36+36}=9=3\norm{\vc{u}}$.
+\end{ex}
+
+\begin{ex}[Dot product, cosine similarity, orthogonality]
+$\langle\vc{u},\vc{v}\rangle = 1(2)+2(2)+2(1) = 8$, so
+\[
+  \cos(\vc{u},\vc{v}) = \frac{8}{3\cdot3} = \frac{8}{9}\approx0.889 ,
+\]
+close to $1$: the two point in nearly the same direction. Cauchy--Schwarz is
+comfortable, $8\le9$. Meanwhile
+\[
+  \langle\vc{u},\vc{w}\rangle = 1(2)+2(-2)+2(1) = 2-4+2 = 0 ,
+\]
+so by the test of \S11.7, $\vc{u}$ and $\vc{w}$ are \emph{orthogonal} --- a
+right angle in space, detected by three multiplications and two additions, with
+no picture consulted.
+\end{ex}
+
+\begin{ex}[Projection]
+Project $\vc{v}$ onto $\vc{u}$. Since $\langle\vc{u},\vc{v}\rangle=8$ and
+$\norm{\vc{u}}^{2}=9$,
+\[
+  \comp{\vc{u}}{\vc{v}} = \frac{8}{3},
+  \qquad
+  \proj{\vc{u}}{\vc{v}} = \frac{8}{9}[\,1,\,2,\,2\,]
+    = \Bigl[\,\tfrac89,\ \tfrac{16}{9},\ \tfrac{16}{9}\,\Bigr] .
+\]
+The orthogonal piece of \S12.6 still works:
+\[
+  \vc{v}-\proj{\vc{u}}{\vc{v}}
+  = \Bigl[\,\tfrac{10}{9},\ \tfrac{2}{9},\ -\tfrac79\,\Bigr],
+  \qquad
+  \bigl\langle\vc{u},\ \vc{v}-\proj{\vc{u}}{\vc{v}}\bigr\rangle
+  = \tfrac{10}{9}+\tfrac49-\tfrac{14}{9} = 0 . \quad\checkmark
+\]
+\end{ex}
+
+\begin{ex}[Metrics]
+The distance from $\vc{u}$ to $\vc{v}$ is
+$\norm{\vc{u}-\vc{v}}=\norm{[-1,0,1]}=\sqrt2$. Under the other two metrics of
+\S14,
+\[
+  d_1(\vc{u},\vc{v}) = 1+0+1 = 2,
+  \qquad
+  d_\infty(\vc{u},\vc{v}) = \max\{1,0,1\} = 1 ,
+\]
+and $1\le\sqrt2\le2$, the same ordering as before.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{What does change}
+%------------------------------------------------------------------------------
+Two honest qualifications.
+
+First, the results that counted to two now count to three. A basis for $\R^{3}$
+needs \emph{three} independent vectors, not two; two independent vectors in
+$\R^{3}$ span only a plane through the origin. And the test $D=u_1v_2-u_2v_1$ of
+\S18.5 was built for a $2\times2$ system and does not apply as written.
+
+Second, $\R^{3}$ supports an operation with no analogue in $\R^{2}$: the
+\textbf{cross product}, which takes two vectors and returns a third vector
+perpendicular to both. This is the $\times$ the complex numbers lecture warned
+against confusing with the dot product --- and now it is clear why the warning
+was specific to $\R^{3}$.
+
+\lookahead Nothing above stopped at three. The same definitions read perfectly
+well in $\R^{n}$ with $n$ terms in each sum, and that is how we will use them.
+The one thing genuinely lost is the picture: in $\R^{2}$ and $\R^{3}$ you can see
+the angle between two vectors, and past that you cannot. This is exactly the
+situation the remark in \S15.3 anticipated --- in high dimensions the angle is
+\emph{defined} by $\cos(\vc{u},\vc{v})=\langle\vc{u},\vc{v}\rangle/(\norm{\vc{u}}\norm{\vc{v}})$,
+and Cauchy--Schwarz is what guarantees that quotient is a legal cosine so the
+definition makes sense. The algebra outlives the geometry, which is why we were
+careful to prove things rather than draw them.
+
+%------------------------------------------------------------------------------
+\subsection{Practice}
+%------------------------------------------------------------------------------
+Let
+\[
+  \vc{a} = [\,1,\,2,\,2\,],
+  \qquad
+  \vc{b} = [\,2,\,-2,\,1\,],
+  \qquad
+  \vc{c} = [\,3,\,0,\,4\,] .
+\]
+
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=6pt,
+                  topsep=6pt]
+  \item Compute $\vc{a}+\vc{b}$, \ $\vc{a}-\vc{c}$, \ and $2\vc{b}$.
+  \item Compute $\norm{\vc{a}}$, $\norm{\vc{b}}$ and $\norm{\vc{c}}$.
+  \item Compute $\langle\vc{a},\vc{b}\rangle$. Are $\vc{a}$ and $\vc{b}$
+        orthogonal?
+  \item Compute $\cos(\vc{b},\vc{c})$.
+  \item Compute $\comp{\vc{a}}{\vc{c}}$ and $\proj{\vc{a}}{\vc{c}}$. Then verify
+        that $\vc{c}-\proj{\vc{a}}{\vc{c}}$ is orthogonal to $\vc{a}$.
+  \item Compute the distance from $\vc{a}$ to $\vc{c}$ under the Euclidean,
+        Manhattan and Chebyshev metrics, and check that they come out in the
+        order \S14.8 predicts.
+  \item Write $\vc{c}$ as a linear combination of $\ivec$, $\jvec$ and $\kvec$.
+\end{enumerate}
+
+\subsubsection*{Answer key}
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.8em,itemsep=5pt,
+                  topsep=5pt]
+  \item $\vc{a}+\vc{b}=[\,3,\,0,\,3\,]$, \
+        $\vc{a}-\vc{c}=[\,-2,\,2,\,-2\,]$, \
+        $2\vc{b}=[\,4,\,-4,\,2\,]$.
+  \item $\norm{\vc{a}}=\sqrt{1+4+4}=3$, \
+        $\norm{\vc{b}}=\sqrt{4+4+1}=3$, \
+        $\norm{\vc{c}}=\sqrt{9+0+16}=5$.
+  \item $\langle\vc{a},\vc{b}\rangle = 2-4+2 = 0$, so yes --- orthogonal.
+  \item $\langle\vc{b},\vc{c}\rangle = 6+0+4 = 10$, so
+        $\cos(\vc{b},\vc{c}) = \dfrac{10}{3\cdot5} = \dfrac23$.
+  \item $\langle\vc{a},\vc{c}\rangle = 3+0+8 = 11$ and $\norm{\vc{a}}^{2}=9$, so
+        $\comp{\vc{a}}{\vc{c}} = \tfrac{11}{3}$ and
+        $\proj{\vc{a}}{\vc{c}} = \tfrac{11}{9}[\,1,\,2,\,2\,]
+         = \bigl[\,\tfrac{11}{9},\,\tfrac{22}{9},\,\tfrac{22}{9}\,\bigr]$.
+        Then $\vc{c}-\proj{\vc{a}}{\vc{c}}
+         = \bigl[\,\tfrac{16}{9},\,-\tfrac{22}{9},\,\tfrac{14}{9}\,\bigr]$, and
+        $\tfrac{16}{9}-\tfrac{44}{9}+\tfrac{28}{9}=0$. \checkmark
+  \item $\vc{a}-\vc{c}=[\,-2,\,2,\,-2\,]$, so $d_2=\sqrt{12}=2\sqrt3\approx3.46$,
+        $d_1=6$, and $d_\infty=2$. Indeed $2\le2\sqrt3\le6$.
+  \item $\vc{c} = 3\ivec + 0\jvec + 4\kvec = 3\ivec+4\kvec$.
+\end{enumerate}
 
 \end{document}
