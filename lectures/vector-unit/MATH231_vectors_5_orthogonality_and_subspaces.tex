@@ -136,8 +136,9 @@ subspaces (\S19).
 linearity of the dot product; prove that mutually orthogonal nonzero vectors are
 linearly independent, both geometrically and algebraically; state the lemma that
 such vectors span; explain why the converse fails; compute coordinates against
-an orthogonal basis by projection alone; and describe the subspaces of $\R^{2}$
-and $\R^{3}$ as lines and planes through the origin.
+an orthogonal basis by projection alone; describe the subspaces of $\R^{2}$
+and $\R^{3}$ as lines and planes through the origin; and prove the Pythagorean
+identity and use it to account exactly for a projection.
 
 %==============================================================================
 \section{Orthogonality and independence}
@@ -148,49 +149,26 @@ combination equal to $\vc{0}$ and solve a system. This section shows there is a
 sufficient condition that is far easier to test, one we have had since \S11.7.
 
 %------------------------------------------------------------------------------
-\subsection{A property of the dot product we now need}
+\subsection{What we will use: the dot product is bilinear}
 %------------------------------------------------------------------------------
-Until now every dot-product computation has been done by expanding into
+Until now most dot-product computations have been done by expanding into
 coordinates; \S12.6 verified an orthogonality claim that way on purpose. The
 argument in \S21.2 is different, because it is the one that keeps working in
-dimensions we cannot draw, and it needs the dot product to interact with
-addition and scaling. It does, and the verification is immediate.
-
-\begin{quote}
-\textbf{Linearity of the dot product.} For all
-$\vc{u},\vc{v},\vc{w}\in\R^{2}$ and all $\alpha\in\R$,
-\[
-  \langle \vc{u},\ \vc{v}+\vc{w}\rangle
-    = \langle\vc{u},\vc{v}\rangle + \langle\vc{u},\vc{w}\rangle ,
-  \qquad
-  \langle \vc{u},\ \alpha\vc{v}\rangle
-    = \alpha\,\langle\vc{u},\vc{v}\rangle .
-\]
-\end{quote}
-
-\noindent Both follow from the definition in one step:
-\[
-  \langle\vc{u},\vc{v}+\vc{w}\rangle
-  = u_1(v_1+w_1) + u_2(v_2+w_2)
-  = \bigl(u_1v_1+u_2v_2\bigr) + \bigl(u_1w_1+u_2w_2\bigr)
-  = \langle\vc{u},\vc{v}\rangle + \langle\vc{u},\vc{w}\rangle ,
-\]
-\[
-  \langle\vc{u},\alpha\vc{v}\rangle
-  = u_1(\alpha v_1) + u_2(\alpha v_2)
-  = \alpha\bigl(u_1v_1+u_2v_2\bigr)
-  = \alpha\,\langle\vc{u},\vc{v}\rangle .
-\]
-Neither step used the number of coordinates, so both hold verbatim in $\R^{3}$
-and beyond. And since the dot product is symmetric (\S11.4), the same two rules
-hold in the \emph{first} argument as well. A function linear in each argument
-separately is called \textbf{bilinear}, and that is what the dot product is.
-
-\noindent Combining them, the form we will use repeatedly:
+dimensions we cannot draw, and instead of coordinates it uses the algebraic laws
+collected in \S11.8. The piece it needs is bilinearity, in this combined form:
 \[
   \bigl\langle \vc{u},\ \alpha\vc{v}+\beta\vc{w}\bigr\rangle
-  = \alpha\langle\vc{u},\vc{v}\rangle + \beta\langle\vc{u},\vc{w}\rangle .
+  = \alpha\langle\vc{u},\vc{v}\rangle + \beta\langle\vc{u},\vc{w}\rangle ,
 \]
+which is \textbf{D2} and \textbf{D3} applied together, and which by symmetry
+(\textbf{D1}) holds in the first argument as well. Recall also \textbf{D4},
+$\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$.
+
+Worth noting once: none of the verifications in \S11.8 mentioned how many
+coordinates a vector has, so every one of \textbf{D1}--\textbf{D4} holds verbatim
+in $\R^{3}$ and in $\R^{n}$. That is what makes the argument below
+dimension-independent, and it is why we reach for the laws rather than the
+components.
 
 %------------------------------------------------------------------------------
 \subsection{Orthogonal vectors are independent}
@@ -514,5 +492,189 @@ the one flagged in \S21.4, that three independent vectors in $\R^{3}$ must span
 it. Once that is in place, the argument runs unchanged, and it will keep running
 in $\R^{n}$, where the subspaces are the origin, the lines, the planes, and so
 on up through dimension $n$.
+
+%==============================================================================
+\section{The Pythagorean identity}
+%==============================================================================
+Orthogonality has one more consequence worth isolating, and it is the oldest
+theorem in the subject wearing new clothes.
+
+%------------------------------------------------------------------------------
+\subsection{The setup}
+%------------------------------------------------------------------------------
+Let $\vc{u},\vc{v}\in\R^{2}$ be orthogonal, and consider their sum
+$\vc{u}+\vc{v}$. Read it head to tail, as in \S7.1: walk along $\vc{u}$, then
+along $\vc{v}$, and $\vc{u}+\vc{v}$ is the single arrow from start to finish.
+
+That walk traces a triangle --- and this time the triangle has a right angle in
+it, because the two legs are orthogonal. So the three side lengths are
+$\norm{\vc{u}}$, $\norm{\vc{v}}$ and $\norm{\vc{u}+\vc{v}}$, with the sum as the
+\emph{hypotenuse}, and Pythagoras predicts
+\[
+  \norm{\vc{u}}^{2} + \norm{\vc{v}}^{2} = \norm{\vc{u}+\vc{v}}^{2} .
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \lattice{-1}{4}{-1}{3}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (3,0);
+  \draw[vecarr,ForestGreen] (3,0) -- (3,2);
+  \draw[vecarr,BrickRed]    (0,0) -- (3,2);
+  \draw[gray!75] (2.76,0) -- (2.76,0.24) -- (3,0.24);
+  \node[below,font=\scriptsize,RoyalBlue]      at (1.5,-0.06) {$\vc{u}$};
+  \node[right,font=\scriptsize,ForestGreen]    at (3.06,1.0)  {$\vc{v}$};
+  \node[above left,font=\scriptsize,BrickRed]  at (2.1,1.42)  {$\vc{u}+\vc{v}$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Note that this is a genuine right triangle only because
+$\langle\vc{u},\vc{v}\rangle=0$. For a general pair the head-to-tail triangle of
+\S7.2 has no right angle and the identity is false --- which is exactly why the
+triangle inequality there was an \emph{inequality}.
+
+%------------------------------------------------------------------------------
+\subsection{The proof}
+%------------------------------------------------------------------------------
+Before proving it, recall the two collections of algebraic facts the computation
+will use. Vector addition and scalar multiplication obey the laws collected in
+\S8.4 --- commutativity, associativity, distributivity and the rest. The dot
+product obeys the laws collected in \S11.8: it is symmetric, it distributes over
+addition, scalars pull out of it, and $\langle\vc{w},\vc{w}\rangle=\norm{\vc{w}}^{2}$.
+With those in hand the proof is four lines.
+
+Start from the identity $\norm{\vc{w}}^{2}=\langle\vc{w},\vc{w}\rangle$ of
+\S11.6, applied to $\vc{w}=\vc{u}+\vc{v}$, and expand by distributing twice:
+\begin{align*}
+  \norm{\vc{u}+\vc{v}}^{2}
+   &= \bigl\langle \vc{u}+\vc{v},\ \vc{u}+\vc{v} \bigr\rangle \\[2pt]
+   &= \langle\vc{u},\vc{u}\rangle + \langle\vc{u},\vc{v}\rangle
+      + \langle\vc{v},\vc{u}\rangle + \langle\vc{v},\vc{v}\rangle \\[2pt]
+   &= \norm{\vc{u}}^{2} + 2\langle\vc{u},\vc{v}\rangle + \norm{\vc{v}}^{2} ,
+\end{align*}
+where the last step used symmetry, $\langle\vc{u},\vc{v}\rangle
+=\langle\vc{v},\vc{u}\rangle$, to combine the two middle terms. Now impose the
+hypothesis. Orthogonality says $\langle\vc{u},\vc{v}\rangle=0$, so the middle
+term vanishes and
+\[
+  \boxed{\;\norm{\vc{u}+\vc{v}}^{2} = \norm{\vc{u}}^{2} + \norm{\vc{v}}^{2}\;}
+\]
+which is the identity. \hfill$\blacksquare$
+
+\begin{rmk}[Nothing here is new except the cancellation]
+The expansion
+$\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+2\langle\vc{u},\vc{v}\rangle+\norm{\vc{v}}^{2}$
+is not new --- it is the computation already used at the end of \S13 to derive
+the triangle inequality from Cauchy--Schwarz. It holds for \emph{every} pair of
+vectors. The Pythagorean identity is that general expansion in the one case
+where the cross term $2\langle\vc{u},\vc{v}\rangle$ happens to be zero. So
+Pythagoras is not a separate theorem about right triangles; it is the special
+case of an algebraic identity, and the right angle is what kills the middle
+term.
+\end{rmk}
+
+\begin{rmk}[It runs both ways]
+The expansion also gives the converse for free. If
+$\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}$, then comparing
+with the general expansion forces $2\langle\vc{u},\vc{v}\rangle=0$, hence
+$\langle\vc{u},\vc{v}\rangle=0$, hence $\vc{u}$ and $\vc{v}$ are orthogonal. So
+\[
+  \vc{u}\perp\vc{v}
+  \qquad\Longleftrightarrow\qquad
+  \norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2} ,
+\]
+and the Pythagorean identity is not merely a consequence of orthogonality but a
+\emph{characterisation} of it --- one more entry alongside
+$\langle\vc{u},\vc{v}\rangle=0$ and $\theta=\pi/2$.
+\end{rmk}
+
+\begin{ex}
+Take $\vc{u}=[\,3,\,0\,]$ and $\vc{v}=[\,0,\,4\,]$, which are orthogonal since
+$\langle\vc{u},\vc{v}\rangle=0$. Then $\vc{u}+\vc{v}=[\,3,\,4\,]$ and
+\[
+  \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2} = 9+16 = 25 = \norm{[\,3,\,4\,]}^{2} .
+\]
+The $3$--$4$--$5$ triangle, recovered from the dot product.
+
+For a pair not aligned with the axes, take $\vc{u}=[\,1,\,1\,]$ and
+$\vc{v}=[\,1,\,-1\,]$ from \S21.3. Then $\vc{u}+\vc{v}=[\,2,\,0\,]$ and
+$2+2=4$. \checkmark
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{In \texorpdfstring{$\R^{3}$}{R3} and beyond}
+%------------------------------------------------------------------------------
+The proof never mentioned coordinates, so it transfers untouched. For orthogonal
+$\vc{u},\vc{v}\in\R^{3}$ the same four lines give
+$\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}$.
+
+\begin{ex}
+From \S21.4, $\vc{u}=[\,1,\,2,\,2\,]$ and $\vc{v}=[\,2,\,-2,\,1\,]$ are
+orthogonal with $\norm{\vc{u}}=\norm{\vc{v}}=3$. Their sum is
+$[\,3,\,0,\,3\,]$, and
+\[
+  \norm{\vc{u}+\vc{v}}^{2} = 9+0+9 = 18 = 9 + 9
+  = \norm{\vc{u}}^{2}+\norm{\vc{v}}^{2} . \quad\checkmark
+\]
+\end{ex}
+
+\noindent It also extends past two vectors. If $\vc{u}_1,\dots,\vc{u}_k$ are
+\emph{mutually} orthogonal, expanding
+$\langle\vc{u}_1+\cdots+\vc{u}_k,\ \vc{u}_1+\cdots+\vc{u}_k\rangle$ produces one
+square term per vector and one cross term per pair --- and every cross term is
+zero. So
+\[
+  \norm{\vc{u}_1+\cdots+\vc{u}_k}^{2}
+  = \norm{\vc{u}_1}^{2}+\cdots+\norm{\vc{u}_k}^{2} .
+\]
+Lengths do not add, but \emph{squared} lengths do, provided the directions are
+mutually orthogonal.
+
+%------------------------------------------------------------------------------
+\subsection{An exact accounting of a projection}
+%------------------------------------------------------------------------------
+The identity earns its keep immediately, because \S12.6 built an orthogonal pair
+for us. Recall that any $\vc{v}$ splits as
+\[
+  \vc{v} = \underbrace{\proj{\vc{u}}{\vc{v}}}_{\text{along }\vc{u}}
+         + \underbrace{\bigl(\vc{v}-\proj{\vc{u}}{\vc{v}}\bigr)}_{\perp\,\vc{u}} ,
+\]
+and that the second piece is orthogonal to $\vc{u}$ --- hence orthogonal to the
+first piece, which is a multiple of $\vc{u}$. Two orthogonal vectors summing to
+$\vc{v}$: exactly the hypothesis of \S23.2. So
+\[
+  \norm{\vc{v}}^{2}
+  = \norm{\proj{\vc{u}}{\vc{v}}}^{2}
+    + \norm{\vc{v}-\proj{\vc{u}}{\vc{v}}}^{2} .
+\]
+
+\noindent Read that as a budget. The squared length of $\vc{v}$ divides exactly
+into the part explained by $\vc{u}$ and the part left over, with nothing
+unaccounted for.
+
+\begin{rmk}[Cauchy--Schwarz, one more time]
+This sharpens \S13. There we argued that a shadow is never longer than the
+object casting it, $\lvert\comp{\vc{u}}{\vc{v}}\rvert\le\norm{\vc{v}}$, and
+turned it into Cauchy--Schwarz. The budget above proves the same inequality and
+says precisely what the slack is: since
+$\norm{\proj{\vc{u}}{\vc{v}}}=\lvert\comp{\vc{u}}{\vc{v}}\rvert$, we get
+\[
+  \norm{\vc{v}}^{2} - \comp{\vc{u}}{\vc{v}}^{2}
+  = \norm{\vc{v}-\proj{\vc{u}}{\vc{v}}}^{2} \;\ge\; 0 ,
+\]
+so the shadow falls short of the object by exactly the squared length of the
+orthogonal remainder --- and equality holds precisely when that remainder is
+$\vc{0}$, which is when $\vc{v}$ already lies along $\vc{u}$. That is the
+equality case of Cauchy--Schwarz, recovered with the gap measured rather than
+merely bounded.
+\end{rmk}
+
+\lookahead Squared lengths adding over orthogonal pieces is the reason
+orthogonal decompositions are the workhorse of applied linear algebra. Split a
+vector into mutually orthogonal components and its squared length distributes
+across them without interference, so each component's contribution can be
+measured, ranked, and discarded independently of the others. That is the
+principle behind least squares, behind Parseval's identity in signal
+processing, and behind deciding how many components of a decomposition are worth
+keeping.
 
 \end{document}

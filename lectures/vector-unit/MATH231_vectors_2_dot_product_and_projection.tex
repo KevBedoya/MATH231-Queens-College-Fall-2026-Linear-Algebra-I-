@@ -132,8 +132,9 @@ $\langle\vc{u},\vc{v}\rangle=\norm{\vc{u}}\norm{\vc{v}}\cos\theta$ from the law
 of cosines; compute dot products and cosine similarities; test two vectors for
 orthogonality with a single dot product; normalize a vector and split it into a
 direction and a magnitude; compute the projection of one vector onto another and
-the component that goes with it; and split a vector into a piece along $\vc{u}$
-and a piece orthogonal to $\vc{u}$.
+the component that goes with it; split a vector into a piece along $\vc{u}$ and a
+piece orthogonal to $\vc{u}$; and state the algebraic laws of the dot product and
+use them to expand $\norm{\vc{u}+\vc{v}}^{2}$.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -754,6 +755,86 @@ arithmetic what \S10.2 argued with slopes --- and unlike the slope test, it
 would work just as well against the vertical vector $[\,0,\,1\,]$:
 $\langle[1,0],[0,1]\rangle = 0$.
 \end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The algebraic laws of the dot product}
+%------------------------------------------------------------------------------
+Section~8.4 collected the laws obeyed by vector addition and scalar
+multiplication. The dot product has its own short list, and we have quietly been
+using it already --- \S11.6 relied on $\langle\vc{u},\vc{u}\rangle$ collapsing to
+a squared norm, and the derivation in \S11.2 rearranged products freely. Here
+are the rules that licensed all of it.
+
+\begin{quote}
+For all $\vc{u},\vc{v},\vc{w}\in\R^{2}$ and all $\alpha\in\R$:
+
+\smallskip
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l l l@{}}
+\textbf{D1} & $\langle\vc{u},\vc{v}\rangle = \langle\vc{v},\vc{u}\rangle$
+            & symmetry \\
+\textbf{D2} & $\langle\vc{u},\ \vc{v}+\vc{w}\rangle
+              = \langle\vc{u},\vc{v}\rangle+\langle\vc{u},\vc{w}\rangle$
+            & additivity \\
+\textbf{D3} & $\langle\vc{u},\ \alpha\vc{v}\rangle
+              = \alpha\,\langle\vc{u},\vc{v}\rangle$
+            & homogeneity \\
+\textbf{D4} & $\langle\vc{u},\vc{u}\rangle = \norm{\vc{u}}^{2} \ge 0$,
+              with equality only for $\vc{u}=\vc{0}$
+            & positive definiteness \\
+\end{tabular}
+\end{quote}
+
+\noindent Each is one line from the definition. For \textbf{D1},
+$u_1v_1+u_2v_2 = v_1u_1+v_2u_2$ because real multiplication commutes. For
+\textbf{D2} and \textbf{D3},
+\[
+  \langle\vc{u},\vc{v}+\vc{w}\rangle
+  = u_1(v_1+w_1)+u_2(v_2+w_2)
+  = \bigl(u_1v_1+u_2v_2\bigr)+\bigl(u_1w_1+u_2w_2\bigr) ,
+\]
+\[
+  \langle\vc{u},\alpha\vc{v}\rangle
+  = u_1(\alpha v_1)+u_2(\alpha v_2)
+  = \alpha\bigl(u_1v_1+u_2v_2\bigr) .
+\]
+\textbf{D4} is \S11.6. Note that by symmetry, \textbf{D2} and \textbf{D3} hold
+in the \emph{first} argument as well: the dot product is linear in each slot
+separately, a property called \textbf{bilinearity}.
+
+\subsubsection*{The consequence we actually use}
+Applying \textbf{D2} and \textbf{D3} in both slots lets a dot product of two
+sums be expanded term by term, exactly like multiplying out brackets:
+\[
+  \bigl\langle \alpha\vc{u}+\beta\vc{v},\ \gamma\vc{w}+\delta\vc{z}\bigr\rangle
+  = \alpha\gamma\langle\vc{u},\vc{w}\rangle
+  + \alpha\delta\langle\vc{u},\vc{z}\rangle
+  + \beta\gamma\langle\vc{v},\vc{w}\rangle
+  + \beta\delta\langle\vc{v},\vc{z}\rangle .
+\]
+The special case we will need repeatedly takes both sums to be
+$\vc{u}+\vc{v}$ and applies \textbf{D1} to merge the two middle terms:
+\[
+  \norm{\vc{u}+\vc{v}}^{2}
+  = \langle\vc{u}+\vc{v},\ \vc{u}+\vc{v}\rangle
+  = \norm{\vc{u}}^{2} + 2\langle\vc{u},\vc{v}\rangle + \norm{\vc{v}}^{2} .
+\]
+
+\begin{warn}[Two laws the dot product does \emph{not} have]
+It has no associativity, and the reason is that the expression cannot even be
+written: $\langle\vc{u},\vc{v}\rangle$ is a \emph{scalar}, so
+$\bigl\langle\langle\vc{u},\vc{v}\rangle,\vc{w}\bigr\rangle$ asks for the dot
+product of a number with a vector, which is not defined. Associativity is not
+false here; it is meaningless.
+
+It also has no cancellation. From $\langle\vc{u},\vc{v}\rangle
+=\langle\vc{u},\vc{w}\rangle$ you may \emph{not} conclude $\vc{v}=\vc{w}$. Take
+$\vc{u}=[\,1,\,0\,]$, $\vc{v}=[\,1,\,1\,]$ and $\vc{w}=[\,1,\,5\,]$: both dot
+products equal $1$, and the two vectors are nowhere near each other. What the
+equation really says is
+$\langle\vc{u},\vc{v}-\vc{w}\rangle=0$ --- that $\vc{v}-\vc{w}$ is orthogonal to
+$\vc{u}$, not that it is zero.
+\end{warn}
 
 %------------------------------------------------------------------------------
 \subsection{Practice: computing cosine similarity}

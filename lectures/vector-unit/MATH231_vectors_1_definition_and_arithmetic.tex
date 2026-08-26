@@ -134,8 +134,9 @@ operation; distinguish vector quantities from scalar quantities; read all three
 notational conventions for a vector, and read a signature $f:A\to B$; add and
 subtract vectors both componentwise and geometrically, using the parallelogram
 rule and the triangle inequality; scale a vector by a real number and say what
-$\alpha=-1$ does to it; and decide when two vectors drawn in different places
-are the \emph{same} vector.
+$\alpha=-1$ does to it; state the eight algebraic laws obeyed by vector addition
+and scalar multiplication, and use them to rearrange vector expressions; and
+decide when two vectors drawn in different places are the \emph{same} vector.
 
 \medskip
 \noindent\textbf{Further reading.}
@@ -976,6 +977,109 @@ one vector.
 its mirror image $-\vc{v}$, and the faint dashed line through the origin shows
 that the two really do lie on a common line. The red diagonal of the
 parallelogram spanned by $\vc{u}$ and $-\vc{v}$ is $\vc{u}-\vc{v}$.
+
+%------------------------------------------------------------------------------
+\subsection{The algebraic laws of vector arithmetic}
+%------------------------------------------------------------------------------
+We now have two operations --- addition from \S7 and scalar multiplication from
+\S8 --- and it is worth recording how they interact, because from here on we will
+manipulate vector expressions the way we manipulate ordinary algebraic ones:
+rearranging sums, regrouping, factoring a scalar out. Every such move is
+licensed by one of the laws below.
+
+\begin{quote}
+For all $\vc{u},\vc{v},\vc{w}\in\R^{2}$ and all $\alpha,\beta\in\R$:
+
+\smallskip
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\textbf{A1} & $\vc{u}+\vc{v} = \vc{v}+\vc{u}$
+            & addition is commutative \\
+\textbf{A2} & $(\vc{u}+\vc{v})+\vc{w} = \vc{u}+(\vc{v}+\vc{w})$
+            & addition is associative \\
+\textbf{A3} & $\vc{u}+\vc{0} = \vc{u}$
+            & $\vc{0}$ is the additive identity \\
+\textbf{A4} & $\vc{u}+(-\vc{u}) = \vc{0}$
+            & $-\vc{u}$ is the additive inverse of $\vc{u}$ \\[4pt]
+\textbf{S1} & $\alpha(\vc{u}+\vc{v}) = \alpha\vc{u}+\alpha\vc{v}$
+            & scalars distribute over vector sums \\
+\textbf{S2} & $(\alpha+\beta)\vc{u} = \alpha\vc{u}+\beta\vc{u}$
+            & vectors distribute over scalar sums \\
+\textbf{S3} & $\alpha(\beta\vc{u}) = (\alpha\beta)\vc{u}$
+            & scalar multiplication is associative \\
+\textbf{S4} & $1\vc{u} = \vc{u}$
+            & $1$ acts as the identity scalar \\
+\end{tabular}
+\end{quote}
+
+\subsubsection*{Why they all hold}
+Every one of the eight is inherited from the real numbers, one coordinate at a
+time. Because our operations are componentwise, each law reduces to the
+corresponding law for reals applied in the first slot and again in the second.
+Three representative verifications, and the rest go the same way:
+\[
+  \vc{u}+\vc{v}
+  = [\,u_1+v_1,\ u_2+v_2\,]
+  = [\,v_1+u_1,\ v_2+u_2\,]
+  = \vc{v}+\vc{u} ,
+\]
+which is \textbf{A1}, holding because $a+b=b+a$ for real numbers;
+\[
+  \alpha(\vc{u}+\vc{v})
+  = [\,\alpha(u_1+v_1),\ \alpha(u_2+v_2)\,]
+  = [\,\alpha u_1+\alpha v_1,\ \alpha u_2+\alpha v_2\,]
+  = \alpha\vc{u}+\alpha\vc{v} ,
+\]
+which is \textbf{S1}, holding because reals distribute; and
+\[
+  \vc{u}+(-\vc{u})
+  = [\,u_1+(-u_1),\ u_2+(-u_2)\,]
+  = [\,0,\,0\,]
+  = \vc{0} ,
+\]
+which is \textbf{A4}. There is nothing deep in any of them --- which is the
+point. The laws are exactly what makes vector algebra feel like ordinary algebra.
+
+\begin{rmk}[Uniqueness of $\vc{0}$ and of $-\vc{u}$]
+The laws also pin their own ingredients down. Suppose $\vc{0}$ and $\vc{0}'$
+both satisfy \textbf{A3}. Then
+\[
+  \vc{0} = \vc{0}+\vc{0}' = \vc{0}' ,
+\]
+using \textbf{A3} for $\vc{0}'$ and then for $\vc{0}$ (with \textbf{A1} to
+swap). So there is only one zero vector. Likewise if $\vc{a}$ and $\vc{b}$ both
+satisfy $\vc{u}+\vc{a}=\vc{0}$ and $\vc{u}+\vc{b}=\vc{0}$, then
+\[
+  \vc{a} = \vc{a}+\vc{0} = \vc{a}+(\vc{u}+\vc{b})
+         = (\vc{a}+\vc{u})+\vc{b} = \vc{0}+\vc{b} = \vc{b} ,
+\]
+using \textbf{A3}, \textbf{A2} and \textbf{A4}. So each vector has exactly one
+additive inverse, and writing ``$-\vc{u}$'' is unambiguous.
+\end{rmk}
+
+\begin{rmk}[Subtraction is not on the list]
+Subtraction is absent because it is not a new operation. By \S8.3 it is defined
+as $\vc{u}-\vc{v}:=\vc{u}+(-\vc{v})$, so every fact about it follows from the
+eight laws plus \textbf{A4}.
+\end{rmk}
+
+\begin{warn}
+Subtraction inherits neither \textbf{A1} nor \textbf{A2}. It is
+\emph{not} commutative: $\vc{u}-\vc{v}$ and $\vc{v}-\vc{u}$ are negatives of
+each other, not equal --- which is exactly the two-directions example of \S7.3.
+And it is not associative: $(\vc{u}-\vc{v})-\vc{w}$ and
+$\vc{u}-(\vc{v}-\vc{w})$ differ by $2\vc{w}$. Parenthesise subtractions.
+\end{warn}
+
+\lookahead In \S1 we promised that ``vector'' would eventually be redefined ---
+that instead of an arrow with a magnitude and a direction, a vector would become
+any element of a set carrying two operations that obey a short list of axioms.
+The list above \emph{is} that list. A set equipped with an addition and a scalar
+multiplication satisfying \textbf{A1}--\textbf{A4} and \textbf{S1}--\textbf{S4}
+is called a \emph{vector space}, and once we adopt that definition, matrices,
+polynomials and functions all turn out to be vectors, with these same eight laws
+doing all the work. Nothing about the laws mentions arrows, coordinates, or the
+number $2$.
 
 %==============================================================================
 \section{When are two vectors equal?}
