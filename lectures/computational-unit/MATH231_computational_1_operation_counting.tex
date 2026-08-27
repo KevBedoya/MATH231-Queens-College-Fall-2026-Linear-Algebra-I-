@@ -16,7 +16,7 @@
 %  AUDIENCE: distributed to students.  Keep it free of instructor-facing
 %  apparatus -- time budgets, pacing notes, teaching cues.
 %
-%  THREE NOTES on the exercises in Sec. 1.8, all deliberate:
+%  TWO NOTES on the exercises in Sec. 1.8, both deliberate:
 %
 %   (a) E1 (orthonormal u, v; count proj_u(v)) has answer ZERO operations:
 %       orthonormality gives <u,v> = 0, so the projection IS the zero vector and
@@ -28,11 +28,6 @@
 %       |||u|| - ||v||| costs 4n+1 = 201, i.e. MORE.  Stated plainly, because
 %       "given information is always worth using" is a false lesson.
 %
-%   (c) E4 (count <u,v> + w) is a TYPE ERROR, not a counting problem: <u,v> is
-%       a scalar and w is a vector, so the sum is undefined.  The answer key
-%       says so and notes that NumPy/MATLAB would broadcast, which is a
-%       language convention rather than mathematics -- a distinction worth
-%       drawing early in a computational unit.
 %
 %  Compile with pdflatex (standard TeX Live packages only; uses tikz).
 %==============================================================================
@@ -778,23 +773,6 @@ are exactly $n$ terms. Therefore
 \]
 Take $C=1$ and $n_0=1$. \hfill$\blacksquare$
 \end{ex}
-
-\begin{rmk}[Why that sum is not $O(n^{2})$]
-The bound above is not merely convenient --- $n^{3}$ is the right answer, and
-$O(n^{2})$ would be false. The sum has a closed form,
-\[
-  \sum_{k=1}^{n}k^{2} = \frac{n(n+1)(2n+1)}{6} ,
-\]
-whose leading behaviour is $\tfrac{2n^{3}}{6}=\tfrac{n^{3}}{3}$. If the sum were
-$O(n^{2})$ there would be a $C$ with $\tfrac{n^{3}}{3}\lesssim Cn^{2}$ for all
-large $n$, which rearranges to $n\lesssim 3C$ --- impossible, since $n$ grows
-without bound while $3C$ is fixed. It is worth checking a small case against the
-formula: for $n=3$, the sum is $1+4+9=14$ and
-$\tfrac{3\cdot4\cdot7}{6}=14$. \checkmark
-
-The moral is that ``$n$ terms, each at most $n^{2}$'' gives $n^{3}$, not
-$n^{2}$. Counting the terms is part of the estimate.
-\end{rmk}
 
 %------------------------------------------------------------------------------
 \subsection{A note on what Big-O does and does not say}
