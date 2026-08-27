@@ -1,0 +1,480 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  COMPUTATIONAL UNIT, PART 1 -- Counting Operations
+%
+%  A NEW UNIT.  Section numbering restarts at 1 here; it does NOT continue from
+%  the vector unit.  Consequently every cross-reference OUT of this unit must
+%  name the unit explicitly ("the vector unit, Sec. 11.3"), because a bare
+%  "Sec. 11.3" would be ambiguous -- the vector unit has one and so will this.
+%  Sec. 1 states that convention for students in the front matter.
+%
+%  STATUS: in progress.  This part covers operation counting only.  Asymptotic
+%  notation (Big-O) and floating-point arithmetic are the announced sequels and
+%  are deliberately NOT introduced here -- Sec. 1.7 calls this a "first glimmer"
+%  and flags both forward.
+%
+%  AUDIENCE: distributed to students.  Keep it free of instructor-facing
+%  apparatus -- time budgets, pacing notes, teaching cues.
+%
+%  THREE NOTES on the exercises in Sec. 1.8, all deliberate:
+%
+%   (a) E1 (orthonormal u, v; count proj_u(v)) has answer ZERO operations:
+%       orthonormality gives <u,v> = 0, so the projection IS the zero vector and
+%       no arithmetic is required.  The answer key shows the 5n-1 = 999 you pay
+%       if you ignore the hypothesis.
+%
+%   (b) E2 (cos = 1; count ||u - v||) is the case where the hypothesis does NOT
+%       help.  Direct computation is 3n = 150.  The identity route via
+%       |||u|| - ||v||| costs 4n+1 = 201, i.e. MORE.  Stated plainly, because
+%       "given information is always worth using" is a false lesson.
+%
+%   (c) E4 (count <u,v> + w) is a TYPE ERROR, not a counting problem: <u,v> is
+%       a scalar and w is a vector, so the sum is undefined.  The answer key
+%       says so and notes that NumPy/MATLAB would broadcast, which is a
+%       language convention rather than mathematics -- a distinction worth
+%       drawing early in a computational unit.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses tikz).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From the vector unit.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+
+%------------------------------------------------------------- tikz helpers --
+\tikzset{
+  opbox/.style = {draw=gray!65, rounded corners=2pt, fill=gray!8,
+                  inner sep=4pt, font=\small, minimum height=7.5mm},
+  opar/.style  = {-{Stealth[length=2.4mm,width=1.8mm]}, gray!80, thick}
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Computational Unit, Part 1 \textbullet\ Counting
+        Operations}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This opens a new unit, on the
+computational side of the subject: how much work a calculation actually costs,
+how numbers are really stored, and how the algorithms of this course are built
+and analysed.
+
+\begin{warn}[Section numbers restart]
+This unit numbers its sections from $1$ again --- they do \emph{not} continue
+from the vector unit. So a reference to ``\S1.3'' below means \S1.3 \emph{of
+this unit}. Whenever we point back at the earlier material we will say so
+explicitly, as in ``the vector unit, \S11.3''. Both units have a \S11.3, and
+they are different sections.
+\end{warn}
+
+\medskip
+\noindent\textbf{Assumed from the vector unit.} Vectors in $\R^{n}$ and
+componentwise addition (\S7 there); the dot product
+$\langle\vc{u},\vc{v}\rangle=\sum_i u_iv_i$ (\S11.3); the Euclidean norm
+(\S2); the projection $\proj{\vc{u}}{\vc{v}}$ (\S12.4); the identity
+$\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$ (\S11.6); orthogonality and
+cosine similarity (\S11.4, \S11.7); and linear dependence (\S18.4).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} Say what an
+\emph{operation} is; count exactly how many operations vector addition, the dot
+product, the norm and the projection require in $\R^{n}$; recognise redundant
+work in a formula and remove it; and explain why an exact count is worth having.
+
+%==============================================================================
+\section{Counting operations}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{A first count: adding two vectors}
+%------------------------------------------------------------------------------
+Let $\vc{u},\vc{v}\in\R^{n}$ and set $\vc{w}=\vc{u}+\vc{v}$. Here is a question
+we have never asked before:
+
+\begin{quote}
+How many calculations must a machine perform in order to produce $\vc{w}$?
+\end{quote}
+
+\noindent Before answering, one condition. Addition of vectors --- like every
+vector operation in this course --- is defined only when both inputs have the
+\emph{same} dimension. There is no sum of a vector in $\R^{3}$ and a vector in
+$\R^{5}$: the definition matches up first coordinate with first, second with
+second, and would run out. So we may take both to have exactly $n$ coordinates.
+
+Now count. Addition is componentwise, so
+\[
+  \vc{w} = [\,u_1+v_1,\ u_2+v_2,\ \dots,\ u_n+v_n\,] .
+\]
+Each slot of the answer requires exactly one addition of two real numbers, and
+there are $n$ slots. Nothing else happens. So producing $\vc{w}$ costs
+\[
+  \boxed{\,n \text{ operations}\,}
+\]
+and the same count holds for $\vc{u}-\vc{v}$, which differs only in replacing
+each addition by a subtraction.
+
+%------------------------------------------------------------------------------
+\subsection{What counts as an operation}
+%------------------------------------------------------------------------------
+\begin{defn}[Operation]
+In a computational setting, an \textbf{operation} is a single calculation
+carried out on scalar quantities by one operator --- one addition, one
+subtraction, one multiplication, one division, one square root.
+\end{defn}
+
+\noindent Two pieces of vocabulary we will use constantly: a scalar addition is
+an \textbf{add}, and a scalar multiplication is a \textbf{mult}. So the count
+above reads: vector addition in $\R^{n}$ costs $n$ adds.
+
+\begin{rmk}
+Counting every operation as costing ``one'' is a simplification, and a
+deliberate one. On real hardware a multiplication is somewhat slower than an
+addition, a division is several times slower again, and a square root slower
+still. We ignore that for now because the first thing worth knowing about a
+computation is \emph{how the count grows with $n$}, and that pattern is the same
+whichever weights you attach. We will revisit the assumption when it starts to
+matter.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The dot product}
+%------------------------------------------------------------------------------
+Now take $\langle\vc{u},\vc{v}\rangle$. Write out what the definition asks for:
+\[
+  \langle\vc{u},\vc{v}\rangle
+  = u_1v_1 + u_2v_2 + \cdots + u_nv_n .
+\]
+Two distinct stages are visible. First, $n$ products $u_iv_i$ must be formed ---
+that is $n$ mults. Then those $n$ numbers must be added into a single total.
+
+How many adds does it take to total $n$ numbers? Not $n$. Adding is a
+\emph{binary} operation, so each add consumes two numbers and returns one,
+reducing the count of outstanding numbers by exactly one. Starting with $n$
+numbers and finishing with $1$ therefore takes $n-1$ adds.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \node[opbox] (p1) at (0,0)   {$p_1$};
+  \node[opbox] (p2) at (2.6,0) {$p_1{+}p_2$};
+  \node[opbox] (p3) at (6.0,0) {$p_1{+}p_2{+}p_3$};
+  \node[opbox] (p4) at (10.4,0){$p_1{+}p_2{+}p_3{+}p_4$};
+  \draw[opar] (p1) -- (p2) node[midway,above,font=\scriptsize]{$+\,p_2$}
+                           node[midway,below,font=\scriptsize]{add 1};
+  \draw[opar] (p2) -- (p3) node[midway,above,font=\scriptsize]{$+\,p_3$}
+                           node[midway,below,font=\scriptsize]{add 2};
+  \draw[opar] (p3) -- (p4) node[midway,above,font=\scriptsize]{$+\,p_4$}
+                           node[midway,below,font=\scriptsize]{add 3};
+  \node[font=\scriptsize] at (5.2,-1.15)
+        {$4$ numbers, $3$ adds --- in general $n$ numbers, $n-1$ adds};
+\end{tikzpicture}
+\end{center}
+
+\noindent So the dot product runs in two stages:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.92]
+  \node[opbox] (a) at (0,0)    {$\vc{u},\vc{v}$};
+  \node[opbox] (b) at (5.6,0)  {$p_1,\dots,p_n$ \ \ ($p_i=u_iv_i$)};
+  \node[opbox] (c) at (11.2,0) {$\langle\vc{u},\vc{v}\rangle$};
+  \draw[opar] (a) -- (b) node[midway,above,font=\scriptsize]{multiply}
+                         node[midway,below,font=\scriptsize]{$n$ mults};
+  \draw[opar] (b) -- (c) node[midway,above,font=\scriptsize]{total them}
+                         node[midway,below,font=\scriptsize]{$n-1$ adds};
+\end{tikzpicture}
+\end{center}
+
+\noindent Adding the two stages,
+\[
+  \boxed{\,\langle\vc{u},\vc{v}\rangle \text{ costs } n + (n-1) = 2n-1
+          \text{ operations}\,}
+\]
+
+%------------------------------------------------------------------------------
+\subsection{The norm}
+%------------------------------------------------------------------------------
+Next, $\norm{\vc{u}}$. Written out term by term,
+\[
+  \norm{\vc{u}} = \bigl(u_1^{2} + u_2^{2} + \cdots + u_n^{2}\bigr)^{1/2} .
+\]
+Now three stages. Each $u_i^{2}$ is the product $u_i\cdot u_i$, so squaring all
+$n$ coordinates is $n$ mults. Totalling those $n$ squares is $n-1$ adds, by the
+counting argument of \S1.3. And finally one square root is taken, of a single
+scalar --- one operation, no matter how large $n$ is, because by that point only
+one number is left.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.92]
+  \node[opbox] (a) at (0,0)    {$[\,u_1,\dots,u_n\,]$};
+  \node[opbox] (b) at (5.0,0)  {$[\,u_1^{2},\dots,u_n^{2}\,]$};
+  \node[opbox] (c) at (9.6,0)  {$\sum_i u_i^{2}$};
+  \node[opbox] (d) at (12.8,0) {$\norm{\vc{u}}$};
+  \draw[opar] (a) -- (b) node[midway,above,font=\scriptsize]{square each}
+                         node[midway,below,font=\scriptsize]{$n$ mults};
+  \draw[opar] (b) -- (c) node[midway,above,font=\scriptsize]{total them}
+                         node[midway,below,font=\scriptsize]{$n-1$ adds};
+  \draw[opar] (c) -- (d) node[midway,above,font=\scriptsize]{$\sqrt{\ \ }$}
+                         node[midway,below,font=\scriptsize]{$1$ sqrt};
+\end{tikzpicture}
+\end{center}
+
+\noindent Adding the three stages,
+\[
+  \boxed{\,\norm{\vc{u}} \text{ costs } n + (n-1) + 1 = 2n
+          \text{ operations}\,}
+\]
+
+\begin{rmk}
+It is worth noticing where the $1$ sits. The square root is applied \emph{once},
+at the very end, to a scalar --- not once per coordinate. Miscounting this is
+the most common error in a first operation count: the stages of a computation
+operate on different numbers of quantities, and you must track how many are
+still in play at each stage.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The projection}
+%------------------------------------------------------------------------------
+Now something with several moving parts. Recall from the vector unit, \S12.4,
+\[
+  \proj{\vc{u}}{\vc{v}}
+  = \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}\cdot
+    \frac{\vc{u}}{\norm{\vc{u}}} .
+\]
+The hard work is already done: we know what a dot product and a norm cost. What
+remains is to take the formula apart and add up the pieces, being careful at
+each step about whether the quantity involved is a scalar or a vector.
+
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=2.4em,itemsep=4pt,
+                  topsep=4pt]
+  \item $\langle\vc{u},\vc{v}\rangle$ --- a dot product, so $2n-1$ operations.
+  \item $\norm{\vc{u}}$ --- a norm, so $2n$ operations. The formula asks for it
+        \emph{twice}, once in each factor, so as written that is $4n$.
+  \item $\langle\vc{u},\vc{v}\rangle/\norm{\vc{u}}$ --- careful here. Both of
+        these are \emph{scalars}, so this is a single scalar division:
+        $1$ operation.
+  \item $\vc{u}/\norm{\vc{u}}$ --- here $\vc{u}$ is a \emph{vector}, and
+        dividing it by a scalar is componentwise. That is $n$ divisions, so $n$
+        operations.
+  \item Finally the scalar from step 3 multiplies the vector from step 4, again
+        componentwise: $n$ mults, so $n$ operations.
+\end{enumerate}
+
+\noindent Adding them up,
+\[
+  (2n-1) + 4n + 1 + n + n = 8n ,
+\]
+so the formula \emph{as written} costs $8n$ operations.
+
+%------------------------------------------------------------------------------
+\subsection{Doing it better}
+%------------------------------------------------------------------------------
+Is there anything wrong with that count? Mathematically, no --- $8n$ is the
+honest cost of evaluating the expression exactly as it appears. But to anyone
+who has written code, the problem is glaring.
+
+\subsubsection*{First saving: stop computing the same thing twice}
+Why did we compute $\norm{\vc{u}}$ \emph{twice}? The two occurrences are the
+same number. Compute it once, keep it, and use it in both places. That deletes
+one of the two $2n$ charges:
+\[
+  (2n-1) + 2n + 1 + n + n = 6n .
+\]
+Nothing about the mathematics changed --- only the bookkeeping. This is the
+single most common optimisation there is, and it has a name in programming:
+\emph{common subexpression elimination}.
+
+\subsubsection*{Second saving: do not take a square root you are going to square}
+Look at what $\norm{\vc{u}}$ is used for. It appears twice, and both times it
+divides --- so what the formula really uses is $\norm{\vc{u}}^{2}$. And by the
+vector unit's \S11.6,
+\[
+  \norm{\vc{u}}^{2} = \langle\vc{u},\vc{u}\rangle ,
+\]
+which is a dot product: $2n-1$ operations, with \emph{no square root at all}.
+Rewriting the projection in the equivalent form already given in \S12.4,
+\[
+  \proj{\vc{u}}{\vc{v}}
+  = \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u} ,
+\]
+the count becomes
+\[
+  \underbrace{(2n-1)}_{\langle\vc{u},\vc{v}\rangle}
+  + \underbrace{(2n-1)}_{\langle\vc{u},\vc{u}\rangle}
+  + \underbrace{1}_{\text{one scalar division}}
+  + \underbrace{n}_{\text{scale }\vc{u}}
+  \;=\; 5n-1 .
+\]
+
+\noindent Notice the third saving hiding in that line. The old version made two
+separate passes over $\vc{u}$ --- dividing by the norm, then multiplying by the
+scalar --- costing $n+n$. Combining the two scalars into one \emph{before}
+touching the vector reduces that to a single pass of $n$ mults.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Version} & \textbf{Cost} & \textbf{What changed} \\
+\midrule
+As written                    & $8n$    & --- \\
+Reuse $\norm{\vc{u}}$          & $6n$    & compute the norm once, not twice \\
+Use $\norm{\vc{u}}^{2}=\langle\vc{u},\vc{u}\rangle$
+                              & $5n-1$  & no square root; one pass over $\vc{u}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent For $n=1000$ that is $8000$ operations against $4999$ --- the same
+answer, at a little over half the cost. And the square root, which we noted in
+\S1.2 is among the slowest operations available, has been removed entirely.
+
+%------------------------------------------------------------------------------
+\subsection{Why count at all}
+%------------------------------------------------------------------------------
+A fair question at this point is why any of this matters. The formulas are
+correct either way, and a modern machine will evaluate all three versions
+faster than you can notice.
+
+The reason is that we are stepping out of mathematics and into computation.
+Until now every object in this course has been exact and every operation free:
+$\R^{n}$ is infinite, a real number carries infinitely many digits, and writing
+$\norm{\vc{u}}$ costs nothing because writing is not computing. A machine has
+none of that. It has finitely many digits per number, finitely many operations
+per second, and finite memory, and every one of those limits will eventually
+bind.
+
+The computations here are small, and modern hardware and libraries are heavily
+optimised for exactly them. But the habit is what matters: taking a formula
+apart, asking what each stage costs, and noticing when the same quantity is
+being computed twice. Do that on a projection and you save a square root. Do it
+on an algorithm that runs a projection a million times inside a loop, and the
+difference is the difference between a program that finishes and one that does
+not.
+
+\lookahead Two threads start here. First, we have been counting \emph{exactly},
+producing answers like $5n-1$; usually the constants and the $-1$ do not matter
+and only the growth rate does, which is what \emph{asymptotic} notation captures
+--- the reason $5n-1$ and $8n$ are ``the same'' in a sense worth making precise.
+Second, we have assumed a machine stores real numbers. It does not; it stores
+\emph{floating-point} numbers, of which there are finitely many, and arithmetic
+on them is not quite the arithmetic of $\R$. Both are next.
+
+%------------------------------------------------------------------------------
+\subsection{Exercises}
+%------------------------------------------------------------------------------
+In each case, count the operations required, and keep the count \emph{as low as
+possible} --- part of the exercise is noticing what the given information lets
+you skip.
+
+\begin{enumerate}[label=\textbf{E\arabic*.},leftmargin=2.8em,itemsep=7pt,
+                  topsep=6pt]
+  \item Let $\vc{u},\vc{v}\in\R^{200}$ be orthonormal. Count the operations
+        needed to compute $\proj{\vc{u}}{\vc{v}}$.
+  \item Let $\vc{u},\vc{v}\in\R^{50}$ with $\cos(\vc{u},\vc{v})=1$. Count the
+        operations needed to compute $\norm{\vc{u}-\vc{v}}$.
+  \item Let $\vc{u},\vc{v}\in\R^{25}$ be nonzero and linearly dependent. Count
+        the operations needed to compute $\cos(\vc{u},\vc{v})$.
+  \item Let $\vc{u},\vc{v},\vc{w}\in\R^{100}$. Count the operations needed to
+        compute $\langle\vc{u},\vc{v}\rangle+\vc{w}$.
+\end{enumerate}
+
+\subsubsection*{Answer key}
+
+\noindent\textbf{E1.} \emph{Zero operations.} ``Orthonormal'' means both vectors
+are unit length \emph{and} orthogonal, so $\langle\vc{u},\vc{v}\rangle=0$ is
+given. Then
+\[
+  \proj{\vc{u}}{\vc{v}}
+  = \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u}
+  = \frac{0}{1}\,\vc{u} = \vc{0},
+\]
+and the answer is the zero vector, written down without arithmetic. Ignoring the
+hypothesis and evaluating the optimised formula would have cost $5n-1=999$
+operations to arrive at the same $\vc{0}$. The lesson is that recognising
+structure beats computing.
+
+\smallskip
+\noindent\textbf{E2.} \emph{$3n=150$ operations, and the hypothesis does not
+help.} Directly: $\vc{u}-\vc{v}$ costs $n=50$ subtractions, and taking the norm
+of the result costs $2n=100$, for $3n=150$ in total.
+
+It is worth seeing why the given information is no use. Since
+$\cos(\vc{u},\vc{v})=1$ the two vectors point the same way, and expanding as in
+the vector unit's \S13 gives
+$\norm{\vc{u}-\vc{v}}^{2}
+ =\norm{\vc{u}}^{2}-2\langle\vc{u},\vc{v}\rangle+\norm{\vc{v}}^{2}
+ =\bigl(\norm{\vc{u}}-\norm{\vc{v}}\bigr)^{2}$,
+so $\norm{\vc{u}-\vc{v}}=\bigl\lvert\norm{\vc{u}}-\norm{\vc{v}}\bigr\rvert$.
+That is a genuine shortcut in appearance, but it costs two norms and a
+subtraction: $2n+2n+1=4n+1=201$, which is \emph{more} than $150$. A shortcut is
+only a shortcut if it is cheaper.
+
+\smallskip
+\noindent\textbf{E3.} \emph{$1$ operation.} Linearly dependent and nonzero means
+parallel (vector unit, \S18.4), so $\vc{v}=\alpha\vc{u}$ for some
+$\alpha\neq0$, and the angle between them is $0$ or $\pi$. Hence
+$\cos(\vc{u},\vc{v})=\pm1$, with the sign being the sign of $\alpha$. To find
+that sign, pick any index $i$ with $u_i\neq0$ and form $\alpha=v_i/u_i$: one
+division. Then $\cos(\vc{u},\vc{v})=+1$ if $\alpha>0$ and $-1$ if $\alpha<0$.
+
+Evaluating the definition instead would cost one dot product, two norms, one
+mult and one division: $(2n-1)+2n+2n+1+1=6n+1=151$.
+
+\smallskip
+\noindent\textbf{E4.} \emph{The expression is undefined, so there is nothing to
+count.} By the signatures of the vector unit, $\langle\,\cdot\,,\cdot\,\rangle$
+maps $\R^{n}\times\R^{n}\to\R$, so $\langle\vc{u},\vc{v}\rangle$ is a
+\emph{scalar}; and $+$ maps $\R^{n}\times\R^{n}\to\R^{n}$, so it requires two
+\emph{vectors}. A scalar plus a vector is not defined --- exactly the
+same-dimension requirement noted in \S1.1, in its most extreme form.
+
+\begin{rmk}[Why E4 is not a trick question]
+Type mismatches of this kind are the most common bug in numerical code, and
+they do not always announce themselves. Written in NumPy or MATLAB, the
+expression \texttt{u@v + w} will \emph{not} raise an error: those languages
+\emph{broadcast} the scalar, quietly adding it to every entry of $\vc{w}$ at a
+cost of $n=100$ adds. That may be what you wanted, or it may be a bug that now
+produces plausible wrong numbers instead of a crash. The mathematics and the
+software disagree here, and knowing which one you are speaking is part of the
+job.
+\end{rmk}
+
+\end{document}
