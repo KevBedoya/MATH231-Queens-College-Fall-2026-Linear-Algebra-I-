@@ -76,9 +76,10 @@
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
-  opbox/.style = {draw=gray!65, rounded corners=2pt, fill=gray!8,
-                  inner sep=4pt, font=\small, minimum height=7.5mm},
-  opar/.style  = {-{Stealth[length=2.4mm,width=1.8mm]}, gray!80, thick}
+  opbox/.style    = {draw=gray!65, rounded corners=2pt, fill=gray!8,
+                     inner sep=4pt, font=\small, minimum height=7.5mm},
+  opar/.style     = {-{Stealth[length=2.4mm,width=1.8mm]}, gray!80, thick},
+  axisline/.style = {->, gray!75, thin}
 }
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
@@ -412,8 +413,6 @@ you skip.
         operations needed to compute $\norm{\vc{u}-\vc{v}}$.
   \item Let $\vc{u},\vc{v}\in\R^{25}$ be nonzero and linearly dependent. Count
         the operations needed to compute $\cos(\vc{u},\vc{v})$.
-  \item Let $\vc{u},\vc{v},\vc{w}\in\R^{100}$. Count the operations needed to
-        compute $\langle\vc{u},\vc{v}\rangle+\vc{w}$.
 \end{enumerate}
 
 \subsubsection*{Answer key}
@@ -458,23 +457,378 @@ division. Then $\cos(\vc{u},\vc{v})=+1$ if $\alpha>0$ and $-1$ if $\alpha<0$.
 Evaluating the definition instead would cost one dot product, two norms, one
 mult and one division: $(2n-1)+2n+2n+1+1=6n+1=151$.
 
-\smallskip
-\noindent\textbf{E4.} \emph{The expression is undefined, so there is nothing to
-count.} By the signatures of the vector unit, $\langle\,\cdot\,,\cdot\,\rangle$
-maps $\R^{n}\times\R^{n}\to\R$, so $\langle\vc{u},\vc{v}\rangle$ is a
-\emph{scalar}; and $+$ maps $\R^{n}\times\R^{n}\to\R^{n}$, so it requires two
-\emph{vectors}. A scalar plus a vector is not defined --- exactly the
-same-dimension requirement noted in \S1.1, in its most extreme form.
+%==============================================================================
+\section{How costs scale: asymptotic analysis}
+%==============================================================================
+Section~1 produced exact counts: $n$, $2n-1$, $2n$, $5n-1$. Exactness is
+satisfying but it is rarely what we want to know. In computer science the
+question is almost always how the count \emph{scales} --- what happens to the
+cost as the input grows.
 
-\begin{rmk}[Why E4 is not a trick question]
-Type mismatches of this kind are the most common bug in numerical code, and
-they do not always announce themselves. Written in NumPy or MATLAB, the
-expression \texttt{u@v + w} will \emph{not} raise an error: those languages
-\emph{broadcast} the scalar, quietly adding it to every entry of $\vc{w}$ at a
-cost of $n=100$ adds. That may be what you wanted, or it may be a bug that now
-produces plausible wrong numbers instead of a crash. The mathematics and the
-software disagree here, and knowing which one you are speaking is part of the
-job.
+%------------------------------------------------------------------------------
+\subsection{What an algorithm is}
+%------------------------------------------------------------------------------
+\begin{defn}[Algorithm, informally]
+An \textbf{algorithm} is a finite sequence of steps aimed at solving a problem.
+It usually has an \textbf{input} and always produces an \textbf{output}.
+\end{defn}
+
+\noindent Vector addition is about as simple an algorithm as exists. Its input
+is the pair $\vc{u},\vc{v}\in\R^{n}$; its steps are the $n$ componentwise adds;
+its output is the vector $\vc{w}=\vc{u}+\vc{v}$.
+
+\begin{rmk}
+Every algorithm emits an output --- an algorithm that produced nothing would
+have solved nothing. An input, though, is optional: an algorithm that prints the
+first thousand primes takes no input at all, and simply runs.
 \end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Operation count as a function of input size}
+%------------------------------------------------------------------------------
+To speak about scaling we need to say what is growing. For an algorithm on
+vectors, the \textbf{input size} is the number of components, $n$. So write the
+operation count as a function of it:
+\[
+  f(n) = n ,
+\]
+where $n$ is the number of components and $f(n)$ is the exact number of
+operations vector addition performs. Note that $n$ ranges over the natural
+numbers --- an input size is a count, and there is no vector in $\R^{2.7}$ ---
+so the graph of $f$ is a set of isolated points, not a curve.
+
+\begin{center}
+\begin{tikzpicture}[xscale=0.82,yscale=0.72]
+  \draw[axisline] (0,0) -- (9.0,0) node[right,font=\scriptsize,black]{$n$};
+  \draw[axisline] (0,0) -- (0,10.4) node[above,font=\scriptsize,black]{operations};
+  % ticks drawn top-to-bottom / right-to-left so the label lands clear of them
+  \foreach \n in {2,4,6,8} { \draw[gray!70] (\n,0.16) -- (\n,-0.16)
+        node[below=1pt,font=\scriptsize,gray]{$\n$}; }
+  \foreach \y in {2,4,6,8,10} { \draw[gray!70] (0.13,\y) -- (-0.13,\y)
+        node[left=1pt,font=\scriptsize,gray]{$\y$}; }
+  \draw[RoyalBlue,dotted,thick] (1,1) -- (8,8);
+  \foreach \n in {1,...,8} { \fill[RoyalBlue] (\n,\n) circle (2.4pt); }
+  \node[right,font=\scriptsize,RoyalBlue] at (8.15,8) {$f(n)=n$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The dotted line is interpolation, drawn only so the eye can see the
+pattern; the algorithm exists only at the dots. That pattern --- the relative
+geometry of $f$ --- is what we mean by the \textbf{scale} of the algorithm, and
+here it is plainly \emph{linear}. The number of operations vector addition
+performs scales linearly with the number of components.
+
+%------------------------------------------------------------------------------
+\subsection{The other algorithms}
+%------------------------------------------------------------------------------
+We already have counts for three more. Writing each as a function of input size:
+\[
+  \underbrace{g(n)=2n}_{\norm{\vc{u}}},
+  \qquad
+  \underbrace{h(n)=2n-1}_{\langle\vc{u},\vc{v}\rangle},
+  \qquad
+  \underbrace{\ell(n)=5n-1}_{\proj{\vc{u}}{\vc{v}}\ \text{computed efficiently}} .
+\]
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.05,yscale=0.28]
+  \draw[axisline] (0,0) -- (8.8,0) node[right,font=\scriptsize,black]{$n$};
+  \draw[axisline] (0,0) -- (0,44) node[above,font=\scriptsize,black]{operations};
+  \foreach \n in {2,4,6,8} { \draw[gray!70] (\n,0.55) -- (\n,-0.55)
+        node[below=1pt,font=\scriptsize,gray]{$\n$}; }
+  \foreach \y in {10,20,30,40} { \draw[gray!70] (0.09,\y) -- (-0.09,\y)
+        node[left=1pt,font=\scriptsize,gray]{$\y$}; }
+  \draw[BrickRed,dotted,thick]    (1,4)  -- (8,39);
+  \draw[ForestGreen,dotted,thick] (1,2)  -- (8,16);
+  \draw[Orange,dotted,thick]      (1,1)  -- (8,15);
+  \draw[RoyalBlue,dotted,thick]   (1,1)  -- (8,8);
+  \foreach \n in {1,...,8} {
+    \fill[BrickRed]    (\n,{5*\n-1}) circle (2.4pt);
+    \fill[ForestGreen] (\n,{2*\n})   circle (2.4pt);
+    \fill[Orange]      (\n,{2*\n-1}) circle (2.4pt);
+    \fill[RoyalBlue]   (\n,\n)       circle (2.4pt);
+  }
+  \node[right,font=\scriptsize,BrickRed]    at (8.1,39) {$\ell(n)=5n-1$};
+  \node[right,font=\scriptsize,ForestGreen] at (8.1,17.5) {$g(n)=2n$};
+  \node[right,font=\scriptsize,Orange]      at (8.1,13.5) {$h(n)=2n-1$};
+  \node[right,font=\scriptsize,RoyalBlue]   at (8.1,8)  {$f(n)=n$};
+\end{tikzpicture}
+\end{center}
+
+\noindent What do the four have in common? Every one of them is a straight line.
+The slopes differ and one is shifted down by $1$, but the \emph{shape} is
+identical: all four algorithms scale linearly with the number of components.
+Make the input as large as you like and that does not change --- a line stays a
+line.
+
+%------------------------------------------------------------------------------
+\subsection{Big-O notation}
+%------------------------------------------------------------------------------
+Since the shape is what matters and the constants are not, we want notation that
+records the shape and discards the rest.
+
+\begin{quote}
+For a count that scales linearly in the long run we write $O(n)$, read
+``big-oh of $n$'', and call it the algorithm's \textbf{runtime complexity} ---
+also its \textbf{asymptotic runtime} or \textbf{time complexity}.
+\end{quote}
+
+\noindent So vector addition is $O(n)$. And so are the norm, the dot product,
+and the projection, despite their different constants and shifts. Big-O is
+concerned only with the underlying scale, which is set by the \textbf{dominant
+term} of the count.
+
+\begin{warn}[We are not measuring time]
+``Time complexity'' is a misleading name, and it is worth being clear about it
+early. We are counting \emph{operations}, not seconds. How long a program
+actually takes depends on the processor, the language, the compiler, how the
+data sits in memory, and what else the machine is doing --- two $O(n)$
+implementations can easily differ by a factor of a hundred in wall-clock time.
+What Big-O describes is how the operation count \emph{grows}, and that is a
+property of the algorithm rather than of any machine that runs it.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Finding the dominant term}
+%------------------------------------------------------------------------------
+For a polynomial count the dominant term is the highest-degree one. Suppose an
+algorithm's count is modelled by
+\[
+  f(n) = 3n^{2} + 2n + 3 .
+\]
+As $n$ grows, $3n^{2}$ outpaces $2n$ and $3$ so completely that they stop
+mattering, and the coefficient $3$ does not change the shape --- a parabola
+stretched is still a parabola. So $f$ scales quadratically and we write
+$f(n)$ is $O(n^{2})$.
+
+When the terms are not both polynomials it can be less obvious which one wins,
+and a table of values helps.
+
+\begin{ex}[A table that nearly misleads]
+Consider $f(n) = 2^{n} + n^{5}$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}r r r l@{}}
+\toprule
+$n$ & $2^{n}$ & $n^{5}$ & larger \\
+\midrule
+$1$  & $2$             & $1$          & $2^{n}$ \\
+$2$  & $4$             & $32$         & $n^{5}$ \\
+$5$  & $32$            & $3{,}125$    & $n^{5}$ \\
+$10$ & $1{,}024$       & $100{,}000$  & $n^{5}$ \\
+$15$ & $32{,}768$      & $759{,}375$  & $n^{5}$ \\
+$20$ & $1{,}048{,}576$ & $3{,}200{,}000$ & $n^{5}$ \\
+$22$ & $4{,}194{,}304$ & $5{,}153{,}632$ & $n^{5}$ \\
+$23$ & $8{,}388{,}608$ & $6{,}436{,}343$ & $\mathbf{2^{n}}$ \\
+$25$ & $33{,}554{,}432$ & $9{,}765{,}625$ & $2^{n}$ \\
+$30$ & $1{,}073{,}741{,}824$ & $24{,}300{,}000$ & $2^{n}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Read only the first six rows and you would conclude that $n^{5}$
+dominates. It does not. The two cross between $n=22$ and $n=23$, and past that
+$2^{n}$ pulls away without limit --- by $n=30$ it is more than forty times
+larger, and the gap keeps widening. So the dominant term is $2^{n}$, and
+\[
+  f(n) = 2^{n}+n^{5} \quad\text{is}\quad O(2^{n}) .
+\]
+\end{ex}
+
+\begin{warn}
+That example is the reason a table of values is a hint and not a proof. An
+exponential eventually beats every polynomial, no matter how large the
+polynomial's degree --- but ``eventually'' can be far to the right of where you
+stopped looking. Big-O is a statement about the long run, so a handful of small
+values can point the wrong way.
+\end{warn}
+
+\begin{rmk}[A tip: compare with a ratio]
+A quick way to settle which of two positive functions dominates is to look at
+their ratio as $n$ grows. If
+\[
+  \lim_{n\to\infty}\frac{f(n)}{g(n)} = 0 ,
+\]
+then $f$ is negligible against $g$, so $g$ is the dominant one; if the limit is
+$\infty$, then $f$ dominates; and if it is a positive constant, the two scale
+alike. Two standard facts from Calculus~I settle most cases immediately:
+exponentials outgrow all polynomials, and all polynomials outgrow logarithms.
+For the example above, $n^{5}/2^{n}\to0$, confirming $2^{n}$ as dominant without
+any table.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Complexities you will meet}
+%------------------------------------------------------------------------------
+A few growth rates account for most algorithms in practice.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Complexity} & \textbf{A typical algorithm} \\
+\midrule
+$O(1)$          & reading one entry of a vector \\
+$O(\log_2 n)$   & binary search in a sorted index \\
+$O(n)$          & vector addition, the dot product, the norm \\
+$O(n\log_2 n)$  & a good general-purpose sort \\
+$O(n^{2})$      & a naive sort; a matrix--vector product \\
+$O(n^{3})$      & naive matrix multiplication; Gaussian elimination \\
+$O(2^{n})$      & checking every subset of $n$ items \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.15,yscale=0.185]
+  \draw[axisline] (0,0) -- (10.6,0) node[right,font=\scriptsize,black]{$n$};
+  \draw[axisline] (0,0) -- (0,44) node[above,font=\scriptsize,black]{operations};
+  \foreach \n in {2,4,6,8,10} { \draw[gray!70] (\n,0.8) -- (\n,-0.8)
+        node[below=1pt,font=\scriptsize,gray]{$\n$}; }
+  \foreach \y in {10,20,30,40} { \draw[gray!70] (0.1,\y) -- (-0.1,\y)
+        node[left=1pt,font=\scriptsize,gray]{$\y$}; }
+  \draw[Purple,thick,domain=1:5.32,smooth,variable=\x,samples=60]
+        plot ({\x},{2^\x});
+  \draw[BrickRed,thick,domain=1:6.32,smooth,variable=\x,samples=60]
+        plot ({\x},{\x*\x});
+  \draw[Orange,thick,domain=1:10,smooth,variable=\x,samples=60]
+        plot ({\x},{\x*ln(\x)/ln(2)});
+  \draw[RoyalBlue,thick,domain=1:10,smooth,variable=\x,samples=60]
+        plot ({\x},{\x});
+  \draw[ForestGreen,thick,domain=1:10,smooth,variable=\x,samples=60]
+        plot ({\x},{ln(\x)/ln(2)});
+  \node[right,font=\scriptsize,Purple]      at (5.4,41)  {$2^{n}$};
+  \node[right,font=\scriptsize,BrickRed]    at (6.4,41)  {$n^{2}$};
+  \node[right,font=\scriptsize,Orange]      at (10.1,33) {$n\log_2 n$};
+  \node[right,font=\scriptsize,RoyalBlue]   at (10.1,10) {$n$};
+  \node[right,font=\scriptsize,ForestGreen] at (10.1,3.3){$\log_2 n$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The vertical spread at the right-hand edge is the whole point. At
+$n=10$ the logarithm has reached about $3$ while $2^{n}$ passed $40$ before
+$n$ even reached $6$. Choosing a better algorithm is not a small optimisation
+like the ones in \S1.6; it changes which problems are solvable at all.
+
+%------------------------------------------------------------------------------
+\subsection{The formal definition}
+%------------------------------------------------------------------------------
+Everything so far has been informal --- ``dominant term'', ``in the long run''.
+Here is the precise statement.
+
+\begin{defn}[Big-O]
+For functions $f$ and $g$, we say $f(n)$ is $O\bigl(g(n)\bigr)$ if and only if
+there exist constants $C>0$ and $n_0\ge0$ such that
+\[
+  \lvert f(n)\rvert \;\le\; C\,\bigl\lvert g(n)\bigr\rvert
+  \qquad\text{for all } n\ge n_0 .
+\]
+\end{defn}
+
+\noindent Every function we will use counts operations, so all of them are
+positive, and the absolute values may be dropped:
+\[
+  f(n) \le C\,g(n) \qquad\text{for all } n\ge n_0 .
+\]
+Read the definition as licensing two concessions. The constant $C$ says we do
+not care about a fixed multiplicative factor; the threshold $n_0$ says we do not
+care what happens for small inputs. Proving $f$ is $O(g)$ therefore amounts to
+\emph{exhibiting} a $C$ large enough and an $n_0$ far enough right that the
+inequality holds from there on. You do not need the smallest such $C$ --- any
+one that works will do.
+
+%------------------------------------------------------------------------------
+\subsection{Three proofs}
+%------------------------------------------------------------------------------
+\begin{ex}
+Show that $f(n)=2n^{2}+2n$ is $O(n^{2})$.
+
+For every $n\ge1$ we have $n\le n^{2}$, hence $2n\le 2n^{2}$, and so
+\[
+  f(n) = 2n^{2}+2n \;\le\; 2n^{2}+2n^{2} = 4n^{2} .
+\]
+Take $C=4$ and $n_0=1$. \hfill$\blacksquare$
+\end{ex}
+
+\begin{ex}
+Show that $f(n)=n^{4}+n^{3}$ is $O(n^{4})$.
+
+For every $n\ge1$ we have $n^{3}\le n^{4}$, so
+\[
+  f(n) = n^{4}+n^{3} \;\le\; n^{4}+n^{4} = 2n^{4} .
+\]
+Take $C=2$ and $n_0=1$. \hfill$\blacksquare$
+\end{ex}
+
+\noindent Both follow the same recipe: bound every lower-order term by the
+dominant one, then collect. That recipe handles any polynomial.
+
+\begin{ex}[Challenge]
+Show that $1^{2}+2^{2}+3^{2}+\cdots+n^{2}$ is $O(n^{3})$.
+
+Here there is no highest-degree term to bound against, because the number of
+terms itself grows with $n$. The trick is to bound each term by the largest one.
+Every index $k$ in the sum satisfies $k\le n$, hence $k^{2}\le n^{2}$; and there
+are exactly $n$ terms. Therefore
+\[
+  \sum_{k=1}^{n}k^{2}
+  \;\le\; \underbrace{n^{2}+n^{2}+\cdots+n^{2}}_{n\ \text{terms}}
+  \;=\; n\cdot n^{2} = n^{3} .
+\]
+Take $C=1$ and $n_0=1$. \hfill$\blacksquare$
+\end{ex}
+
+\begin{rmk}[Why that sum is not $O(n^{2})$]
+The bound above is not merely convenient --- $n^{3}$ is the right answer, and
+$O(n^{2})$ would be false. The sum has a closed form,
+\[
+  \sum_{k=1}^{n}k^{2} = \frac{n(n+1)(2n+1)}{6} ,
+\]
+whose leading behaviour is $\tfrac{2n^{3}}{6}=\tfrac{n^{3}}{3}$. If the sum were
+$O(n^{2})$ there would be a $C$ with $\tfrac{n^{3}}{3}\lesssim Cn^{2}$ for all
+large $n$, which rearranges to $n\lesssim 3C$ --- impossible, since $n$ grows
+without bound while $3C$ is fixed. It is worth checking a small case against the
+formula: for $n=3$, the sum is $1+4+9=14$ and
+$\tfrac{3\cdot4\cdot7}{6}=14$. \checkmark
+
+The moral is that ``$n$ terms, each at most $n^{2}$'' gives $n^{3}$, not
+$n^{2}$. Counting the terms is part of the estimate.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A note on what Big-O does and does not say}
+%------------------------------------------------------------------------------
+Complexity notation comes in several forms. Big-O is an \emph{upper} bound on
+growth --- it says the cost is no worse than a certain shape. There are
+companions for the other directions: $\Omega$ for a lower bound, and $\Theta$
+when upper and lower bounds match. For this course Big-O is enough.
+
+\begin{rmk}
+Big-O is often described loosely as ``the worst case'', and for our purposes
+nothing goes wrong in saying so. Strictly, though, two separate ideas are being
+run together. \emph{Worst, best} and \emph{average case} concern which
+\emph{input} you measure; Big-O concerns how a count \emph{grows} once you have
+chosen. One can perfectly well speak of an average-case $O(n\log_2 n)$.
+
+For the algorithms in \S1 the distinction happens not to arise: vector addition
+performs exactly $n$ adds whatever the entries happen to be, and the same holds
+for the dot product, the norm and the projection. Their cost depends only on
+$n$, so best, average and worst case coincide. Algorithms where they differ ---
+searching, sorting, elimination with pivoting --- are where the vocabulary earns
+its keep.
+\end{rmk}
+
+\noindent Big-O is ubiquitous well beyond this course: it is the common language
+of software engineering, numerical analysis and scientific computing, and it is
+how the cost of every algorithm in the rest of this unit will be reported.
+
+\lookahead One assumption remains unexamined. Throughout \S1 and \S2 we have
+counted operations on \emph{real numbers}, as though a machine could hold one.
+It cannot: there are infinitely many reals and only finitely many patterns of
+bits. What a computer actually stores is a \emph{floating-point} number, and
+arithmetic on those is not quite the arithmetic of $\R$ --- sums can depend on
+the order you add them, and quantities that should cancel exactly do not. That
+is the next topic, and the last of this lecture.
 
 \end{document}
