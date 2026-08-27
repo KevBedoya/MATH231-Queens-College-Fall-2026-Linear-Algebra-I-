@@ -1,0 +1,169 @@
+% MATH 231: Linear Algebra I --- Welcome Letter
+% Queens College, CUNY --- Fall 2026
+% Instructor: Kevin Bedoya
+
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{rule}{HTML}{C8D3DF}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  urlcolor=accent,
+  pdftitle={MATH 231: Linear Algebra I --- Welcome Letter},
+  pdfauthor={Kevin Bedoya}
+}
+
+\titleformat{\section}{\large\bfseries\color{accent}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.5em}
+
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.25em, topsep=0.35em}
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+
+% FAQ question formatting
+\newcommand{\faq}[1]{\vspace{0.6em}\textbf{\color{accent}#1}\par\nobreak\vspace{0.15em}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{accent} Welcome to MATH 231: Linear Algebra I}\\[0.45em]
+  {\large Queens College, CUNY \quad$\cdot$\quad Fall 2026}\\[0.6em]
+  {\normalsize Instructor: Kevin Bedoya \quad$\cdot$\quad
+   \href{mailto:Kevin.Bedoya32@stu-mail.qc.cuny.edu}{Kevin.Bedoya32@stu-mail.qc.cuny.edu}}
+\end{center}
+
+\vspace{0.4em}
+{\color{rule}\hrule height 1.2pt}
+\vspace{1.2em}
+
+Hi class,
+
+I'm Kevin Bedoya, and I'll be your instructor for MATH 231: Linear Algebra I this fall. This will be my first time ever teaching linear algebra, and I'm genuinely excited about it.
+
+\section{A little about me}
+
+I'm a second-year graduate student in applied mathematics, with interests in numerical linear algebra, scientific computing, and AI memory. I earned my BA in computer science from Queens College last year. I do research in computational biophysics in the Physics Department (still ongoing!) and have worked on machine learning for equation discovery using SINDy and symbolic regression in the CS Department. On the teaching side, I taught MATH 141 and the CSCI 212 lab last semester, and the CSCI 48 lab over the summer.
+
+I'm also the cofounder of an AI startup called Augenta, which I founded alongside my colleague Richard Ortega (formerly an applied AI engineer at Microsoft). We recently raised \$250K. I developed Augenta's core algorithm, which applies the very theory and techniques of linear algebra that you'll be learning this semester.
+
+\section{Our first class}
+
+\begin{center}
+\begin{tabular}{@{}>{\bfseries}l l@{}}
+\toprule
+Date & Tuesday, September 1st \\
+Time & 12:10--2:00 PM \\
+Location & Kiely Hall 326 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+We'll jump into course material right away on day one.
+
+\section{What this course looks like}
+
+Most of you are computer science majors (or in applied-math-adjacent programs), so this course leans heavily into computational material and theory, including modern applications of linear algebra in numerical analysis, machine learning, vector databases, and more. We'll cover famous algorithms built on linear algebra and calculus (MATH 141 is a prerequisite), including:
+
+\begin{itemize}
+  \item $k$-means clustering
+  \item $k$-nearest neighbors
+  \item Gradient descent
+  \item Google PageRank
+  \item Image compression algorithms --- and more
+\end{itemize}
+
+\subsection*{On programming}
+
+Our language of choice will be Python, used primarily for homework, extra credit, and projects. \textbf{I will not assess your programming ability on exams in this course.}
+
+If this is your first time writing Python --- or your first time coding at all --- don't worry. Assignments will come with plenty of guidance and walkthroughs covering syntax, semantics, and the basic machinery you'll need. Python is widely considered a beginner-friendly language, and if you've already taken a programming course (CSCI 111, 211, 212, etc.), you shouldn't have much trouble picking it up.
+
+The Python projects are mostly implementation-based: you'll be asked to solve a problem computationally by implementing an algorithm that I've already taught you in lecture. Python also offers a rich ecosystem of highly optimized scientific computing packages used across industry and academia --- we'll get a lot of mileage out of \texttt{numpy}, \texttt{scipy}, \texttt{matplotlib}, and others.
+
+\section{FAQ}
+
+\faq{Where will we be communicating?}
+Discord. I'll set the server up over the weekend and follow up with the invite link. \textbf{All announcements for this class will go through the class Discord} --- schedule changes, homework, extra credit, projects, exams, and general information. We will not be using Brightspace at all this semester.
+
+\faq{Where are the resources for this class?}
+GitHub:\\
+\url{https://github.com/KevinB88/MATH231-Queens-College-Fall-2026-Linear-Algebra-I-}
+
+Lecture material, homework, extra credit assignments, projects, and practice exams will appear under their respective directories as they become available. There's also a document with links to the textbooks this class references throughout the semester --- \textbf{no purchases are required}, as I've provided links to online copies. Lectures won't follow any single textbook; instead, the texts supply additional readings, alternate perspectives, and possible homework problems. I've designed my own progression for the course to reflect a modern, applied treatment of linear algebra.
+
+\faq{Where are grades posted?}
+Gradesly: \url{https://gradesly.com/}
+
+It was developed by Professor Adam Kapelner, my former data science professor (I took MATH 640, 641, 642, and 643 with him over the past two semesters). You'll receive setup instructions over the weekend; you'll sign up using your CUNY ID and a randomly generated passcode.
+
+\faq{How am I graded?}
+You'll be graded on homework, projects, and exams: 5 homework assignments, 3 projects, and 3 exams (2 midterms and a final). The tentative distribution is:
+
+\begin{center}
+\begin{tabular}{@{}l r@{}}
+\toprule
+\textbf{Component} & \textbf{Weight} \\
+\midrule
+Homework (5 assignments) & 20\% \\
+Projects (3) & 15\% \\
+Midterm 1 & 20\% \\
+Midterm 2 & 20\% \\
+Final exam & 25\% \\
+\midrule
+\textbf{Total} & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Extra credit will be discussed as the semester progresses.
+
+\faq{How will I turn in assignments?}
+You'll commit and push your work to your own personal MATH 231 repository on GitHub. Over the weekend, I'll provide instructions on creating an account, setting up your directory structure, and using git (including what git actually is) to upload your work. This covers homework, projects, and extra credit.
+
+\faq{Is there a syllabus?}
+Most of the information in this letter will almost certainly be restated in the syllabus, which I'll have ready over the weekend and posted to GitHub. Other course information lives on GitHub as well --- but fair warning: some of it may look inconsistent or confusing right now, since I'm still working out logistics (exact topics, number of assignments, and pacing). \textbf{Where the GitHub and this letter disagree, trust this letter.}
+
+\faq{What do I need for this class?}
+Everything below is completely free:
+
+\begin{center}
+\begin{tabular}{@{}>{\bfseries}l l@{}}
+\toprule
+Primary communication & Discord \\
+Grades & Gradesly \\
+Assignments \& lecture material & GitHub \\
+Textbook access & GitHub \\
+Uploading homework & A GitHub account + git installed locally \\
+Writing code & Python + an IDE (VS Code or PyCharm) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Questions?}
+
+Feel free to email me anytime at \href{mailto:Kevin.Bedoya32@stu-mail.qc.cuny.edu}{Kevin.Bedoya32@stu-mail.qc.cuny.edu}.
+
+\vspace{0.8em}
+Looking forward to meeting you all next week --- or seeing some of you again!
+
+\vspace{1.2em}
+Best,\\[0.4em]
+\textbf{Kevin Bedoya}\\
+Instructor, MATH 231: Linear Algebra I\\
+Queens College, CUNY
+
+\end{document}
