@@ -10,11 +10,13 @@
 %      Part 2  MATH231_vectors_2_dot_product_and_projection Sections 10-12
 %      Part 3  MATH231_vectors_3_norms_and_metrics          Sections 13-15
 %      Part 4  MATH231_vectors_4_basis_and_span             Sections 16-20
-%      Part 5  MATH231_vectors_5_orthogonality_and_subspaces Section 21-
+%      Part 5  MATH231_vectors_5_orthogonality_and_subspaces Sections 21-24
 %
 %  Hence the \setcounter{section}{20} below: this part opens at Section 21.
 %
-%  STATUS: in progress.  Further sections will be appended.
+%  STATUS: complete.  Sections 21-24.  Sec. 24 closes the unit by restating
+%  every definition in R^n with Sigma notation, so it is the reference section
+%  students should return to.
 %
 %  AUDIENCE: distributed to students.  Keep it free of instructor-facing
 %  apparatus -- time budgets, pacing notes, teaching cues.
@@ -119,7 +121,7 @@ Section numbering runs continuously through all parts, so a reference such as
 2 & \S10--\S12  & orientation, the dot product, projection \\
 3 & \S13--\S15  & Cauchy--Schwarz, metrics, norms \\
 4 & \S16--\S20  & the standard basis, span, coordinates, $\R^{3}$ \\
-5 & \S21--      & orthogonality, independence, subspaces \\
+5 & \S21--\S24  & orthogonality, independence, subspaces, $\R^{n}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -137,8 +139,9 @@ linearity of the dot product; prove that mutually orthogonal nonzero vectors are
 linearly independent, both geometrically and algebraically; state the lemma that
 such vectors span; explain why the converse fails; compute coordinates against
 an orthogonal basis by projection alone; describe the subspaces of $\R^{2}$
-and $\R^{3}$ as lines and planes through the origin; and prove the Pythagorean
-identity and use it to account exactly for a projection.
+and $\R^{3}$ as lines and planes through the origin; prove the Pythagorean
+identity and use it to account exactly for a projection; and state every
+definition of the unit in $\R^{n}$ using $\Sigma$ notation.
 
 %==============================================================================
 \section{Orthogonality and independence}
@@ -617,17 +620,8 @@ $[\,3,\,0,\,3\,]$, and
 \]
 \end{ex}
 
-\noindent It also extends past two vectors. If $\vc{u}_1,\dots,\vc{u}_k$ are
-\emph{mutually} orthogonal, expanding
-$\langle\vc{u}_1+\cdots+\vc{u}_k,\ \vc{u}_1+\cdots+\vc{u}_k\rangle$ produces one
-square term per vector and one cross term per pair --- and every cross term is
-zero. So
-\[
-  \norm{\vc{u}_1+\cdots+\vc{u}_k}^{2}
-  = \norm{\vc{u}_1}^{2}+\cdots+\norm{\vc{u}_k}^{2} .
-\]
-Lengths do not add, but \emph{squared} lengths do, provided the directions are
-mutually orthogonal.
+\noindent The moral is worth stating in one line: lengths do not add, but
+\emph{squared} lengths do --- provided the two directions are orthogonal.
 
 %------------------------------------------------------------------------------
 \subsection{An exact accounting of a projection}
@@ -676,5 +670,257 @@ measured, ranked, and discarded independently of the others. That is the
 principle behind least squares, behind Parseval's identity in signal
 processing, and behind deciding how many components of a decomposition are worth
 keeping.
+
+%==============================================================================
+\section{Generalizing to \texorpdfstring{$\R^{n}$}{Rn}}
+%==============================================================================
+We began this unit with arrows in a plane and have twice widened the setting ---
+to $\R^{3}$ in \S20, and to a whole family of norms in \S14 --- without the
+definitions objecting. It is time to stop widening one dimension at a time.
+
+Fix a natural number $n$ and work in $\R^{n}$. Everything built so far
+generalizes, and this section collects the generalizations in one place. Each
+formula reduces to the one you already know when $n=2$ or $n=3$; the only real
+change is notational, since writing out $n$ terms is impossible and we use the
+$\Sigma$ notation of Lecture~0 instead.
+
+%------------------------------------------------------------------------------
+\subsection{The space and its standard basis}
+%------------------------------------------------------------------------------
+\begin{defn}[$\R^{n}$]
+For a natural number $n$,
+\[
+  \R^{n}
+  \;=\;
+  \bigl\{\,(x_1,x_2,\dots,x_n) \;\bigm|\; x_i\in\R \text{ for } i=1,\dots,n \,\bigr\},
+\]
+the set of ordered $n$-tuples of real numbers. We write a vector as
+$\vc{v}=[\,v_1,\,v_2,\,\dots,\,v_n\,]$ and call $v_i$ its $i$-th
+\textbf{coordinate}.
+\end{defn}
+
+\noindent The standard basis needs $n$ vectors, and the letters $\ivec,\jvec,\kvec$
+run out at three. So they are renamed and indexed:
+\[
+  \vc{e}_1 = [\,1,0,0,\dots,0\,],\quad
+  \vc{e}_2 = [\,0,1,0,\dots,0\,],\quad\dots,\quad
+  \vc{e}_n = [\,0,0,\dots,0,1\,] ,
+\]
+where $\vc{e}_i$ carries a $1$ in slot $i$ and $0$ everywhere else. In $\R^{3}$
+these are exactly $\ivec,\jvec,\kvec$ under new names.
+
+They are orthonormal for the same reason as before: $\norm{\vc{e}_i}=1$, and for
+$i\neq j$ the product $\langle\vc{e}_i,\vc{e}_j\rangle$ has a zero in every term.
+Every vector expands over them,
+\[
+  \vc{v} = \sum_{i=1}^{n} v_i\,\vc{e}_i ,
+\]
+and by \S21.6 the coordinates are read off by projection, $v_i=\langle\vc{e}_i,\vc{v}\rangle$,
+with no system to solve. Since a basis has $n$ vectors,
+\[
+  \dim\R^{n}=n .
+\]
+
+%------------------------------------------------------------------------------
+\subsection{Every definition, in \texorpdfstring{$n$}{n} dimensions}
+%------------------------------------------------------------------------------
+Here is the whole unit, restated. In each row $\vc{u},\vc{v},\vc{x},\vc{y}\in\R^{n}$
+and $\alpha\in\R$, and every sum runs from $i=1$ to $n$.
+
+\begin{center}
+\renewcommand{\arraystretch}{2.0}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Object} & \textbf{Where} & \textbf{Definition in $\R^{n}$} \\
+\midrule
+Addition & \S7
+  & $\vc{u}+\vc{v} = [\,u_1+v_1,\ \dots,\ u_n+v_n\,]$ \\
+Subtraction & \S7
+  & $\vc{u}-\vc{v} = [\,u_1-v_1,\ \dots,\ u_n-v_n\,]$ \\
+Scalar multiplication & \S8
+  & $\alpha\vc{v} = [\,\alpha v_1,\ \dots,\ \alpha v_n\,]$ \\
+Dot product & \S11.3
+  & $\displaystyle\langle\vc{u},\vc{v}\rangle=\sum_{i=1}^{n}u_iv_i$ \\
+Euclidean norm & \S2
+  & $\displaystyle\norm{\vc{v}}=\sqrt{\sum_{i=1}^{n}v_i^{2}}=\sqrt{\langle\vc{v},\vc{v}\rangle}$ \\
+$p$-norm & \S14.6
+  & $\displaystyle\norm{\vc{v}}_p=\Bigl(\sum_{i=1}^{n}\lvert v_i\rvert^{p}\Bigr)^{1/p}$ \\
+$\infty$-norm & \S14.7
+  & $\displaystyle\norm{\vc{v}}_\infty=\max_{1\le i\le n}\lvert v_i\rvert$ \\
+Metric & \S14.2
+  & $\displaystyle d(\vc{x},\vc{y})=\norm{\vc{x}-\vc{y}}=\sqrt{\sum_{i=1}^{n}(x_i-y_i)^{2}}$ \\
+Cosine similarity & \S11.4
+  & $\displaystyle\cos(\vc{u},\vc{v})=\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}}$ \\
+Orthogonality & \S11.7
+  & $\vc{u}\perp\vc{v} \iff \langle\vc{u},\vc{v}\rangle=0$ \\
+Component & \S12.4
+  & $\displaystyle\comp{\vc{u}}{\vc{v}}=\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}}$ \\
+Projection & \S12.4
+  & $\displaystyle\proj{\vc{u}}{\vc{v}}=\frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}^{2}}\,\vc{u}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent And the structural notions, for a collection
+$\vc{u}_1,\dots,\vc{u}_k\in\R^{n}$:
+
+\begin{center}
+\renewcommand{\arraystretch}{2.0}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Object} & \textbf{Where} & \textbf{Definition in $\R^{n}$} \\
+\midrule
+Linear combination & \S16.2
+  & $\displaystyle\sum_{i=1}^{k}\alpha_i\vc{u}_i$, \quad $\alpha_i\in\R$ \\
+Span & \S16.3
+  & $\displaystyle\spanop\{\vc{u}_1,\dots,\vc{u}_k\}
+     = \Bigl\{\sum_{i=1}^{k}\alpha_i\vc{u}_i \;\Bigm|\; \alpha_i\in\R\Bigr\}$ \\
+Linear independence & \S18.4
+  & $\displaystyle\sum_{i=1}^{k}\alpha_i\vc{u}_i=\vc{0}
+     \ \Longrightarrow\ \alpha_1=\cdots=\alpha_k=0$ \\
+Linear dependence & \S18.4
+  & some $\alpha_i$ not all zero give $\displaystyle\sum_{i=1}^{k}\alpha_i\vc{u}_i=\vc{0}$ \\
+Basis & \S16.3
+  & spans, and is linearly independent \\
+Dimension & \S17
+  & the number of vectors in a basis \\
+Subspace & \S19.3
+  & non-empty $S\subseteq\R^{n}$ closed under $+$ and scalar multiplication \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{rmk}
+Notice how little the $\Sigma$ notation is doing beyond bookkeeping. The dot
+product in $\R^{2}$ was $u_1v_1+u_2v_2$ and in $\R^{3}$ was
+$u_1v_1+u_2v_2+u_3v_3$; the notation $\sum_{i=1}^{n}u_iv_i$ says ``keep going''
+and nothing more. Definitions that were already written without reference to
+coordinates --- cosine similarity, the projection, the metric --- did not change
+at all, exactly as the table in \S20.3 predicted.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The laws and identities that come with them}
+%------------------------------------------------------------------------------
+Every algebraic fact in the unit was proved either componentwise, in which case
+the proof runs over $n$ slots instead of $2$, or from the laws, in which case it
+never mentioned coordinates at all. Either way it survives:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item the eight laws of vector arithmetic, \textbf{A1}--\textbf{A4} and
+        \textbf{S1}--\textbf{S4} (\S8.4);
+  \item the dot-product laws \textbf{D1}--\textbf{D4} and bilinearity
+        (\S11.8), including
+        $\langle\vc{u},\vc{u}\rangle=\norm{\vc{u}}^{2}$;
+  \item the norm axioms \textbf{N1}--\textbf{N3} (\S15.1), and Minkowski's
+        inequality for every $p\ge1$;
+  \item the metric axioms \textbf{M1}--\textbf{M4} (\S14.1);
+  \item \textbf{Cauchy--Schwarz}, $\lvert\langle\vc{u},\vc{v}\rangle\rvert
+        \le\norm{\vc{u}}\norm{\vc{v}}$ (\S13), and H\"older with conjugate
+        exponents (\S15.3);
+  \item the \textbf{triangle inequality}
+        $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$ (\S7.2);
+  \item the expansion
+        $\norm{\vc{u}+\vc{v}}^{2}
+         =\norm{\vc{u}}^{2}+2\langle\vc{u},\vc{v}\rangle+\norm{\vc{v}}^{2}$,
+        and with it the \textbf{Pythagorean identity} (\S23): if
+        $\langle\vc{u},\vc{v}\rangle=0$ then
+        $\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}$;
+  \item the \textbf{orthogonal decomposition}
+        $\vc{v}=\proj{\vc{u}}{\vc{v}}+\bigl(\vc{v}-\proj{\vc{u}}{\vc{v}}\bigr)$
+        (\S12.6), with the two pieces orthogonal;
+  \item \textbf{orthogonal $\Rightarrow$ independent} for nonzero vectors
+        (\S21.2), by the same proof: dot with $\vc{u}_j$, every cross term dies,
+        and $\alpha_j\norm{\vc{u}_j}^{2}=0$ forces $\alpha_j=0$.
+\end{itemize}
+
+\noindent The counting statements adjust in the obvious way: a basis for
+$\R^{n}$ has $n$ vectors, at most $n$ vectors in $\R^{n}$ can be mutually
+orthogonal and nonzero, and the subspaces of $\R^{n}$ are the origin, the lines
+through it, the planes through it, and so on up to $\R^{n}$ itself --- of every
+dimension from $0$ to $n$.
+
+%------------------------------------------------------------------------------
+\subsection{An example you cannot draw}
+%------------------------------------------------------------------------------
+\begin{ex}
+Work in $\R^{4}$ with
+\[
+  \vc{u} = [\,1,\,1,\,1,\,1\,],
+  \qquad
+  \vc{v} = [\,1,\,1,\,-1,\,-1\,] .
+\]
+Norms: $\norm{\vc{u}}=\sqrt{1+1+1+1}=2$, and likewise $\norm{\vc{v}}=2$. The
+other members of the family: $\norm{\vc{u}}_1=4$, $\norm{\vc{u}}_2=2$,
+$\norm{\vc{u}}_\infty=1$, so $1\le2\le4$, the ordering of \S14.8.
+
+Dot product: $\langle\vc{u},\vc{v}\rangle = 1+1-1-1 = 0$, so $\vc{u}$ and
+$\vc{v}$ are orthogonal --- and by \S21.2 independent --- although no picture
+was consulted and none is available.
+
+Pythagoras: $\vc{u}+\vc{v}=[\,2,\,2,\,0,\,0\,]$, so
+$\norm{\vc{u}+\vc{v}}^{2}=4+4=8$, and $\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}=4+4=8$.
+\checkmark
+
+Distance: $\vc{u}-\vc{v}=[\,0,\,0,\,2,\,2\,]$, so $d(\vc{u},\vc{v})=\sqrt{8}=2\sqrt2$,
+while $d_1=4$ and $d_\infty=2$.
+\end{ex}
+
+\begin{ex}
+Adjoin two more vectors to the pair above:
+\[
+  \vc{w} = [\,1,\,-1,\,1,\,-1\,],
+  \qquad
+  \vc{z} = [\,1,\,-1,\,-1,\,1\,] .
+\]
+Every one of the six pairings has dot product zero --- for instance
+$\langle\vc{u},\vc{w}\rangle = 1-1+1-1 = 0$ and
+$\langle\vc{v},\vc{z}\rangle = 1-1+1-1 = 0$. So $\{\vc{u},\vc{v},\vc{w},\vc{z}\}$
+is a set of four mutually orthogonal nonzero vectors in $\R^{4}$, hence
+independent, hence a basis. Coordinates against it cost four dot products and
+four divisions by $4$, with no system solved. Try to visualise it and you will
+fail; the arithmetic does not care.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{What is lost, and what is not}
+%------------------------------------------------------------------------------
+One thing genuinely does not survive: the picture. In $\R^{2}$ and $\R^{3}$ you
+can see the angle between two vectors and check a claim by drawing it. In
+$\R^{4}$ and beyond you cannot, and this is the situation flagged twice already
+--- in the remark of \S15.3 and again in \S20.4.
+
+The resolution is to reverse the order of definition. In the plane we defined
+$\theta$ geometrically in \S10.3 and \emph{derived}
+$\cos(\vc{u},\vc{v})=\langle\vc{u},\vc{v}\rangle/(\norm{\vc{u}}\norm{\vc{v}})$
+from the law of cosines. In $\R^{n}$ there is no geometric $\theta$ to start
+from, so the quotient becomes the definition:
+\[
+  \theta := \arccos\!\left(
+    \frac{\langle\vc{u},\vc{v}\rangle}{\norm{\vc{u}}\,\norm{\vc{v}}}\right)
+  \in [\,0,\pi\,] .
+\]
+That this is legitimate is exactly what Cauchy--Schwarz provides: it guarantees
+the quotient lies in $[-1,1]$, which is the domain of $\arccos$. Without the
+inequality, the definition would be writing nonsense. This is why \S15.3
+insisted that Cauchy--Schwarz is a statement about inner products rather than a
+fact about triangles --- the triangle was scaffolding, and here the scaffolding
+is gone while the statement remains.
+
+\begin{rmk}[One operation that does not generalize]
+The cross product of \S20.4 is genuinely special to $\R^{3}$. It takes two
+vectors and returns a third perpendicular to both, and no such operation exists
+in $\R^{2}$ or in $\R^{4}$. When we need ``the directions orthogonal to a given
+set'' in general dimensions, we will get them from the dot product instead, by
+solving $\langle\vc{u},\vc{x}\rangle=0$ --- a linear system.
+\end{rmk}
+
+\lookahead With $\R^{n}$ in place the unit has done its job. Every object from
+here on --- a system of equations, a matrix, an eigenvector, a least-squares fit
+--- lives in some $\R^{n}$, and the norms, dot products, projections and
+orthogonality of this unit are the tools used on all of them. What we lack is a
+way to describe transformations \emph{between} such spaces, and a systematic
+method for the linear systems that keep appearing whenever a basis is not
+orthogonal. Both are matrices, and they are next.
 
 \end{document}
