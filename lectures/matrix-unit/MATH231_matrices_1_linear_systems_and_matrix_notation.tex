@@ -1,0 +1,888 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MATRIX UNIT, PART 1 -- Linear Systems and the Matrix
+%
+%  A NEW UNIT.  Section numbering restarts at 1 here.  It does NOT continue
+%  from the vector unit (Sections 1-24) and is unrelated to the computational
+%  unit, which also restarts at 1.  Consequently every cross-reference OUT of
+%  this unit must name the unit explicitly ("the vector unit, Sec. 16.5"),
+%  because a bare "Sec. 1.5" is now ambiguous three ways.  The front matter
+%  states that convention for students.
+%
+%  STATUS: in progress.  This part motivates the matrix and stops at Vx = u.
+%  HOW to solve a system -- elimination, pivoting, existence and uniqueness --
+%  is the announced sequel and is deliberately NOT begun here; Sec. 2.6 flags
+%  it forward.
+%
+%  AUDIENCE: distributed to students.  Keep it free of instructor-facing
+%  apparatus -- time budgets, pacing notes, teaching cues.
+%
+%  INDEX CONVENTION, the one decision this document turns on.  A basis vector
+%  is written  v_i = [v_{1i}, v_{2i}, ..., v_{ni}],  so that
+%
+%        v_{ki}  =  the k-th component of the i-th basis vector
+%                =  the entry of V in row k, column i.
+%
+%  FIRST index = row = which slot; SECOND index = column = which vector.  The
+%  natural way to write it -- v_{ik} for "component k of vector i" -- reads the
+%  indices in the opposite order from the matrix position, which forces the
+%  reader to transpose mentally at every step of Sec. 2.  Sec. 1.3 states the
+%  convention explicitly and Sec. 2.2 relies on it: with it, the (k,i) entry of
+%  V is literally v_{ki} and no transposition is ever needed.
+%
+%  SEC. 2 IS DELIBERATELY SHORT.  It is the payoff of the whole document and
+%  the place a reader is most likely to get lost, so it runs concrete-first:
+%  the 3x3 example of Sec. 1.6 is carried through all four steps, and the
+%  general n x n statement is only ever "the same thing, with dots".  Resist
+%  adding intermediate notations here -- each extra layer between the system
+%  and Vx = u costs more than it explains.
+%
+%  ROW VS COLUMN.  The vector unit writes vectors in row brackets, [v_1, v_2].
+%  A matrix-vector product needs x as a column.  Sec. 2.3 has a flagged warning
+%  reconciling the two: the bracket notation never asserted a shape, and the
+%  two spellings denote the same vector.  Do not silently switch conventions
+%  without that box, and do not "fix" the vector unit to use columns.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses tikz).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From the vector unit.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}        % vectors: bold lower case
+\newcommand{\mt}[1]{\mathbf{#1}}        % matrices: bold UPPER case
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\bas}{\mathcal{B}}
+\DeclareMathOperator{\spanop}{span}
+
+%------------------------------------------------------------- tikz helpers --
+\tikzset{
+  vecarr/.style   = {-{Stealth[length=2.6mm,width=2.0mm]},very thick},
+  thinarr/.style  = {-{Stealth[length=2.2mm,width=1.7mm]},thick},
+  axisline/.style = {->,gray!75,thin}
+}
+% \lattice{xmin}{xmax}{ymin}{ymax}
+\newcommand{\lattice}[4]{%
+  \draw[step=1cm,gray!25,very thin] (#1,#3) grid (#2,#4);
+  \draw[axisline] (#1,0) -- (#2+0.45,0) node[right,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,#3) -- (0,#4+0.45) node[above,font=\scriptsize,black]{$y$};
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Matrix Unit, Part 1 \textbullet\ Linear Systems
+        and the Matrix}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This opens the unit on \emph{matrices}.
+It does not begin by defining one. It begins with a question the vector unit
+left unanswered --- given a basis and a vector, how do you find the
+coordinates? --- shows that the question is a system of $n$ linear equations,
+and then builds the matrix as the notation that system demands.
+
+\begin{warn}[Section numbers restart]
+This unit numbers its sections from $1$ again. They do \emph{not} continue from
+the vector unit, whose sections run $\S1$ to $\S24$, and they have nothing to do
+with the computational unit, which also restarts at $1$. So a bare reference
+such as ``\S1.3'' below means \S1.3 \emph{of this unit}. Whenever we point at
+either of the other two we will name it, as in ``the vector unit, \S16.5''.
+\end{warn}
+
+\medskip
+\noindent\textbf{Assumed from the vector unit.} $\R^{n}$ and the bracket
+notation $\vc{v}=[\,v_1,\dots,v_n\,]$ (\S24.1); addition and scalar
+multiplication (\S7--\S8); the dot product
+$\langle\vc{u},\vc{v}\rangle=\sum_i u_iv_i$ (\S11.3); linear combinations and
+span (\S16.2--\S16.3); coordinates and their uniqueness (\S16.4); the
+coordinate problem for the standard basis (\S16.5); linear independence
+(\S18.4); basis and dimension (\S16.3, \S17); and orthogonality (\S11.7).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} Say why a basis
+turns ``find the coordinates of $\vc{u}$'' into a system of $n$ linear
+equations in $n$ unknowns; write that system out from a given basis; say what
+it means to solve it; recognise each equation as a dot product; build the
+coefficient matrix $\mt{V}$ and the coordinate vector $\vc{x}$; state the
+definition of a matrix--vector product and compute one; write a system as
+$\mt{V}\vc{x}=\vc{u}$; and read that single equation in both directions ---
+by rows as $n$ dot products, and by columns as one linear combination.
+
+%==============================================================================
+\section{The problem a basis leaves behind}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{What a basis promises}
+%------------------------------------------------------------------------------
+Work in $\R^{n}$ and let
+\[
+  \bas = \{\,\vc{v}_1,\ \vc{v}_2,\ \dots,\ \vc{v}_n\,\}
+\]
+be a set of $n$ linearly independent vectors. That is enough to make $\bas$ a
+basis.
+
+\lookback Two facts do the work. A basis for $\R^{n}$ is a set that spans
+$\R^{n}$ and is linearly independent (\S16.3), and a basis for $\R^{n}$ has
+exactly $n$ vectors, since $\dim\R^{n}=n$ (\S17, \S24.1). What is not obvious is
+that independence alone is enough --- that $n$ independent vectors cannot fail
+to span. The vector unit proved this in $\R^{2}$ (\S18.5) and used it in
+$\R^{n}$ (\S24.4). We take it as given.
+
+\begin{rmk}
+It is worth being clear that this is a genuine theorem and not a definition. In
+principle a set could be independent and still miss part of the space; what the
+result says is that in $\R^{n}$, once you have $n$ independent vectors, there is
+no room left for it to miss anything. A proof in general dimension is one of the
+things the machinery of this unit will eventually supply, which is a fair reason
+to postpone it rather than assert it twice.
+\end{rmk}
+
+\noindent Being a basis, $\bas$ spans $\R^{n}$, and \emph{span} means exactly
+what it said in the vector unit, \S16.3: the set of all linear combinations. So
+every vector of $\R^{n}$ is reachable. Written out: for any $\vc{u}\in\R^{n}$
+there are scalars $\alpha_1,\dots,\alpha_n\in\R$ with
+\[
+  \boxed{\;\vc{u}
+  \;=\; \alpha_1\vc{v}_1 + \alpha_2\vc{v}_2 + \cdots + \alpha_n\vc{v}_n
+  \;=\; \sum_{i=1}^{n}\alpha_i\vc{v}_i \;}
+\]
+and, because coordinates against a basis are unique (\S16.4), there is exactly
+one such list of scalars.
+
+That is a promise about existence, and it is the kind of promise that is easy to
+undervalue. It says: pick any point of $\R^{n}$ you like --- any point at all,
+however far out, in however many dimensions --- and it can be built out of these
+$n$ vectors, in one and only one way.
+
+What the promise does \emph{not} do is tell you the scalars.
+
+%------------------------------------------------------------------------------
+\subsection{The reverse problem}
+%------------------------------------------------------------------------------
+So we ask for them. This is the reverse problem of the vector unit, \S16.5, now
+posed in $\R^{n}$ and against an arbitrary basis rather than the standard one:
+
+\begin{quote}
+Given a basis $\bas=\{\vc{v}_1,\dots,\vc{v}_n\}$ and a vector $\vc{u}\in\R^{n}$,
+find the scalars $\alpha_1,\dots,\alpha_n$ with
+$\vc{u}=\alpha_1\vc{v}_1+\cdots+\alpha_n\vc{v}_n$.
+\end{quote}
+
+\noindent The $\vc{v}_i$ are known. The vector $\vc{u}$ is known. The
+$\alpha_i$ are the unknowns, and \S1.1 has already told us two things about
+them before we begin: they exist, and there is only one list of them. We are
+not searching hopefully. We are computing something we know is there and know is
+unambiguous --- which is precisely the situation in which it is worth developing
+a method.
+
+\lookback When $\bas$ was the standard basis this question was free. Because
+$\vc{e}_i$ has a $1$ in slot $i$ and zeros elsewhere, the coordinates of
+$\vc{u}$ are just its components, $\alpha_i=u_i$, read off with no work at all
+(\S16.5 in $\R^{2}$, \S24.1 in $\R^{n}$). The vector unit was careful to say why:
+the standard basis is orthonormal, and the zeros that make the reading free are
+the statement $\langle\vc{e}_i,\vc{e}_j\rangle=0$. Change the basis and the zeros
+go, and with them the free answer.
+
+%------------------------------------------------------------------------------
+\subsection{The system, written out}
+%------------------------------------------------------------------------------
+To turn the vector equation into something we can compute with, expand it
+componentwise. Two vectors in $\R^{n}$ are equal exactly when all $n$ of their
+components agree (\S9), so one vector equation is $n$ scalar equations.
+
+First, notation for the components of the basis vectors. Each $\vc{v}_i$ is a
+vector in $\R^{n}$, so it has $n$ components, and we need a symbol carrying both
+\emph{which vector} and \emph{which slot}:
+\[
+  \vc{v}_i = [\,v_{1i},\ v_{2i},\ \dots,\ v_{ni}\,] ,
+  \qquad\text{so}\qquad
+  v_{ki} = \text{the } k\text{-th component of } \vc{v}_i .
+\]
+
+\begin{warn}[Which index is which]
+Read $v_{ki}$ as ``slot $k$, vector $i$''. The \emph{first} index says which
+component and the \emph{second} says which basis vector --- the opposite of the
+order in which you would say it out loud. This is deliberate, and \S2.2 is where
+it pays: written this way, $v_{ki}$ will turn out to sit in row $k$ and column
+$i$ of the object we are about to build, so the two indices are the two
+directions of a grid, in that order. Choose the other convention and you spend
+the rest of the unit transposing in your head.
+\end{warn}
+
+\noindent Now expand. Scaling $\vc{v}_i$ by $\alpha_i$ multiplies every
+component (\S8), and adding vectors adds them slot by slot (\S7), so slot $k$ of
+the right-hand side collects one term from each basis vector:
+\[
+  \text{slot } k \text{ of } \sum_{i=1}^{n}\alpha_i\vc{v}_i
+  \;=\; \alpha_1 v_{k1} + \alpha_2 v_{k2} + \cdots + \alpha_n v_{kn} .
+\]
+Setting that equal to $u_k$ for each $k=1,\dots,n$ gives $n$ equations:
+\[
+  \begin{aligned}
+    \alpha_1 v_{11} + \alpha_2 v_{12} + \cdots + \alpha_n v_{1n} &= u_1 ,\\
+    \alpha_1 v_{21} + \alpha_2 v_{22} + \cdots + \alpha_n v_{2n} &= u_2 ,\\
+    &\ \,\vdots \\
+    \alpha_1 v_{n1} + \alpha_2 v_{n2} + \cdots + \alpha_n v_{nn} &= u_n .
+  \end{aligned}
+\]
+
+\begin{defn}[Linear system]
+A \textbf{linear system} is a finite collection of linear equations in the same
+unknowns, to be satisfied \emph{simultaneously}. The display above is a system
+of $n$ equations in the $n$ unknowns $\alpha_1,\dots,\alpha_n$.
+\end{defn}
+
+\noindent Read the display in both directions once, because both readings are
+used constantly.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \textbf{Across a row.} Row $k$ is one equation. It involves every
+        unknown, and the coefficients it uses are the $k$-th components of all
+        $n$ basis vectors.
+  \item \textbf{Down a column.} Column $i$ belongs to one basis vector. Reading
+        $v_{1i},v_{2i},\dots,v_{ni}$ downward reassembles $\vc{v}_i$ itself.
+\end{itemize}
+
+\noindent That the same array of numbers organises into rows that are equations
+and columns that are vectors is not a coincidence, and it is the whole reason
+\S2 works.
+
+%------------------------------------------------------------------------------
+\subsection{What it means to solve it}
+%------------------------------------------------------------------------------
+\begin{defn}[Solving a linear system]
+To \textbf{solve} a linear system is to find values of the unknowns that satisfy
+\emph{every} equation at once. A list of values satisfying all of them is a
+\textbf{solution}.
+\end{defn}
+
+\noindent The word \emph{simultaneously} is the entire difficulty. Any one of
+those $n$ equations is easy on its own --- one equation in $n$ unknowns has
+endlessly many solutions, and you can satisfy it by picking $n-1$ of the
+$\alpha$'s at random and solving for the last. What is hard is finding the one
+choice that satisfies all $n$ at the same time. Each equation is a constraint,
+and the solution is what survives all of them together.
+
+\begin{rmk}
+For the system of \S1.3 we already know the answer set has exactly one element,
+because $\bas$ is a basis and coordinates are unique. That is a strong piece of
+information and it will not always be available. Systems in general can have one
+solution, no solution, or infinitely many, and deciding which is the case is a
+question in its own right. Here the basis hypothesis has settled it in advance,
+which makes this the cleanest possible first example of a linear system.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A worked case in \texorpdfstring{$\R^{2}$}{R2}}
+%------------------------------------------------------------------------------
+Take $n=2$ and the basis
+\[
+  \vc{v}_1 = [\,2,\,1\,], \qquad \vc{v}_2 = [\,1,\,3\,] ,
+\]
+which is independent: if $\alpha_1[2,1]+\alpha_2[1,3]=\vc{0}$ then
+$2\alpha_1+\alpha_2=0$ and $\alpha_1+3\alpha_2=0$; the first gives
+$\alpha_2=-2\alpha_1$, and substituting into the second gives
+$\alpha_1-6\alpha_1=-5\alpha_1=0$, so $\alpha_1=\alpha_2=0$. Two independent
+vectors in $\R^{2}$, so a basis.
+
+Let $\vc{u}=[\,5,\,5\,]$ and ask for its coordinates. In the notation of \S1.3,
+$v_{11}=2$, $v_{21}=1$, $v_{12}=1$, $v_{22}=3$, and the system is
+\[
+  \begin{aligned}
+    2\alpha_1 + 1\alpha_2 &= 5 ,\\
+    1\alpha_1 + 3\alpha_2 &= 5 .
+  \end{aligned}
+\]
+Solve it by substitution: the first equation gives $\alpha_2=5-2\alpha_1$, and
+putting that into the second gives $\alpha_1+15-6\alpha_1=5$, so
+$-5\alpha_1=-10$ and $\alpha_1=2$; then $\alpha_2=5-4=1$. Checking against the
+original vector equation,
+\[
+  2\vc{v}_1 + 1\vc{v}_2 = 2[\,2,\,1\,] + [\,1,\,3\,]
+  = [\,4,\,2\,] + [\,1,\,3\,] = [\,5,\,5\,] = \vc{u} . \quad\checkmark
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=0.92]
+  \lattice{-1}{6}{-1}{6}
+  \draw[vecarr,RoyalBlue]   (0,0) -- (2,1);
+  \draw[vecarr,ForestGreen] (0,0) -- (1,3);
+  \draw[thinarr,RoyalBlue!55,dashed]   (0,0) -- (4,2);
+  \draw[thinarr,ForestGreen!60,dashed] (4,2) -- (5,5);
+  \draw[vecarr,BrickRed]    (0,0) -- (5,5);
+  \node[below right,font=\scriptsize,RoyalBlue]   at (2.0,0.95) {$\vc{v}_1=[2,1]$};
+  \node[left,font=\scriptsize,ForestGreen]        at (0.95,3.0) {$\vc{v}_2=[1,3]$};
+  \node[below right,font=\scriptsize,RoyalBlue!75] at (3.6,1.75) {$\alpha_1\vc{v}_1=2\vc{v}_1$};
+  \node[right,font=\scriptsize,ForestGreen!75]    at (4.55,3.6) {$\alpha_2\vc{v}_2=\vc{v}_2$};
+  \node[above left,font=\small,BrickRed]          at (4.6,4.7) {$\vc{u}=[5,5]$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The picture is the same walk as in the vector unit, \S16.5 --- travel
+$\alpha_1$ steps along the first basis vector, then $\alpha_2$ along the second,
+and arrive at the head of $\vc{u}$ --- but the steps are no longer along the
+axes, and that is exactly what makes the arithmetic non-trivial.
+
+\begin{rmk}[What changed, and it is only one thing]
+Against the standard basis the same system would have read
+$1\alpha_1+0\alpha_2=u_1$ and $0\alpha_1+1\alpha_2=u_2$, and the zeros would
+have collapsed it on sight. Here there are no zeros: both unknowns appear in
+both equations, so neither can be found without the other, and the equations
+have to be handled together. The vector unit predicted this at the end of
+\S16.5. Substitution coped with two equations; it is not a method that survives
+twenty.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The same thing one dimension up}
+%------------------------------------------------------------------------------
+One more, in $\R^{3}$, to have a case with enough room to show the shape of
+things. Take
+\[
+  \vc{v}_1 = [\,1,\,0,\,1\,], \qquad
+  \vc{v}_2 = [\,2,\,1,\,0\,], \qquad
+  \vc{v}_3 = [\,0,\,1,\,1\,] .
+\]
+These are independent, and checking it is itself a small system: setting
+$\alpha_1\vc{v}_1+\alpha_2\vc{v}_2+\alpha_3\vc{v}_3=\vc{0}$ and reading the
+three slots gives $\alpha_1+2\alpha_2=0$, $\alpha_2+\alpha_3=0$ and
+$\alpha_1+\alpha_3=0$. The last two give $\alpha_1=\alpha_2=-\alpha_3$, and
+substituting into the first gives $-3\alpha_3=0$, so all three are zero. Three
+independent vectors in $\R^{3}$, so a basis.
+
+Now suppose the coordinates of some $\vc{u}$ turn out to be
+$\alpha_1=1$, $\alpha_2=2$, $\alpha_3=3$. Then
+\[
+  \vc{u} = 1[\,1,0,1\,] + 2[\,2,1,0\,] + 3[\,0,1,1\,]
+         = [\,1,0,1\,] + [\,4,2,0\,] + [\,0,3,3\,]
+         = [\,5,\,5,\,4\,] .
+\]
+Read off the components with the convention of \S1.3 --- $v_{ki}$ is slot $k$ of
+$\vc{v}_i$, so $v_{12}=2$ is the first slot of the second vector --- and the
+system for the unknown coordinates of $\vc{u}=[5,5,4]$ is
+\[
+  \begin{aligned}
+    1\alpha_1 + 2\alpha_2 + 0\alpha_3 &= 5 ,\\
+    0\alpha_1 + 1\alpha_2 + 1\alpha_3 &= 5 ,\\
+    1\alpha_1 + 0\alpha_2 + 1\alpha_3 &= 4 ,
+  \end{aligned}
+\]
+whose solution is $\alpha_1=1$, $\alpha_2=2$, $\alpha_3=3$, as constructed. This
+is the example \S2 will carry through. Notice already what \S1.3 promised: the
+coefficients going \emph{down} the first column are $1,0,1$, which is $\vc{v}_1$;
+down the second, $2,1,0$, which is $\vc{v}_2$; down the third, $0,1,1$, which is
+$\vc{v}_3$.
+
+%------------------------------------------------------------------------------
+\subsection{Where else these come from}
+%------------------------------------------------------------------------------
+The coordinate problem is how linear systems enter \emph{this} course, and it is
+a good entrance because everything about it is already understood: we know a
+solution exists, we know it is unique, and we know what it means. It is not the
+only entrance. Systems of linear equations arise whenever several linear
+constraints must hold at once --- balancing a chemical reaction, fitting a line
+through data, computing currents in a circuit, allocating a fixed budget across
+competing demands, enforcing conservation at every node of a network.
+
+What all of these share is not their subject matter but their \emph{shape}: a
+list of unknowns, and a list of linear equations relating them. That shape is
+what the next section names, and naming it is what lets one method serve all of
+them.
+
+%==============================================================================
+\section{Compressing the notation}
+%==============================================================================
+The system of \S1.3 is correct and unwieldy. Writing it out costs $n$ lines,
+each with $n$ terms, so a system in twenty unknowns fills a page before any work
+is done --- and none of that page is doing anything a symbol could not.
+
+Before asking \emph{how} to solve such a system, we spend this section building
+notation for it. Four steps, each one small.
+
+%------------------------------------------------------------------------------
+\subsection{Step 1: every equation is a dot product}
+%------------------------------------------------------------------------------
+Look at a single equation of the system --- row $k$:
+\[
+  \alpha_1 v_{k1} + \alpha_2 v_{k2} + \cdots + \alpha_n v_{kn}
+  \;=\; u_k .
+\]
+The left-hand side is a sum of products of paired-up numbers, which is a
+structure we have a name for. Set
+\[
+  \vc{r}_k = [\,v_{k1},\ v_{k2},\ \dots,\ v_{kn}\,],
+  \qquad
+  \vc{x}   = [\,\alpha_1,\ \alpha_2,\ \dots,\ \alpha_n\,] ,
+\]
+and the left-hand side is precisely $\langle\vc{r}_k,\vc{x}\rangle$, the dot
+product of the vector unit, \S11.3. So the system is
+\[
+  \langle\vc{r}_1,\vc{x}\rangle = u_1,
+  \qquad
+  \langle\vc{r}_2,\vc{x}\rangle = u_2,
+  \qquad \dots, \qquad
+  \langle\vc{r}_n,\vc{x}\rangle = u_n .
+\]
+Nothing has been computed and nothing has been assumed. We have only noticed
+that an operation we already have describes each line.
+
+\begin{ex}
+For the $\R^{3}$ system of \S1.6, the three vectors $\vc{r}_k$ are
+$[\,1,2,0\,]$, $[\,0,1,1\,]$ and $[\,1,0,1\,]$, and with $\vc{x}=[\,1,2,3\,]$,
+\[
+  \begin{aligned}
+    \langle[1,2,0],[1,2,3]\rangle &= 1+4+0 = 5, \\
+    \langle[0,1,1],[1,2,3]\rangle &= 0+2+3 = 5, \\
+    \langle[1,0,1],[1,2,3]\rangle &= 1+0+3 = 4 ,
+  \end{aligned}
+\]
+which are the three right-hand sides $5,5,4$. \hfill$\blacksquare$
+\end{ex}
+
+\begin{defn}[Coordinate vector]
+The vector $\vc{x}=[\,\alpha_1,\dots,\alpha_n\,]$ holding the unknown
+coordinates is the \textbf{coordinate vector} of $\vc{u}$ with respect to
+$\bas$.
+\end{defn}
+
+\begin{rmk}
+Two different vectors of $\R^{n}$ are now in play and it is worth keeping them
+apart. The vector $\vc{u}$ is a point of the space. The vector $\vc{x}$ is the
+recipe for building it out of $\bas$. They are equal only when $\bas$ is the
+standard basis --- which is the content of the vector unit's remark at \S16.4,
+that the bracket notation was silently reporting coordinates in one particular
+basis all along.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Step 2: the matrix}
+%------------------------------------------------------------------------------
+The $n$ vectors $\vc{r}_1,\dots,\vc{r}_n$ carry all the coefficients of the
+system, and $\vc{x}$ carries all the unknowns. Stack the $\vc{r}_k$ in order,
+one per line, keeping their entries aligned in columns.
+
+\begin{defn}[Matrix]
+A \textbf{matrix} is a rectangular array of numbers arranged in rows and
+columns. The matrix of the system of \S1.3 is
+\[
+  \mt{V} \;=\;
+  \begin{bmatrix}
+    v_{11} & v_{12} & \cdots & v_{1n} \\
+    v_{21} & v_{22} & \cdots & v_{2n} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    v_{n1} & v_{n2} & \cdots & v_{nn}
+  \end{bmatrix},
+\]
+with $n$ rows and $n$ columns. The number $v_{ki}$ in row $k$ and column $i$ is
+the \textbf{$(k,i)$ entry} of $\mt{V}$.
+\end{defn}
+
+\noindent This is the second object of the course, after the vector, and the
+convention of \S1.3 is what makes it painless to write down: the two indices of
+$v_{ki}$ are already the two directions of the grid, row first and column
+second. Nothing had to be rearranged.
+
+Now the two readings of \S1.3 become geometric facts about the array.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \textbf{Row $k$ of $\mt{V}$ is $\vc{r}_k$}, the coefficients of the
+        $k$-th equation. Rows are equations.
+  \item \textbf{Column $i$ of $\mt{V}$ is $\vc{v}_i$}, the $i$-th basis vector,
+        written downward. Columns are the basis.
+\end{itemize}
+
+\noindent So $\mt{V}$ is the basis $\bas$ with its vectors stood up side by side:
+\[
+  \mt{V} \;=\;
+  \left[\;
+  \begin{array}{c|c|c|c}
+    \rule{0pt}{2.4ex}\vc{v}_1 & \vc{v}_2 & \cdots & \vc{v}_n
+  \end{array}
+  \;\right] ,
+\]
+which is worth remembering as the picture of what the matrix \emph{is}, before
+it is anything else.
+
+\begin{ex}
+The $\R^{3}$ system of \S1.6 has
+\[
+  \mt{V} =
+  \begin{bmatrix}
+    1 & 2 & 0 \\
+    0 & 1 & 1 \\
+    1 & 0 & 1
+  \end{bmatrix} .
+\]
+Its rows $[1,2,0]$, $[0,1,1]$, $[1,0,1]$ are the three equations. Its columns,
+read downward, are $[1,0,1]$, $[2,1,0]$, $[0,1,1]$ --- exactly
+$\vc{v}_1,\vc{v}_2,\vc{v}_3$. \hfill$\blacksquare$
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Step 3: multiplying a matrix by a vector}
+%------------------------------------------------------------------------------
+We have a matrix holding the coefficients and a vector holding the unknowns, and
+\S2.1 said what to do with them: dot each row against $\vc{x}$. Doing that for
+every row produces $n$ numbers, which is a vector. So the operation takes a
+matrix and a vector and returns a vector, and it deserves a name and a symbol.
+
+\begin{defn}[Matrix--vector product]
+Let $\mt{V}$ be an $n\times n$ matrix with rows
+$\vc{r}_1,\dots,\vc{r}_n$, and let $\vc{x}\in\R^{n}$. The
+\textbf{matrix--vector product} $\mt{V}\vc{x}$ is the vector of $\R^{n}$ whose
+$k$-th component is the dot product of row $k$ with $\vc{x}$:
+\[
+  \mt{V}\vc{x}
+  \;=\;
+  \begin{bmatrix}
+    \langle\vc{r}_1,\vc{x}\rangle \\
+    \langle\vc{r}_2,\vc{x}\rangle \\
+    \vdots \\
+    \langle\vc{r}_n,\vc{x}\rangle
+  \end{bmatrix}
+  \;=\;
+  \begin{bmatrix}
+    \displaystyle\sum_{i=1}^{n} v_{1i}\,\alpha_i \\[4pt]
+    \displaystyle\sum_{i=1}^{n} v_{2i}\,\alpha_i \\
+    \vdots \\
+    \displaystyle\sum_{i=1}^{n} v_{ni}\,\alpha_i
+  \end{bmatrix} .
+\]
+\end{defn}
+
+\noindent In words, and this is the sentence to memorise: \emph{to multiply a
+matrix by a vector, take the dot product of each row of the matrix with that
+vector.} The row supplies one component of the answer, and there are as many
+components as rows.
+
+\begin{center}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm]
+  % --- V: three row bands, no internal column rules; rows are the unit here
+  \fill[RoyalBlue!13] (0,1) rectangle (3.4,2);
+  \draw[gray!60] (0,0) rectangle (3.4,3);
+  \foreach \y in {1,2} { \draw[gray!40] (0,\y) -- (3.4,\y); }
+  \node[font=\scriptsize,gray]      at (1.7,2.5) {row $1$};
+  \node[font=\scriptsize,RoyalBlue] at (1.7,1.5) {row $k$};
+  \node[font=\scriptsize,gray]      at (1.7,0.5) {row $n$};
+  \node[below,font=\small] at (1.7,-0.2) {$\mt{V}$};
+  % --- x: one column, n cells
+  \fill[ForestGreen!14] (4.0,0) rectangle (4.9,3);
+  \draw[gray!60] (4.0,0) rectangle (4.9,3);
+  \foreach \y in {1,2} { \draw[gray!40] (4.0,\y) -- (4.9,\y); }
+  \node[below,font=\small,ForestGreen] at (4.45,-0.2) {$\vc{x}$};
+  \node[font=\large] at (5.7,1.5) {$=$};
+  % --- u: one column, entry k highlighted
+  \draw[gray!60] (6.5,0) rectangle (7.4,3);
+  \foreach \y in {1,2} { \draw[gray!40] (6.5,\y) -- (7.4,\y); }
+  \fill[BrickRed!15] (6.5,1) rectangle (7.4,2);
+  \node[font=\scriptsize,BrickRed] at (6.95,1.5) {$u_k$};
+  \node[below,font=\small] at (6.95,-0.2) {$\vc{u}$};
+  % --- the one operation the picture is about
+  \draw[thinarr,gray!70]
+        (3.5,1.5) .. controls (4.2,3.5) and (5.8,3.7) .. (6.4,1.9);
+  \node[font=\scriptsize,gray] at (4.95,3.85)
+       {row $k$ dotted with $\vc{x}$ gives entry $k$};
+\end{tikzpicture}
+\end{center}
+
+\begin{warn}[Rows, columns, and the bracket notation]
+The vector unit wrote vectors horizontally, $\vc{v}=[\,v_1,\dots,v_n\,]$, and
+the display above writes $\vc{x}$ and $\mt{V}\vc{x}$ vertically. Nothing has
+changed about the vectors. The bracket notation never claimed a shape --- it
+listed $n$ numbers in order, which is all a vector in $\R^{n}$ is --- and
+$[\,1,2,3\,]$ and its column spelling denote the same element of $\R^{3}$.
+
+The reason for switching is that $\mt{V}\vc{x}$ dots $\vc{x}$ against each
+\emph{row}, so drawing $\vc{x}$ as a column puts each of its entries directly
+beneath the column of $\mt{V}$ it multiplies, and the arithmetic can be read off
+the page. Horizontal brackets stay in use for prose, where they take less room.
+When the distinction between a row and a column starts to carry mathematical
+weight, we will say so; here it is typography.
+\end{warn}
+
+\begin{ex}
+With $\mt{V}$ from \S2.2 and $\vc{x}=[\,1,\,2,\,3\,]$:
+\[
+  \begin{bmatrix}
+    1 & 2 & 0 \\
+    0 & 1 & 1 \\
+    1 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix} 1 \\ 2 \\ 3 \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1(1) + 2(2) + 0(3) \\
+    0(1) + 1(2) + 1(3) \\
+    1(1) + 0(2) + 1(3)
+  \end{bmatrix}
+  =
+  \begin{bmatrix} 5 \\ 5 \\ 4 \end{bmatrix} .
+\]
+Three dot products, three components. \hfill$\blacksquare$
+\end{ex}
+
+\begin{rmk}[A shape rule, for later]
+Row $k$ has $n$ entries and $\vc{x}$ has $n$ entries, and a dot product is
+defined only when both vectors have the same dimension (the vector unit,
+\S11.3). So $\mt{V}\vc{x}$ makes sense only when the number of \emph{columns} of
+$\mt{V}$ matches the number of entries of $\vc{x}$. Every matrix in this part is
+$n\times n$ and the condition is automatic, but it is the rule that will govern
+all matrix multiplication later, and it comes from nowhere more exotic than the
+dot product needing two vectors of equal length.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Step 4: \texorpdfstring{$\mt{V}\vc{x}=\vc{u}$}{Vx = u}}
+%------------------------------------------------------------------------------
+Now put the three pieces together. By \S2.3, the $k$-th component of
+$\mt{V}\vc{x}$ is $\langle\vc{r}_k,\vc{x}\rangle$. By \S2.1, the $k$-th equation
+of the system says that this equals $u_k$. Two vectors are equal exactly when
+all their components agree. So the entire system --- all $n$ equations, all $n$
+unknowns --- is the single statement
+\[
+  \boxed{\;\mt{V}\vc{x} = \vc{u}\;}
+\]
+
+That is the compression. The $\R^{3}$ example of \S1.6, which took three lines
+and nine coefficients to state, is
+\[
+  \begin{bmatrix}
+    1 & 2 & 0 \\
+    0 & 1 & 1 \\
+    1 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix} \alpha_1 \\ \alpha_2 \\ \alpha_3 \end{bmatrix}
+  =
+  \begin{bmatrix} 5 \\ 5 \\ 4 \end{bmatrix} ,
+\]
+and in $\R^{20}$ it would still be $\mt{V}\vc{x}=\vc{u}$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Symbol} & \textbf{What it is} & \textbf{Known?} \\
+\midrule
+$\mt{V}$   & the $n\times n$ matrix whose columns are the basis vectors & known \\
+$\vc{x}$   & the coordinate vector $[\,\alpha_1,\dots,\alpha_n\,]$      & \textbf{unknown} \\
+$\vc{u}$   & the vector whose coordinates we want                       & known \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Compare the shape of $\mt{V}\vc{x}=\vc{u}$ with the scalar equation
+$ax=b$, whose solution is $x=b/a$ whenever $a\neq0$. The resemblance is not
+accidental and it is not yet a method: we have no division of vectors, and no
+meaning for $\mt{V}^{-1}$. But the resemblance is the reason the notation is
+worth having. It makes a question of $n$ equations look like a question about
+one object, and questions about one object are the kind we know how to ask.
+
+\begin{rmk}[What was actually gained]
+Three things, and only the first is about saving ink.
+
+\emph{Brevity.} One symbol for $n^{2}$ coefficients.
+
+\emph{Uniformity.} The coordinate problem, a circuit, a least-squares fit and a
+network flow all reduce to $\mt{V}\vc{x}=\vc{u}$ with different $\mt{V}$. A
+method for the equation is a method for all of them at once.
+
+\emph{A new object.} $\mt{V}$ was introduced as bookkeeping, but it will not
+stay bookkeeping. Matrices add, multiply, and have their own arithmetic; a
+matrix will turn out to \emph{act} on vectors rather than merely tabulate
+numbers, and $\mt{V}\vc{x}$ will be read as a function applied to $\vc{x}$. That
+reading is where most of the rest of this course lives.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The same equation, read by columns}
+%------------------------------------------------------------------------------
+The definition in \S2.3 built $\mt{V}\vc{x}$ out of rows. There is a second way
+to read the same product, and it closes the loop back to \S1.1.
+
+Take the $\R^{3}$ computation again, and instead of collecting the arithmetic
+into three dot products, group it by which column of $\mt{V}$ each term came
+from:
+\[
+  \begin{bmatrix}
+    1(1) + 2(2) + 0(3) \\
+    0(1) + 1(2) + 1(3) \\
+    1(1) + 0(2) + 1(3)
+  \end{bmatrix}
+  =
+  1\begin{bmatrix} 1 \\ 0 \\ 1 \end{bmatrix}
+  + 2\begin{bmatrix} 2 \\ 1 \\ 0 \end{bmatrix}
+  + 3\begin{bmatrix} 0 \\ 1 \\ 1 \end{bmatrix} .
+\]
+The left side is grouped by row, the right side by column, and both are the same
+nine products added in a different order. But the right-hand side is
+$\alpha_1\vc{v}_1+\alpha_2\vc{v}_2+\alpha_3\vc{v}_3$ --- a linear combination of
+the basis vectors, with the entries of $\vc{x}$ as the weights.
+
+\begin{thm}[The two readings of a matrix--vector product]
+Let $\mt{V}$ have columns $\vc{v}_1,\dots,\vc{v}_n$ and let
+$\vc{x}=[\,\alpha_1,\dots,\alpha_n\,]$. Then
+\[
+  \mt{V}\vc{x}
+  \;=\;
+  \underbrace{\bigl[\,\langle\vc{r}_1,\vc{x}\rangle,\ \dots,\
+                      \langle\vc{r}_n,\vc{x}\rangle\,\bigr]}_{\text{by rows}}
+  \;=\;
+  \underbrace{\alpha_1\vc{v}_1 + \alpha_2\vc{v}_2 + \cdots
+              + \alpha_n\vc{v}_n}_{\text{by columns}} .
+\]
+\end{thm}
+
+\begin{proof}
+Compare slot $k$ of each side. On the left it is
+$\langle\vc{r}_k,\vc{x}\rangle=\sum_{i=1}^{n}v_{ki}\alpha_i$, by \S2.3. On the
+right, slot $k$ of $\alpha_i\vc{v}_i$ is $\alpha_i v_{ki}$, since scaling acts
+componentwise, and adding the $n$ vectors adds their $k$-th slots, giving
+$\sum_{i=1}^{n}\alpha_i v_{ki}$. The two sums have the same terms.
+\end{proof}
+
+\noindent So $\mt{V}\vc{x}=\vc{u}$ says, in the column reading,
+\[
+  \alpha_1\vc{v}_1 + \alpha_2\vc{v}_2 + \cdots + \alpha_n\vc{v}_n = \vc{u} ,
+\]
+which is the boxed equation of \S1.1 --- the one we started from. We have gone
+around a full circle and arrived back where we began, in new notation.
+
+\begin{rmk}[Why the circle was worth walking]
+Nothing was proved on the trip; the two ends are the same statement. What
+changed is that the statement now has a \emph{form}, and the form is what can be
+worked on. ``Find weights that combine these vectors into $\vc{u}$'' is a
+description. ``Solve $\mt{V}\vc{x}=\vc{u}$'' is a problem with an object in it.
+
+Keep both readings. The row reading is how you \emph{compute} a matrix--vector
+product, and it is what an algorithm implements. The column reading is how you
+\emph{understand} one: $\mt{V}\vc{x}$ is a linear combination of the columns of
+$\mt{V}$. Most of the structural theorems ahead --- when a system has a
+solution, how many, what the columns of a matrix span --- are consequences of the
+column reading.
+\end{rmk}
+
+\begin{warn}[$\mt{V}$ is not a list of the basis vectors]
+Writing $\mt{V}$ as its columns is a picture, not an identification. A basis is a
+\emph{set} --- $\bas=\{\vc{v}_1,\dots,\vc{v}_n\}$, unordered, with no repeats. A
+matrix is an \emph{array}, in which order matters and entries may repeat.
+Swapping two columns of $\mt{V}$ gives a different matrix but the same basis,
+with the coordinates permuted to match. So $\mt{V}$ records the basis
+\emph{together with} a choice of ordering for it, which the set $\bas$ alone does
+not supply.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Practice}
+%------------------------------------------------------------------------------
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.6em,itemsep=5pt]
+  \item Let $\vc{v}_1=[\,3,\,1\,]$ and $\vc{v}_2=[\,1,\,2\,]$, and let
+        $\vc{u}=[\,7,\,4\,]$. Write the system for the coordinates of $\vc{u}$,
+        solve it, and check your answer in the original vector equation.
+  \item Write the matrix $\mt{V}$ for the basis in P1, and verify that
+        $\mt{V}\vc{x}=\vc{u}$ for the $\vc{x}$ you found.
+  \item Compute
+        $\begin{bmatrix} 2 & -1 & 0 \\ 1 & 1 & 3 \\ 0 & 4 & -2 \end{bmatrix}
+         \begin{bmatrix} 1 \\ 2 \\ -1 \end{bmatrix}$
+        twice: once by the row reading, once by the column reading. The answers
+        must agree.
+  \item Let $\bas=\{\vc{e}_1,\dots,\vc{e}_n\}$ be the standard basis of
+        $\R^{n}$. Write down $\mt{V}$, and use \S2.5 to say in one sentence why
+        the system $\mt{V}\vc{x}=\vc{u}$ has solution $\vc{x}=\vc{u}$.
+  \item Suppose $\vc{v}_1=[\,1,\,2\,]$ and $\vc{v}_2=[\,2,\,4\,]$. Show that the
+        system for the coordinates of $\vc{u}=[\,3,\,1\,]$ has no solution, and
+        say which hypothesis of \S1.1 fails.
+\end{enumerate}
+
+\subsubsection*{Answer key}
+
+\noindent\textbf{P1.} The system is $3\alpha_1+\alpha_2=7$ and
+$\alpha_1+2\alpha_2=4$. From the first, $\alpha_2=7-3\alpha_1$; substituting,
+$\alpha_1+14-6\alpha_1=4$, so $-5\alpha_1=-10$ and $\alpha_1=2$, then
+$\alpha_2=1$. Check: $2[\,3,1\,]+1[\,1,2\,]=[\,6,2\,]+[\,1,2\,]=[\,7,4\,]$.
+\checkmark
+
+\smallskip
+\noindent\textbf{P2.} The columns of $\mt{V}$ are the basis vectors, so
+$\mt{V}=\begin{bmatrix} 3 & 1 \\ 1 & 2\end{bmatrix}$ and
+$\vc{x}=[\,2,\,1\,]$. Row $1$: $3(2)+1(1)=7$. Row $2$: $1(2)+2(1)=4$. So
+$\mt{V}\vc{x}=[\,7,\,4\,]=\vc{u}$. \checkmark
+
+\smallskip
+\noindent\textbf{P3.} By rows: $2(1)-1(2)+0(-1)=0$; $1(1)+1(2)+3(-1)=0$;
+$0(1)+4(2)-2(-1)=10$. So the product is $[\,0,\,0,\,10\,]$. By columns:
+\[
+  1\begin{bmatrix}2\\1\\0\end{bmatrix}
+  + 2\begin{bmatrix}-1\\1\\4\end{bmatrix}
+  + (-1)\begin{bmatrix}0\\3\\-2\end{bmatrix}
+  = \begin{bmatrix}2\\1\\0\end{bmatrix}
+  + \begin{bmatrix}-2\\2\\8\end{bmatrix}
+  + \begin{bmatrix}0\\-3\\2\end{bmatrix}
+  = \begin{bmatrix}0\\0\\10\end{bmatrix} . \quad\checkmark
+\]
+
+\smallskip
+\noindent\textbf{P4.} The columns are $\vc{e}_1,\dots,\vc{e}_n$, so $\mt{V}$ has
+$1$s down the diagonal and $0$s elsewhere. By the column reading,
+$\mt{V}\vc{x}=\alpha_1\vc{e}_1+\cdots+\alpha_n\vc{e}_n=[\,\alpha_1,\dots,\alpha_n\,]=\vc{x}$,
+so the equation reads $\vc{x}=\vc{u}$ directly. This is the vector unit's
+observation at \S24.1 that coordinates against the standard basis are the
+components themselves, now visible as a property of one particular matrix.
+
+\smallskip
+\noindent\textbf{P5.} The system is $\alpha_1+2\alpha_2=3$ and
+$2\alpha_1+4\alpha_2=1$. The second equation is twice the left-hand side of the
+first, so it demands $2(3)=1$, which is false; no pair
+$(\alpha_1,\alpha_2)$ satisfies both. The hypothesis that fails is
+\emph{independence}: $\vc{v}_2=2\vc{v}_1$, so $\bas$ is linearly dependent (the
+vector unit, \S18.4), hence not a basis, and its span is a line rather than
+$\R^{2}$ --- a line that does not contain $[\,3,\,1\,]$. With the basis
+hypothesis gone, so is the guarantee of \S1.1 that a solution exists at all.
+
+\lookahead We can now state the problem in one line but not yet solve it, and
+substitution --- fine for the $2\times2$ case of \S1.5 --- is not a method that
+scales. What is needed is a procedure that works on $\mt{V}$ directly, applies
+to any size, and terminates with the answer or with a definite report that there
+is none. That procedure is \emph{Gaussian elimination}, and it is next. With it
+come the questions that P5 has already raised: when does a system have a
+solution, when is it unique, and what does the matrix look like in each case.
+
+\end{document}
