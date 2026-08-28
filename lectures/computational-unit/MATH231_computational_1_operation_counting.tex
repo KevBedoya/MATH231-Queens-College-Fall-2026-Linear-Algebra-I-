@@ -8,6 +8,19 @@
 %  "Sec. 11.3" would be ambiguous -- the vector unit has one and so will this.
 %  Sec. 1 states that convention for students in the front matter.
 %
+%  WITHIN the computational unit, numbering then runs CONTINUOUSLY across parts,
+%  matching the vector unit's scheme:
+%
+%      Part 1  MATH231_computational_1_operation_counting        Sections 1-4
+%      Part 2  MATH231_computational_2_k_nearest_neighbours      Sections 5-10
+%      Part 3  MATH231_computational_3_k_means_clustering        Sections 11-15
+%
+%  Parts 2 and 3 therefore begin with \setcounter{section}{...}.  Both cite back
+%  into this part heavily -- Sec. 1.1 and 1.4 for the cost of a vector
+%  subtraction and a norm, Sec. 1.6 for the "do not take a square root you are
+%  going to square" saving, Sec. 2.7 for Big-O and Sec. 4.6 for FLOPs -- so a
+%  change to any of those counts propagates forward into both.
+%
 %  STATUS: complete.  Four sections: exact operation counts (1), Big-O (2), the
 %  IEEE 754 floating-point set (3), and rounding error and FLOPs (4).  The two
 %  threads flagged forward in Sec. 1.7 are now both closed here, so that
@@ -120,6 +133,21 @@ from the vector unit. So a reference to ``\S1.3'' below means \S1.3 \emph{of
 this unit}. Whenever we point back at the earlier material we will say so
 explicitly, as in ``the vector unit, \S11.3''. Both units have a \S11.3, and
 they are different sections.
+
+Within this unit, though, the numbering does run continuously from part to part:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Part} & \textbf{Sections} & \textbf{Subject} \\
+\midrule
+1 & \S1--\S4    & operation counting, Big-O, floating point, error \\
+2 & \S5--\S10   & $k$-nearest neighbours \\
+3 & \S11--\S15  & $k$-means clustering \\
+\bottomrule
+\end{tabular}
+\end{center}
 \end{warn}
 
 \medskip

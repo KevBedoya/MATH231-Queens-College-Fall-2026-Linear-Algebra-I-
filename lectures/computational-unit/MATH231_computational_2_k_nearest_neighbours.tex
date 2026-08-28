@@ -1,0 +1,1059 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  COMPUTATIONAL UNIT, PART 2 -- k-Nearest Neighbours
+%
+%  Section numbering runs CONTINUOUSLY across the parts of the computational
+%  unit, matching the vector unit's scheme:
+%
+%      Part 1  MATH231_computational_1_operation_counting        Sections 1-4
+%      Part 2  MATH231_computational_2_k_nearest_neighbours      Sections 5-10
+%      Part 3  MATH231_computational_3_k_means_clustering        Sections 11-15
+%
+%  Hence \setcounter{section}{4}: this part opens at Section 5.  References to
+%  Sections 1-4 point into Part 1.  Cross-references OUT of the unit still name
+%  the unit ("the vector unit, Sec. 14.2"), because the vector unit also has a
+%  Sec. 14 and the matrix unit also has a Sec. 1.
+%
+%  STATUS: complete.  Sections 5-10.
+%
+%  AUDIENCE: distributed to students.  Keep it free of instructor-facing
+%  apparatus -- time budgets, pacing notes, teaching cues.
+%
+%  THE CLUSTERING QUESTION, Sec. 9.  "k-NN clustering" is a phrase in wide
+%  circulation and it names two different things.  k-NN itself is SUPERVISED
+%  classification -- it needs labels and it does not cluster.  What legitimately
+%  bears the name is the k-NN GRAPH, whose connected components (or spectral
+%  cuts) are used as clusters, and which is the substrate of DBSCAN, spectral
+%  clustering and UMAP.  Sec. 9 gives both: a flagged warning drawing the
+%  distinction, then a worked 1-NN graph on six points whose two components are
+%  the two clusters.  Do not quietly "fix" this by calling k-NN a clustering
+%  algorithm, and do not drop Sec. 9 -- the phrase will be met in the wild.
+%
+%  COUNTS REUSED FROM PART 1.  Sec. 7 does not re-derive the cost of a norm; it
+%  cites Sec. 1.4 (2n operations) and adds the n subtractions that form the
+%  difference vector, giving 3n for a Euclidean distance.  If Sec. 1.4's count
+%  ever changes, Sec. 7.1 changes with it.  The squared-distance shortcut of
+%  Sec. 7.5 is deliberately framed as an instance of Sec. 1.6's "do not take a
+%  square root you are going to square".
+%
+%  THE WORKED EXAMPLE in Sec. 6.5 is built so that k=1 and k=3 DISAGREE: the
+%  point a4 = (4,5) is an A-labelled outlier sitting inside the B region, and it
+%  is the single nearest neighbour of the query.  All eight distances are
+%  distinct, deliberately, so no tie-breaking rule is needed there; ties get
+%  their own treatment in Sec. 8.4.  Changing any coordinate risks creating a
+%  tie and destroying the k=1 vs k=3 contrast, which Sec. 8.1 then builds on.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses tikz).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,shapes.geometric}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From the vector unit.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Nk}{\mathcal{N}_k}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+%--------------------------------------------------------------- pseudocode --
+\newcommand{\kw}[1]{\textsf{\bfseries #1}}
+\newcommand{\ind}{\hspace*{1.3em}}
+\newcommand{\indd}{\hspace*{2.6em}}
+\newenvironment{algo}[2]{%
+  \par\medskip\needspace{8\baselineskip}%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \hrule height 0.9pt \vspace{3pt}%
+  \noindent{\sffamily\bfseries #1}\par\vspace{2pt}%
+  \noindent{\small #2}\par\vspace{3pt}%
+  \hrule height 0.4pt \vspace{5pt}%
+  \begin{list}{\textbf{\arabic{algoline}:}}%
+    {\usecounter{algoline}\setlength{\leftmargin}{2.3em}%
+     \setlength{\labelwidth}{1.8em}\setlength{\labelsep}{0.5em}%
+     \setlength{\itemsep}{2pt}\setlength{\topsep}{0pt}%
+     \setlength{\parsep}{0pt}}%
+}{%
+  \end{list}\vspace{5pt}\hrule height 0.9pt%
+  \end{minipage}\end{center}\medskip%
+}
+\newcounter{algoline}
+
+%------------------------------------------------------------- tikz helpers --
+\tikzset{
+  opbox/.style    = {draw=gray!65, rounded corners=2pt, fill=gray!8,
+                     inner sep=4pt, font=\small, minimum height=7.5mm},
+  opar/.style     = {-{Stealth[length=2.4mm,width=1.8mm]}, gray!80, thick},
+  axisline/.style = {->, gray!75, thin},
+  ptA/.style      = {circle, fill=RoyalBlue!75, draw=RoyalBlue!90,
+                     inner sep=0pt, minimum size=5.4pt},
+  ptB/.style      = {rectangle, fill=BrickRed!75, draw=BrickRed!90,
+                     inner sep=0pt, minimum size=5.2pt},
+  ptQ/.style      = {star, star points=5, fill=ForestGreen!85,
+                     draw=ForestGreen, inner sep=0pt, minimum size=8pt}
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Computational Unit, Part 2 \textbullet\
+        $k$-Nearest Neighbours}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{4}   % this part opens at Section 5; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This is Part 2 of the computational
+unit, and the first of two on algorithms that do nothing but measure distances
+between vectors. Everything it needs was built in the vector unit; what is new
+is putting those tools to work on a problem, and then asking what the work
+costs.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Part} & \textbf{Sections} & \textbf{Subject} \\
+\midrule
+1 & \S1--\S4    & operation counting, Big-O, floating point, error \\
+2 & \S5--\S10   & $k$-nearest neighbours \\
+3 & \S11--\S15  & $k$-means clustering \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warn}[Whose \S5 is this?]
+Section numbering runs continuously through the computational unit, so a bare
+``\S1.4'' below means \S1.4 \emph{of this unit} --- Part 1. The vector unit and
+the matrix unit have their own numbering, and references into them always say
+so, as in ``the vector unit, \S14.2''.
+\end{warn}
+
+\medskip
+\noindent\textbf{Assumed.} From the vector unit: $\R^{n}$ and its arithmetic
+(\S24); the Euclidean norm (\S2) and distance $d(\vc{x},\vc{y})=\norm{\vc{x}-\vc{y}}$
+(\S14.2); the metric axioms \textbf{M1}--\textbf{M4} (\S14.1); the family of
+$p$-norms and the Manhattan and Chebyshev metrics (\S14.3--\S14.6); cosine
+similarity (\S11.4). From Part 1 of this unit: what an operation is (\S1.2), the
+cost of a norm (\S1.4), Big-O (\S2.7), and FLOPs (\S4.6).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} State the
+classification problem in vector terms; describe the $k$-nearest neighbours rule
+and run it by hand; write its pseudocode; count its operations and give its
+complexity; explain what changes as $k$ grows and why feature scaling matters;
+distinguish $k$-NN from clustering and build a $k$-NN graph; and name the
+standard ways the algorithm is made fast in practice.
+
+%==============================================================================
+\section{Data as vectors}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Turning a thing into a point}
+%------------------------------------------------------------------------------
+Everything in this part rests on one move, and the move is so routine in
+practice that it is easy to miss how much it assumes. Take some collection of
+objects --- patients, photographs, emails, houses for sale --- and describe each
+one by a fixed list of $n$ numbers. That list is a vector in $\R^{n}$, and the
+object has become a point.
+
+\begin{defn}[Feature vector]
+A \textbf{feature vector} is a vector $\vc{x}=[\,x_1,\dots,x_n\,]\in\R^{n}$ whose
+components are $n$ measured attributes of a single object, recorded in a fixed
+order. Each component is a \textbf{feature}, and $n$ is the
+\textbf{dimension} of the data.
+\end{defn}
+
+\noindent A house might become $[\,\text{area},\ \text{bedrooms},\
+\text{age},\ \text{distance to station}\,]\in\R^{4}$. A grayscale image
+$28\times28$ pixels becomes the list of its $784$ brightness values, a point in
+$\R^{784}$. A sentence, run through a modern language model, becomes a vector of
+a few hundred or a few thousand numbers.
+
+\begin{defn}[Dataset]
+A \textbf{labelled dataset} is a finite collection
+\[
+  \D = \bigl\{(\vc{x}_1,y_1),\ (\vc{x}_2,y_2),\ \dots,\ (\vc{x}_N,y_N)\bigr\},
+  \qquad \vc{x}_i\in\R^{n},
+\]
+of $N$ feature vectors, each carrying a \textbf{label} $y_i$. When the labels
+come from a finite set of categories the problem is \textbf{classification};
+when they are real numbers it is \textbf{regression}.
+\end{defn}
+
+\noindent Two numbers will recur throughout, and they measure different things:
+$N$ is how \emph{many} points there are, and $n$ is how \emph{long} each one is.
+Confusing them is the most common error in a first complexity analysis.
+
+\begin{rmk}[What the move assumes]
+Writing an object as a point in $\R^{n}$ commits to something: that the
+arithmetic of $\R^{n}$ means something about the objects. Specifically, it
+commits to \emph{distance being meaningful} --- to the claim that two houses
+whose feature vectors are close really are similar houses. That is a modelling
+assumption, not a mathematical fact, and \S8.2 is about a way it commonly fails.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The classification problem}
+%------------------------------------------------------------------------------
+\begin{quote}
+Given a labelled dataset $\D$ and a new, unlabelled point $\vc{q}\in\R^{n}$ ---
+the \textbf{query} --- predict its label.
+\end{quote}
+
+\noindent The dataset is what we have been told; the query is what we are asked
+about. A \textbf{classifier} is any rule that turns the first into an answer
+about the second.
+
+%------------------------------------------------------------------------------
+\subsection{The idea in one sentence}
+%------------------------------------------------------------------------------
+Here is the whole of $k$-nearest neighbours, before any notation:
+
+\begin{center}
+\emph{To label a new point, look at the labelled points nearest to it, and let
+them vote.}
+\end{center}
+
+\noindent That is an idea, not yet an algorithm, and turning it into one
+requires answering exactly three questions.
+
+\begin{enumerate}[label=\textbf{Q\arabic*.},leftmargin=2.6em,itemsep=4pt]
+  \item What does \emph{nearest} mean? --- \S5.4.
+  \item How many neighbours vote? --- that is the $k$, \S6.2.
+  \item How do they vote? --- \S6.3.
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\subsection{What ``nearest'' means}
+%------------------------------------------------------------------------------
+\lookback The vector unit answered Q1 in advance. A \emph{metric} is a function
+$d(\vc{x},\vc{y})$ measuring distance, subject to the four axioms
+\textbf{M1}--\textbf{M4} of \S14.1, and the unit built a whole family of them.
+The default is Euclidean distance,
+\[
+  d_2(\vc{x},\vc{y}) = \norm{\vc{x}-\vc{y}}_2
+  = \sqrt{\sum_{i=1}^{n}(x_i-y_i)^{2}} \qquad (\S14.2),
+\]
+but nothing in the algorithm requires it. The Manhattan distance $d_1$
+(\S14.3), the Chebyshev distance $d_\infty$ (\S14.4), and any $p$-norm distance
+(\S14.6) all satisfy the axioms and all may be substituted directly.
+
+Which one to use is a modelling decision. Manhattan distance is natural when the
+features are independent counts and you want each to contribute in proportion to
+its own deviation; Euclidean is natural when the features are spatial
+coordinates. For text and for high-dimensional embeddings, practitioners very
+often use \emph{cosine} distance instead,
+\[
+  d_{\cos}(\vc{x},\vc{y}) = 1 - \cos(\vc{x},\vc{y})
+  = 1 - \frac{\langle\vc{x},\vc{y}\rangle}{\norm{\vc{x}}\norm{\vc{y}}}
+  \qquad (\text{the vector unit, }\S11.4),
+\]
+which compares \emph{direction} and ignores magnitude entirely --- appropriate
+when a long document and a short one on the same topic should count as similar.
+
+\begin{rmk}
+$d_{\cos}$ is not a metric: it fails the triangle inequality \textbf{M4}. This
+is worth knowing and, for $k$-NN, worth not worrying about --- the algorithm
+only ever \emph{sorts} by the distance function, and sorting needs an ordering,
+not an axiom. Some of the fast methods in \S10.2 do rely on the triangle
+inequality, and those are the ones that stop working.
+\end{rmk}
+
+%==============================================================================
+\section{The algorithm}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Walking through it}
+%------------------------------------------------------------------------------
+Fix a metric $d$ and an integer $k\ge1$. Given the query $\vc{q}$:
+
+\begin{enumerate}[label=\textbf{Step \arabic*.},leftmargin=4.2em,itemsep=5pt]
+  \item \textbf{Measure.} Compute the distance from $\vc{q}$ to every one of the
+        $N$ points in $\D$. This produces $N$ numbers
+        $d(\vc{q},\vc{x}_1),\dots,d(\vc{q},\vc{x}_N)$ and nothing else.
+  \item \textbf{Select.} Find the $k$ smallest of those numbers, and remember
+        which points they belonged to. Call that set of points the
+        \textbf{$k$-neighbourhood} of $\vc{q}$, written $\Nk(\vc{q})$.
+  \item \textbf{Vote.} Look at the labels of those $k$ points. Predict whichever
+        label occurs most often.
+\end{enumerate}
+
+\noindent That is the entire algorithm. Notice what is \emph{not} in it: there
+is no model, no equation fitted to the data, no parameters estimated. The
+dataset is the model. Everything happens when a query arrives.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.74]
+  \draw[axisline] (-0.5,0) -- (9.8,0) node[right,font=\scriptsize,black]{$x_1$};
+  \draw[axisline] (0,-0.5) -- (0,9.9) node[above,font=\scriptsize,black]{$x_2$};
+  % the two neighbourhood balls, drawn just outside the 1st and 3rd neighbour
+  % (which sit at distance 1 and 2.236) so that they visibly enclose them
+  \draw[ForestGreen!70,dashed] (5,5) circle (1.15);
+  \draw[ForestGreen!45,dashed] (5,5) circle (2.40);
+  % class A points
+  \foreach \x/\y in {1/1, 2/3, 2/1, 4/5} { \node[ptA] at (\x,\y) {}; }
+  % class B points
+  \foreach \x/\y in {6/4, 7/6, 6/8, 8/5} { \node[ptB] at (\x,\y) {}; }
+  \node[ptQ] at (5,5) {};
+  \node[font=\scriptsize,ForestGreen!85] at (3.72,4.05) {$k=1$};
+  \node[font=\scriptsize,ForestGreen!65] at (3.00,3.15) {$k=3$};
+  \node[above,font=\scriptsize,ForestGreen!85] at (5.0,5.28) {$\vc{q}$};
+  \node[above left,font=\scriptsize,RoyalBlue] at (4.08,5.05) {$\vc{a}_4$};
+  \node[below right,font=\scriptsize,BrickRed] at (6.05,3.95) {$\vc{b}_1$};
+  % legend
+  \node[ptA] at (0.7,9.4) {}; \node[right,font=\scriptsize] at (0.95,9.4) {class $A$};
+  \node[ptB] at (3.4,9.4) {}; \node[right,font=\scriptsize] at (3.65,9.4) {class $B$};
+  \node[ptQ] at (6.1,9.4) {}; \node[right,font=\scriptsize] at (6.4,9.4) {query};
+\end{tikzpicture}
+\end{center}
+
+\noindent The two dashed circles are the picture of Step~2: growing a ball
+around $\vc{q}$ until it contains exactly $k$ points. The inner circle catches
+one point, which is blue; the outer catches three, of which two are red. So the
+two settings of $k$ disagree, and \S6.5 works out why in numbers.
+
+%------------------------------------------------------------------------------
+\subsection{The $k$}
+%------------------------------------------------------------------------------
+\begin{defn}[$k$-neighbourhood]
+The \textbf{$k$-neighbourhood} of a query $\vc{q}$, written $\Nk(\vc{q})$, is
+the set of the $k$ points of the dataset $\D$ lying closest to $\vc{q}$ under
+the metric $d$.
+\end{defn}
+
+\noindent Two extreme settings frame the choice.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item $k=1$ is the \textbf{nearest neighbour} rule: copy the label of the
+        single closest point. It follows the data exactly --- and therefore
+        follows its mistakes exactly too. One mislabelled or unusual training
+        point creates a small region around itself where every query gets the
+        wrong answer.
+  \item $k=N$ makes every query return the most common label in the entire
+        dataset, regardless of where the query is. The distances have stopped
+        mattering.
+\end{itemize}
+
+\noindent Useful values live between, and \S8.1 says how to think about
+choosing. For a two-class problem it is customary to take $k$ \emph{odd}, which
+makes a tied vote impossible.
+
+%------------------------------------------------------------------------------
+\subsection{Pseudocode}
+%------------------------------------------------------------------------------
+Write $\mathbf{1}[\,P\,]$ for the \emph{indicator} of a statement $P$: it is $1$
+when $P$ is true and $0$ when $P$ is false. Then counting how many neighbours
+carry the label $c$ is a sum of indicators, and the vote is an $\argmax$ over
+the possible labels.
+
+\begin{algo}{$k$-NN classification}
+{\emph{Input:} a labelled dataset $\D=\{(\vc{x}_i,y_i)\}_{i=1}^{N}$ with
+ $\vc{x}_i\in\R^{n}$; a query $\vc{q}\in\R^{n}$; a metric $d$; an integer
+ $k\ge1$. \quad\emph{Output:} a predicted label $\hat{y}$.}
+  \item \kw{for} $i=1$ \kw{to} $N$ \kw{do} \hfill\textit{\small Step 1: measure}
+  \item \ind $\delta_i \;\gets\; d(\vc{q},\vc{x}_i)$
+  \item \kw{end for}
+  \item let $\pi$ be a permutation of $\{1,\dots,N\}$ with
+        $\delta_{\pi(1)}\le\delta_{\pi(2)}\le\cdots\le\delta_{\pi(N)}$
+        \hfill\textit{\small Step 2: select}
+  \item $\Nk(\vc{q}) \;\gets\; \bigl\{\pi(1),\ \pi(2),\ \dots,\ \pi(k)\bigr\}$
+  \item \kw{for} each label $c$ occurring in $\D$ \kw{do}
+        \hfill\textit{\small Step 3: vote}
+  \item \ind $\displaystyle
+        \mathrm{votes}(c) \;\gets\;
+        \sum_{i\,\in\,\Nk(\vc{q})} \mathbf{1}\bigl[\,y_i = c\,\bigr]$
+  \item \kw{end for}
+  \item $\displaystyle \hat{y} \;\gets\; \argmax_{c}\ \mathrm{votes}(c)$
+  \item \kw{return} $\hat{y}$
+\end{algo}
+
+\noindent Two lines deserve a second look.
+
+Line~4 asks for a permutation that sorts the distances, which is more than the
+algorithm needs --- only the first $k$ entries of $\pi$ are ever used. Line~4 is
+written this way because it states \emph{what} is wanted with no commitment to
+\emph{how}, and \S7.2 shows the choice of how is worth a factor of $\log N$.
+
+Line~9 hides a decision. If two labels tie for the maximum, $\argmax$ does not
+say which to return. \S8.4 supplies the usual conventions.
+
+\begin{rmk}[The regression variant]
+If the labels $y_i$ are real numbers rather than categories, the vote in lines
+$6$--$9$ is replaced by an average:
+\[
+  \hat{y} \;=\; \frac{1}{k}\sum_{i\,\in\,\Nk(\vc{q})} y_i .
+\]
+Nothing else changes. Steps 1 and 2 --- which are the expensive ones --- are
+identical.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A refinement: weighting by distance}
+%------------------------------------------------------------------------------
+The vote of \S6.3 treats all $k$ neighbours equally, so a point on the far edge
+of the neighbourhood counts as much as one sitting almost on top of the query.
+A common fix weights each vote by $1/\delta_i$, or by $1/\delta_i^{2}$:
+\[
+  \mathrm{votes}(c)
+  \;=\; \sum_{i\,\in\,\Nk(\vc{q})}
+        \frac{\mathbf{1}[\,y_i=c\,]}{\delta_i} .
+\]
+This costs $k$ extra divisions and nothing else, so it does not change any
+complexity in \S7. It also softens the choice of $k$: distant neighbours are
+admitted to the vote but do not count for much, so the answer changes less
+abruptly as $k$ grows.
+
+%------------------------------------------------------------------------------
+\subsection{A worked example}
+%------------------------------------------------------------------------------
+\begin{ex}
+Work in $\R^{2}$ with Euclidean distance. The dataset is eight points, four in
+class $A$ and four in class $B$:
+\[
+  \begin{aligned}
+    A:\quad & \vc{a}_1=[\,1,1\,],\quad \vc{a}_2=[\,2,3\,],\quad
+              \vc{a}_3=[\,2,1\,],\quad \vc{a}_4=[\,4,5\,], \\
+    B:\quad & \vc{b}_1=[\,6,4\,],\quad \vc{b}_2=[\,7,6\,],\quad
+              \vc{b}_3=[\,6,8\,],\quad \vc{b}_4=[\,8,5\,].
+  \end{aligned}
+\]
+The query is $\vc{q}=[\,5,5\,]$. Step~1 computes eight distances. It is cheaper
+and equivalent to work with $\delta^{2}$ --- see \S7.5 --- so both are tabulated:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l r r l@{}}
+\toprule
+\textbf{Point} & \textbf{Label} & $\boldsymbol{\delta^{2}}$ & $\boldsymbol{\delta}$
+  & \textbf{Rank} \\
+\midrule
+$\vc{a}_4=[4,5]$ & $A$ & $1$  & $1.000$ & 1 \\
+$\vc{b}_1=[6,4]$ & $B$ & $2$  & $1.414$ & 2 \\
+$\vc{b}_2=[7,6]$ & $B$ & $5$  & $2.236$ & 3 \\
+$\vc{b}_4=[8,5]$ & $B$ & $9$  & $3.000$ & 4 \\
+$\vc{b}_3=[6,8]$ & $B$ & $10$ & $3.162$ & 5 \\
+$\vc{a}_2=[2,3]$ & $A$ & $13$ & $3.606$ & 6 \\
+$\vc{a}_3=[2,1]$ & $A$ & $25$ & $5.000$ & 7 \\
+$\vc{a}_1=[1,1]$ & $A$ & $32$ & $5.657$ & 8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent All eight distances are distinct, so Step~2 has no ambiguity. Now vary
+$k$:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+$\boldsymbol{k}$ & $\boldsymbol{\Nk(\vc{q})}$ & \textbf{Votes}
+  & \textbf{Prediction} \\
+\midrule
+$1$ & $\vc{a}_4$
+    & $A:1,\ B:0$ & $\hat{y}=A$ \\
+$3$ & $\vc{a}_4,\vc{b}_1,\vc{b}_2$
+    & $A:1,\ B:2$ & $\hat{y}=B$ \\
+$5$ & $\vc{a}_4,\vc{b}_1,\vc{b}_2,\vc{b}_4,\vc{b}_3$
+    & $A:1,\ B:4$ & $\hat{y}=B$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The answer at $k=1$ disagrees with the answer at $k=3$ and $k=5$, and
+the table shows exactly why. The point $\vc{a}_4=[4,5]$ carries label $A$ but
+sits deep inside the region occupied by $B$ --- an outlier, or a mislabelling,
+or a genuinely unusual case. Being nearest to $\vc{q}$, it decides the vote by
+itself when $k=1$. As soon as two more neighbours are admitted they are both
+$B$, and they outvote it. \hfill$\blacksquare$
+\end{ex}
+
+\begin{rmk}
+This example is the argument for $k>1$ in miniature. Raising $k$ does not make
+the classifier smarter; it makes it \emph{less sensitive to any single training
+point}. That is worth having when the data contains noise, and it is exactly
+what you do not want when the data is clean and the true boundary is intricate.
+\S8.1 is that trade-off, stated.
+\end{rmk}
+
+%==============================================================================
+\section{What it costs}
+%==============================================================================
+Now the question Part 1 taught us to ask. We count the work for \emph{one}
+query against a dataset of $N$ points in $\R^{n}$, in FLOPs (\S4.6).
+
+%------------------------------------------------------------------------------
+\subsection{Step 1: the distances}
+%------------------------------------------------------------------------------
+One Euclidean distance $d(\vc{q},\vc{x}_i)=\norm{\vc{q}-\vc{x}_i}$ is two
+operations we have already priced. Forming the difference $\vc{q}-\vc{x}_i$ is
+vector subtraction, $n$ FLOPs by \S1.1. Taking its norm is $2n$ FLOPs by \S1.4
+--- $n$ mults to square, $n-1$ adds to total, one square root. So
+\[
+  \text{one distance} \;=\; n + 2n \;=\; 3n \text{ FLOPs} ,
+\]
+and Step~1 performs $N$ of them:
+\[
+  \boxed{\;\text{Step 1} \;=\; 3Nn \text{ FLOPs} \;=\; O(Nn) . \;}
+\]
+
+\begin{rmk}
+The count is linear in \emph{both} inputs, and both matter. Doubling the number
+of training points doubles the work; so does doubling the number of features.
+This is the sense in which $k$-NN has no free lunch: every training point is
+touched, every time, at full length.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Step 2: the selection}
+%------------------------------------------------------------------------------
+Step~2 must find the $k$ smallest of $N$ numbers. There are three standard ways,
+and they are not equally good.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Method} & \textbf{Cost} & \textbf{Comment} \\
+\midrule
+Sort all $N$ distances & $O(N\log N)$
+  & what line 4 literally says; wasteful \\
+Keep a heap of the $k$ best & $O(N\log k)$
+  & one pass, $k$ items retained \\
+Quickselect & $O(N)$ average
+  & $O(N^{2})$ worst case \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The middle row is what libraries do. Scan the $N$ distances once,
+maintaining a structure holding the best $k$ seen so far; each new distance
+costs at most $O(\log k)$ to insert or reject. Since $k$ is typically a small
+constant --- $3$, $5$, $11$ --- and $N$ may be in the millions, the difference
+between $\log k$ and $\log N$ is the difference between a factor of $2$ and a
+factor of $20$.
+
+%------------------------------------------------------------------------------
+\subsection{Step 3: the vote}
+%------------------------------------------------------------------------------
+Counting the labels of $k$ points and taking the largest count is $O(k)$, and
+$k\le N$. Beside Steps 1 and 2 this is free, and it will not appear again.
+
+%------------------------------------------------------------------------------
+\subsection{The total}
+%------------------------------------------------------------------------------
+Adding the three steps,
+\[
+  T(N,n,k) \;=\; \underbrace{O(Nn)}_{\text{distances}}
+              +\ \underbrace{O(N\log k)}_{\text{selection}}
+              +\ \underbrace{O(k)}_{\text{vote}}
+  \;=\; \boxed{\;O\bigl(Nn + N\log k\bigr)\;}
+\]
+per query. In almost every real setting the first term dominates: $n$ is the
+number of features, often hundreds or thousands, while $\log k$ is a small
+number like $2$ or $3$. So the working summary is that a $k$-NN query costs
+$O(Nn)$, and $M$ queries cost $O(MNn)$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Quantity} & \textbf{Cost} & \textbf{Why} \\
+\midrule
+Training                  & $O(1)$      & store the data; nothing is computed \\
+Memory                    & $O(Nn)$     & every training point must be kept \\
+One query                 & $O(Nn + N\log k)$ & \S7.4 \\
+$M$ queries               & $O(MNn)$    & no work is shared between queries \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{rmk}[A lazy learner]
+The first row is the strangest entry in the table and the most characteristic.
+Training a $k$-NN classifier costs nothing: you keep the data. Algorithms that
+behave this way are called \textbf{lazy} --- they defer all computation to query
+time --- as opposed to \textbf{eager} learners, which do expensive work once up
+front and then answer queries cheaply.
+
+Neither is better in the abstract, and the choice is a choice about where you
+can afford to spend. Laziness is excellent when the dataset changes constantly,
+because there is no model to rebuild; adding a training point is free. It is
+terrible when queries are frequent and the dataset is large, because you pay
+$O(Nn)$ every single time and never amortise it. \S10.2 is about buying back
+some of that cost with a one-off index.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{One saving, and it is Part 1's saving}
+%------------------------------------------------------------------------------
+There is a cheap improvement to Step~1 that costs nothing to adopt. The
+algorithm never uses the \emph{value} of a distance --- only the \emph{order} of
+the distances. And squaring is increasing on non-negative numbers, so for
+$\delta,\delta'\ge0$,
+\[
+  \delta \le \delta' \iff \delta^{2} \le \delta'^{2} .
+\]
+The ranking by $\delta$ and the ranking by $\delta^{2}$ are therefore the same
+ranking, and we may compare squared distances and never take a square root:
+\[
+  \delta_i^{2} = \sum_{j=1}^{n}(q_j - x_{ij})^{2}
+  \qquad\text{costs } n + n + (n-1) = 3n-1 \text{ FLOPs} .
+\]
+The saving is one square root per training point, so $N$ square roots per query.
+
+\begin{rmk}
+This is exactly the second saving of \S1.6 --- ``do not take a square root you
+are going to square'' --- arriving in a new setting, and it is worth noticing
+that the argument is not the same one. In \S1.6 the square root cancelled
+algebraically. Here it does not cancel at all; it is discarded because the
+answer only depends on the ordering, and the square root preserves orderings.
+Different reason, same square root, same saving.
+
+In Big-O terms nothing has happened: $3n-1$ and $3n$ are both $O(n)$. In wall
+clock terms something has, because a square root is among the slowest operations
+a processor offers (\S1.2), and this removes one per training point per query.
+It is the standard implementation, and the table in \S6.5 was built on it.
+\end{rmk}
+
+%==============================================================================
+\section{Choosing \texorpdfstring{$k$}{k}, and what goes wrong}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Small $k$, large $k$}
+%------------------------------------------------------------------------------
+The example of \S6.5 showed the two failure directions in one dataset.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+& \textbf{$k$ too small} & \textbf{$k$ too large} \\
+\midrule
+Boundary shape   & jagged, follows every point & smooth, ignores real detail \\
+Sensitive to     & noise and mislabelling      & nothing much \\
+Failure mode     & memorises the training data & predicts the majority label \\
+Standard name    & \emph{overfitting}          & \emph{underfitting} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent There is no formula for the right $k$. It is chosen empirically: hold
+back part of the labelled data, run the classifier on it for several values of
+$k$, and keep the value that gets the most answers right. Doing this properly
+--- so that the held-back data is not quietly used to make the choice it is
+supposed to be judging --- is called \emph{cross-validation}, and it belongs to
+a statistics course rather than this one. A common starting guess is
+$k\approx\sqrt{N}$.
+
+%------------------------------------------------------------------------------
+\subsection{Feature scaling, and why it is not optional}
+%------------------------------------------------------------------------------
+This is the failure that catches everyone once. Suppose houses are described by
+\[
+  \vc{x} = [\ \underbrace{\text{area in m}^{2}}_{\text{roughly }50\text{--}300},
+             \ \underbrace{\text{number of bedrooms}}_{\text{roughly }1\text{--}5}\ ] .
+\]
+Take two houses of equal area differing by $4$ bedrooms, and two houses with the
+same bedrooms differing by $4$ square metres. Squared Euclidean distance scores
+both differences as $16$. But one pair is a studio next to a family home and the
+other pair is indistinguishable.
+
+The arithmetic is doing precisely what it was told. Euclidean distance adds the
+squared differences of the components with equal weight, so a feature measured
+in large units contributes large differences and dominates the sum. Change the
+area to square centimetres and it will dominate absolutely; change it to
+hectares and it will vanish. \emph{The units of your features silently set their
+importance.}
+
+\begin{defn}[Standardization]
+To \textbf{standardize} a dataset, replace each feature by
+\[
+  x_{ij} \;\longmapsto\; \frac{x_{ij}-\mu_j}{\sigma_j} ,
+\]
+where $\mu_j$ is the mean of feature $j$ across all $N$ points and $\sigma_j$ is
+its standard deviation. Every feature then has mean $0$ and spread $1$, and none
+is privileged by its units.
+\end{defn}
+
+\begin{warn}[Distance is not unit-free]
+Nothing in the metric axioms of the vector unit, \S14.1, protects you here.
+$d_2$ is a perfectly good metric on $\R^{n}$ whatever the columns mean; the
+axioms constrain how $d$ behaves, not whether the numbers it is fed are
+comparable. Making them comparable is your job, it happens before the algorithm
+runs, and skipping it does not produce an error --- it produces a classifier
+that quietly ignores most of your features.
+\end{warn}
+
+\begin{rmk}
+An alternative to rescaling is to change the metric. Instead of weighting every
+feature equally, use
+$d(\vc{x},\vc{y})^{2}=\sum_j w_j (x_j-y_j)^{2}$ with weights $w_j$ chosen to
+reflect how much each feature should matter. Standardization is the special case
+$w_j = 1/\sigma_j^{2}$, which says ``every feature matters equally once its own
+spread is accounted for''.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The curse of dimensionality}
+%------------------------------------------------------------------------------
+The third difficulty is subtler and it is specific to large $n$. As the
+dimension grows, the distances from a query to all the training points tend to
+become nearly equal --- the nearest point is barely nearer than the farthest.
+When that happens the phrase ``the $k$ nearest neighbours'' stops picking out
+anything meaningful: the ranking still exists, but it is decided by noise.
+
+The intuition is a volume count. In $\R^{n}$ a ball of radius $r$ has volume
+proportional to $r^{n}$, so a small increase in radius sweeps up a huge
+additional region. Points spread through a high-dimensional space are
+overwhelmingly likely to sit at similar middling distances from each other, and
+close neighbours become vanishingly rare unless $N$ grows exponentially in $n$.
+
+\begin{rmk}
+This is not an argument against $k$-NN, which remains one of the most useful
+methods there is on high-dimensional data --- image and text retrieval are
+exactly that. It is an argument for not using the \emph{raw} dimension. The
+standard response is to reduce the dimension first, mapping the data into a
+space of far fewer coordinates that preserves the distances that matter, and
+then run $k$-NN there. The tool for doing that linearly is the singular value
+decomposition, which is a later unit of this course.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Ties}
+%------------------------------------------------------------------------------
+Two kinds of tie can occur, and both need a rule stated in advance.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \textbf{A tie in distance} at the boundary of the neighbourhood: more
+        than $k$ points are within the cutoff. Conventions: take all of them;
+        take the ones with the lowest index; or break the tie at random. Any is
+        defensible, and libraries differ, so it must be checked rather than
+        assumed.
+  \item \textbf{A tie in the vote}: two labels receive the same count. The usual
+        rules are to fall back to the label of the single nearest neighbour, to
+        decrease $k$ by one and re-vote, or --- best --- to use distance
+        weighting (\S6.4), under which exact ties are essentially impossible.
+        Choosing $k$ odd removes the problem for two classes and does nothing
+        for three.
+\end{itemize}
+
+\begin{rmk}
+It is worth remembering, from Part 1, that these are floating-point distances
+(\S3). Two distances that are equal in exact arithmetic may differ in the last
+bit after rounding, and two that differ mathematically may round to the same
+float. So a tie-breaking rule is not only a modelling convention; it is also
+what keeps the output from depending on rounding.
+\end{rmk}
+
+%==============================================================================
+\section{\texorpdfstring{$k$}{k}-NN and clustering}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Two different problems}
+%------------------------------------------------------------------------------
+\begin{warn}[$k$-NN does not cluster]
+The phrase ``$k$-NN clustering'' is in wide circulation and it conflates two
+genuinely different problems.
+
+\emph{$k$-NN} is \textbf{supervised}. It requires a labelled dataset, and it
+answers a question about one new point: what label should $\vc{q}$ get? It never
+partitions anything.
+
+\emph{Clustering} is \textbf{unsupervised}. There are no labels. The task is to
+partition the dataset itself into groups of mutually similar points, and the
+groups are the output. That is Part 3's subject, $k$-means.
+
+The two are neighbours in every syllabus because both run on nothing but
+distances between feature vectors, and the $k$ in each is an integer the user
+must choose --- but they are different $k$'s answering different questions.
+\end{warn}
+
+\noindent There is nevertheless a real construction that the phrase legitimately
+names, and it is worth having, because it is the substrate of several genuine
+clustering algorithms.
+
+%------------------------------------------------------------------------------
+\subsection{The $k$-NN graph}
+%------------------------------------------------------------------------------
+\begin{defn}[$k$-nearest-neighbour graph]
+Let $P=\{\vc{p}_1,\dots,\vc{p}_N\}\subseteq\R^{n}$ and fix a metric $d$ and an
+integer $k$. The \textbf{$k$-NN graph} of $P$ has the points of $P$ as its
+vertices, and joins $\vc{p}_i$ to $\vc{p}_j$ whenever $\vc{p}_j$ is one of the
+$k$ nearest neighbours of $\vc{p}_i$, or $\vc{p}_i$ is one of the $k$ nearest
+neighbours of $\vc{p}_j$.
+\end{defn}
+
+\noindent The construction is $k$-NN run $N$ times, once with each point of $P$
+as the query and the rest as the dataset --- so it costs $O(N^{2}n)$ by \S7.4,
+with no labels involved anywhere. What comes out is not a classification but a
+\emph{structure}: which points are near which.
+
+Now cluster the graph rather than the points. The simplest rule is to take the
+\textbf{connected components} --- the groups of vertices reachable from one
+another by following edges --- and call each one a cluster. Two points end up
+together when a chain of short hops connects them, even if they are far apart
+directly, which is the essential difference from $k$-means and is why this
+family can find long, curved clusters that $k$-means cannot.
+
+%------------------------------------------------------------------------------
+\subsection{A worked example}
+%------------------------------------------------------------------------------
+\begin{ex}
+Six unlabelled points in $\R^{2}$:
+\[
+  \vc{p}_1=[\,0,0\,],\quad \vc{p}_2=[\,1,0\,],\quad \vc{p}_3=[\,0,2\,],
+  \quad
+  \vc{p}_4=[\,10,10\,],\quad \vc{p}_5=[\,11,10\,],\quad \vc{p}_6=[\,10,12\,].
+\]
+Build the $1$-NN graph under Euclidean distance. For each point, find its single
+nearest neighbour:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Point} & \textbf{Distances to the others} & \textbf{Nearest}
+  & \textbf{Edge} \\
+\midrule
+$\vc{p}_1$ & $d(\vc{p}_2)=1$, $d(\vc{p}_3)=2$, rest $\ge 14.1$
+           & $\vc{p}_2$ & $\{\vc{p}_1,\vc{p}_2\}$ \\
+$\vc{p}_2$ & $d(\vc{p}_1)=1$, $d(\vc{p}_3)=\sqrt5\approx2.24$, rest $\ge 13.5$
+           & $\vc{p}_1$ & $\{\vc{p}_1,\vc{p}_2\}$ \\
+$\vc{p}_3$ & $d(\vc{p}_1)=2$, $d(\vc{p}_2)\approx2.24$, rest $\ge 12.8$
+           & $\vc{p}_1$ & $\{\vc{p}_1,\vc{p}_3\}$ \\
+$\vc{p}_4$ & $d(\vc{p}_5)=1$, $d(\vc{p}_6)=2$, rest $\ge 12.8$
+           & $\vc{p}_5$ & $\{\vc{p}_4,\vc{p}_5\}$ \\
+$\vc{p}_5$ & $d(\vc{p}_4)=1$, $d(\vc{p}_6)=\sqrt5\approx2.24$, rest $\ge 14.9$
+           & $\vc{p}_4$ & $\{\vc{p}_4,\vc{p}_5\}$ \\
+$\vc{p}_6$ & $d(\vc{p}_4)=2$, $d(\vc{p}_5)\approx2.24$, rest $\ge 15.6$
+           & $\vc{p}_4$ & $\{\vc{p}_4,\vc{p}_6\}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The distinct edges are
+$\{\vc{p}_1,\vc{p}_2\}$, $\{\vc{p}_1,\vc{p}_3\}$,
+$\{\vc{p}_4,\vc{p}_5\}$, $\{\vc{p}_4,\vc{p}_6\}$, and no edge joins the two
+groups, because every cross distance exceeds $12$ while every within-group
+distance is at most $2.24$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.40]
+  \draw[axisline] (-1.2,0) -- (14,0) node[right,font=\scriptsize,black]{$x_1$};
+  \draw[axisline] (0,-1.2) -- (0,14) node[above,font=\scriptsize,black]{$x_2$};
+  \draw[RoyalBlue!70,very thick] (0,0) -- (1,0);
+  \draw[RoyalBlue!70,very thick] (0,0) -- (0,2);
+  \draw[BrickRed!70,very thick] (10,10) -- (11,10);
+  \draw[BrickRed!70,very thick] (10,10) -- (10,12);
+  \foreach \x/\y in {0/0, 1/0, 0/2}
+     { \node[circle,fill=RoyalBlue!80,draw=RoyalBlue,inner sep=0pt,
+             minimum size=6pt] at (\x,\y) {}; }
+  \foreach \x/\y in {10/10, 11/10, 10/12}
+     { \node[circle,fill=BrickRed!80,draw=BrickRed,inner sep=0pt,
+             minimum size=6pt] at (\x,\y) {}; }
+  \node[below left,font=\scriptsize]  at (0.1,0.1)  {$\vc{p}_1$};
+  \node[below,font=\scriptsize]       at (1.3,-0.1) {$\vc{p}_2$};
+  \node[left,font=\scriptsize]        at (-0.2,2)   {$\vc{p}_3$};
+  \node[below left,font=\scriptsize]  at (10.1,10.1){$\vc{p}_4$};
+  \node[right,font=\scriptsize]       at (11.3,10)  {$\vc{p}_5$};
+  \node[above,font=\scriptsize]       at (10,12.5)  {$\vc{p}_6$};
+  \node[font=\scriptsize,RoyalBlue] at (3.6,1.6) {component 1};
+  \node[font=\scriptsize,BrickRed]  at (6.6,11.4) {component 2};
+\end{tikzpicture}
+\end{center}
+
+\noindent The graph has exactly two connected components,
+$\{\vc{p}_1,\vc{p}_2,\vc{p}_3\}$ and $\{\vc{p}_4,\vc{p}_5,\vc{p}_6\}$, and those
+are the two clusters. No labels were used and none were available: this is
+unsupervised, and it is what ``$k$-NN clustering'' properly refers to.
+\hfill$\blacksquare$
+\end{ex}
+
+\begin{rmk}
+Connected components are the crudest way to cut a $k$-NN graph and are shown
+here because they can be read off by eye. Real methods cut it more carefully:
+\emph{spectral clustering} uses the eigenvectors of a matrix built from the
+graph --- a technique this course will be able to explain once eigenvalues
+arrive --- and \emph{DBSCAN} and \emph{HDBSCAN} use neighbourhood density to
+decide which edges to keep. \emph{UMAP}, the standard tool for visualising
+high-dimensional data, begins by building exactly this graph. All of them start
+where \S9.2 starts.
+\end{rmk}
+
+%==============================================================================
+\section{In practice}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Where it is used}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{9.4cm}@{}}
+\toprule
+\textbf{Application} & \textbf{The vectors, and the metric} \\
+\midrule
+Recommendation
+  & Each user is a vector of ratings; neighbours are users with similar taste,
+    usually under cosine distance, and their preferences are the prediction. \\
+Image retrieval
+  & An image becomes a vector via a neural network; ``find similar images'' is
+    literally a nearest-neighbour query. \\
+Semantic search, RAG
+  & Text passages are embedded as vectors; a question is embedded the same way,
+    and the $k$ nearest passages are retrieved and handed to a language model.
+    This is now among the largest uses of nearest-neighbour search anywhere. \\
+Anomaly detection
+  & The distance to the $k$-th nearest neighbour is an outlier score: points in
+    sparse regions are far from everything. \\
+Handwriting recognition
+  & The classic benchmark. Plain $k$-NN with Euclidean distance on raw
+    $28\times28$ pixel vectors classifies handwritten digits correctly about
+    $97\%$ of the time --- with no training at all, which is why it remains the
+    baseline every new method is expected to beat. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The pattern across the table is worth naming. $k$-NN is chosen when
+similarity is the whole question, when the data changes often enough that
+retraining a model would be a nuisance, and when an answer needs to be
+explainable --- ``we predicted this because of those five specific cases'' is a
+justification a person can check.
+
+%------------------------------------------------------------------------------
+\subsection{Making it fast}
+%------------------------------------------------------------------------------
+Everything in \S7 assumed the obvious implementation: compare the query against
+all $N$ points. That is called \textbf{brute force} or exhaustive search, and
+its $O(Nn)$ per query is the thing every optimisation attacks. The methods
+divide into two families by whether they still return the true answer.
+
+\subsubsection*{Exact methods}
+These return exactly what \S6.3 would, faster, by ruling out regions of space
+without examining the points in them.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \textbf{$k$-d trees.} Recursively split the data by one coordinate at a
+        time, building a binary tree. A query descends the tree and prunes any
+        branch whose region is too far away to contain a neighbour. Queries cost
+        about $O(\log N)$ in low dimension. The catch is that the pruning stops
+        working as $n$ grows --- by roughly $n\approx20$ the tree examines
+        almost everything and is slower than brute force, for the reason given
+        in \S8.3.
+  \item \textbf{Ball trees.} Split by enclosing balls rather than coordinate
+        planes. They tolerate higher dimension better than $k$-d trees and work
+        with any metric, not only Euclidean.
+  \item \textbf{Triangle-inequality pruning.} If $d(\vc{q},\vc{x})$ is known and
+        $d(\vc{x},\vc{y})$ was precomputed, then \textbf{M4} of the vector unit,
+        \S14.1, gives $d(\vc{q},\vc{y}) \ge d(\vc{q},\vc{x}) - d(\vc{x},\vc{y})$,
+        and if that lower bound already exceeds the current $k$-th best
+        distance, $\vc{y}$ can be discarded without ever being measured. This is
+        a metric axiom doing computational work, and Part 3 will use the same
+        trick on $k$-means.
+\end{itemize}
+
+\subsubsection*{Approximate methods (ANN)}
+Above a few dozen dimensions, exact methods lose to brute force, and the
+practical answer is to stop insisting on exactness. \textbf{Approximate nearest
+neighbour} search returns neighbours that are \emph{almost always} the true
+ones, thousands of times faster.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \textbf{LSH} (locality-sensitive hashing) hashes vectors so that nearby
+        points collide with high probability; a query examines only its own
+        bucket.
+  \item \textbf{HNSW} (hierarchical navigable small world) builds a layered
+        proximity graph --- a $k$-NN graph, \S9.2, with long-range shortcuts ---
+        and answers a query by greedy descent. It is the current default in most
+        systems.
+  \item \textbf{IVF with product quantization} partitions the space into cells,
+        searches only the nearest few, and stores each vector in compressed form
+        so that millions fit in memory.
+\end{itemize}
+
+\begin{rmk}
+The trade is explicit and it is measured. \emph{Recall@$k$} is the fraction of
+the true $k$ neighbours that a method actually returns, and ANN systems are
+tuned to a target such as $95\%$ recall at some queries-per-second budget.
+Whether losing one neighbour in twenty matters depends entirely on the
+application --- for retrieving passages to answer a question it is invisible;
+for a legal or medical audit trail it may not be acceptable.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{What the industry uses}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{9.0cm}@{}}
+\toprule
+\textbf{Tool} & \textbf{What it is} \\
+\midrule
+\texttt{scikit-learn}
+  & \texttt{KNeighborsClassifier}. Its \texttt{algorithm="auto"} chooses
+    between brute force, a $k$-d tree and a ball tree from $N$ and $n$. The
+    teaching and prototyping standard. \\
+\texttt{FAISS}
+  & Meta's library for large-scale similarity search, and the reference
+    implementation: IVF, product quantization, GPU support. \\
+\texttt{hnswlib}, \texttt{ScaNN}, \texttt{Annoy}
+  & Focused single-index ANN implementations, the latter two from Google and
+    Spotify. \\
+Vector databases
+  & Pinecone, Weaviate, Milvus, Qdrant, and the \texttt{pgvector} extension to
+    PostgreSQL. These are ANN indexes wrapped in a database: storage,
+    filtering, updates and a query API. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Two things are worth noticing about that table. The first is that
+almost all of it is recent --- the vector-database category barely existed
+before large language models made embedding-and-retrieving the standard way to
+give a model access to documents. The second is that every entry is an
+implementation of \S6.3. The rule being computed is still: measure the
+distances, take the $k$ smallest, and let them vote. Everything else is an index
+built to avoid measuring all $N$ of them.
+
+\lookahead Part 3 turns to the other problem. There will be no labels, so there
+is nothing to vote; the task is to find the groups in the data rather than to
+place a new point into known ones. The tools are the same --- distances between
+vectors, and counting the cost of computing them --- and one new object is
+needed, the mean of a set of vectors.
+
+\end{document}
