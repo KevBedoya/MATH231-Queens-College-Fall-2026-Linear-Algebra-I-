@@ -8,10 +8,23 @@
 %  "Sec. 11.3" would be ambiguous -- the vector unit has one and so will this.
 %  Sec. 1 states that convention for students in the front matter.
 %
-%  STATUS: in progress.  This part covers operation counting only.  Asymptotic
-%  notation (Big-O) and floating-point arithmetic are the announced sequels and
-%  are deliberately NOT introduced here -- Sec. 1.7 calls this a "first glimmer"
-%  and flags both forward.
+%  STATUS: complete.  Four sections: exact operation counts (1), Big-O (2), the
+%  IEEE 754 floating-point set (3), and rounding error and FLOPs (4).  The two
+%  threads flagged forward in Sec. 1.7 are now both closed here, so that
+%  paragraph's "both are next" is satisfied within this document.
+%
+%  ON THE ROUNDING THEOREM in Sec. 4.5.  It is stated as requested, with
+%  |delta| < eps_mach.  The proof actually yields the sharper |delta| <= 2^{-p}
+%  = eps_mach/2 = u (the unit roundoff), which is the form standard in numerical
+%  analysis; a remark records this rather than silently weakening or silently
+%  strengthening the statement.  Sec. 4.1 defines u ahead of time for this.
+%
+%  THE TOY SYSTEM.  Sec. 4.2 uses base 2, p = 2, exponents -1..2, so F+ is
+%  {0.5, 0.75, 1, 1.5, 2, 3, 4, 6} -- eight numbers, spacing 2^{e-1} doubling at
+%  each power of two.  It is reused in 4.3 (rounding, including the 2.5 tie) and
+%  4.4 (error), so changing p or the exponent range breaks three subsections.
+%  Note this is NOT the same toy system as the figure in Sec. 3.2, which has
+%  p = 3; that figure predates this one and is only qualitative.
 %
 %  AUDIENCE: distributed to students.  Keep it free of instructor-facing
 %  apparatus -- time budgets, pacing notes, teaching cues.
@@ -43,12 +56,15 @@
 \usepackage{titlesec}
 \usepackage{needspace}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing}
 
 %------------------------------------------------------------------ style ----
 \titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
 \titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
 \titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
 
 \theoremstyle{definition}
 \newtheorem{defn}{Definition}[section]
@@ -71,6 +87,7 @@
 \newcommand{\norm}[1]{\lVert #1\rVert}
 \newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
 \newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\epsm}{\varepsilon_{\mathrm{mach}}}
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
@@ -117,7 +134,11 @@ cosine similarity (\S11.4, \S11.7); and linear dependence (\S18.4).
 \noindent\textbf{What you should be able to do afterwards.} Say what an
 \emph{operation} is; count exactly how many operations vector addition, the dot
 product, the norm and the projection require in $\R^{n}$; recognise redundant
-work in a formula and remove it; and explain why an exact count is worth having.
+work in a formula and remove it; state a count's Big-O complexity and prove it
+from the definition; convert a decimal number to binary and encode it as an
+IEEE~754 float; read off the precision, the exponent range and the machine
+precision of a format; measure absolute and relative error for scalars and for
+vectors; and say what a FLOP is and what rounding does to one.
 
 %==============================================================================
 \section{Counting operations}
@@ -997,5 +1018,952 @@ $0.625$ is $0.625$ whether you write it in base $10$ or as $0.101_{2}$. But the
 choice is not always innocent, because a fraction that terminates in one base
 need not terminate in another. That is where the surprises live, and it is where
 we pick up next.
+
+%------------------------------------------------------------------------------
+\subsection{From base 10 to base 2}
+%------------------------------------------------------------------------------
+Reading a binary string is the easy direction: multiply out the place values, as
+above. Producing one is the direction we need, and it takes an algorithm. Split
+the number at the point and treat the two halves separately, because they obey
+different rules.
+
+\subsubsection*{The integer part: repeated division by 2}
+Divide by $2$, record the remainder, replace the number by the quotient, and
+repeat until the quotient is $0$. The remainders, read \emph{bottom to top}, are
+the binary digits.
+
+\needspace{10\baselineskip}
+\begin{ex}
+Convert $13_{10}$ to base $2$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Division} & \textbf{Quotient} & \textbf{Remainder} \\
+\midrule
+$13 \div 2$ & $6$ & $1$ \quad$\leftarrow$ read last \\
+$6  \div 2$ & $3$ & $0$ \\
+$3  \div 2$ & $1$ & $1$ \\
+$1  \div 2$ & $0$ & $1$ \quad$\leftarrow$ read first \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Reading upward, $13_{10}=1101_{2}$. Check: $8+4+0+1=13$.
+\hfill$\blacksquare$
+\end{ex}
+
+\noindent The algorithm is not a trick. The first remainder answers ``is this
+number odd?'', which is exactly the $2^{0}$ digit; dividing by $2$ then shifts
+the remaining digits one place right so that the next one can be asked the same
+question.
+
+\subsubsection*{The fractional part: repeated multiplication by 2}
+Multiply by $2$. The integer part of the result --- necessarily $0$ or $1$ ---
+is the next binary digit. Discard it, keep the fraction that remains, and
+repeat. The digits, read \emph{top to bottom}, are the binary expansion. Stop
+when the fraction reaches $0$, or when you have as many digits as you can
+store.
+
+\begin{ex}
+Convert $0.6875_{10}$ to base $2$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Product} & \textbf{Result} & \textbf{Digit} & \textbf{Carry forward} \\
+\midrule
+$0.6875\times2$ & $1.375$ & $1$ \quad$\leftarrow$ read first & $0.375$ \\
+$0.375 \times2$ & $0.75$  & $0$ & $0.75$ \\
+$0.75  \times2$ & $1.5$   & $1$ & $0.5$ \\
+$0.5   \times2$ & $1.0$   & $1$ \quad$\leftarrow$ read last  & $0$ \ (stop) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Reading downward, $0.6875_{10}=0.1011_{2}$. Check:
+$\tfrac12+\tfrac18+\tfrac1{16}=0.6875$. \hfill$\blacksquare$
+\end{ex}
+
+\noindent Putting the halves back together,
+\[
+  13.6875_{10} \;=\; 1101.1011_{2},
+\]
+and we will encode exactly this number into hardware in \S3.8.
+
+\subsubsection*{When the algorithm does not stop}
+The integer algorithm always terminates --- the quotient strictly decreases and
+must reach $0$. The fractional one need not.
+
+\begin{ex}
+Convert $0.1_{10}$ to base $2$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Product} & \textbf{Result} & \textbf{Digit} & \textbf{Carry forward} \\
+\midrule
+$0.1\times2$ & $0.2$ & $0$ & $0.2$ \\
+$0.2\times2$ & $0.4$ & $0$ & $0.4$ \\
+$0.4\times2$ & $0.8$ & $0$ & $0.8$ \\
+$0.8\times2$ & $1.6$ & $1$ & $0.6$ \\
+$0.6\times2$ & $1.2$ & $1$ & $0.2$ \quad$\leftarrow$ seen at row 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The carry has returned to a value it already took, so from here the
+work repeats forever, the block $0011$ recurring without end:
+\begin{equation*}
+  0.1_{10} \;=\; 0.0\overline{0011}_{2}
+            \;=\; 0.000110011001100\ldots_{2} .
+  \tag*{$\blacksquare$}
+\end{equation*}
+\end{ex}
+
+\noindent This is the phenomenon flagged at the end of \S3.4, and the rule
+behind it is worth stating. A fraction $p/q$ in lowest terms terminates in base
+$b$ exactly when every prime factor of $q$ divides $b$. Base $10$ has prime
+factors $2$ and $5$; base $2$ has only $2$. So $1/10$ terminates in decimal and
+cannot terminate in binary, because of the factor of $5$ that base $2$ has no
+way to absorb.
+
+\begin{warn}[$0.1+0.2\neq0.3$]
+Type \texttt{0.1 + 0.2} into Python, or JavaScript, or C, and you get
+\texttt{0.30000000000000004}. This is not a bug in the language, and every
+language does it. Neither $0.1$ nor $0.2$ is a floating-point number ---
+by the example above, neither has a finite binary expansion --- so the machine
+stores the nearest float to each. It then adds those two stored values exactly
+and rounds again. The rounding of a sum need not equal the sum of the
+roundings, and here it does not. The consequence for you is a habit: never test
+two computed floating-point quantities for equality with \texttt{==}. Test
+whether they differ by less than a tolerance you have chosen on purpose.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Normalized form}
+%------------------------------------------------------------------------------
+A number has many representations as a digit string times a power of two:
+\[
+  1101.1011_{2}
+  \;=\; 1101.1011_{2}\times2^{0}
+  \;=\; 110.11011_{2}\times2^{1}
+  \;=\; 1.1011011_{2}\times2^{3}
+  \;=\; 0.11011011_{2}\times2^{4},
+\]
+all equal, all shifting the point against a matching change of exponent. Storing
+a number in hardware requires picking one of them, once and for all.
+
+\begin{defn}[Normalized form]
+A nonzero binary number is in \textbf{normalized form} when it is written
+\[
+  \pm\, 1.f_1f_2f_3\cdots \times 2^{e},
+\]
+that is, with exactly one nonzero digit to the left of the point. The full
+quantity $1.f_1f_2\cdots$ is the \textbf{significand}; the digits
+$f_1f_2\cdots$ after the point are the \textbf{mantissa}, or fraction; and $e$
+is the \textbf{exponent}.
+\end{defn}
+
+\noindent To normalize, shift the point until it sits immediately after the
+leading $1$. The exponent is the number of places shifted: positive if you moved
+left, negative if you moved right.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{As given} & \textbf{Shift} & \textbf{Normalized} \\
+\midrule
+$1101.1011_{2}$ & $3$ places left  & $1.1011011_{2}\times2^{3}$ \\
+$0.0001101_{2}$ & $4$ places right & $1.101_{2}\times2^{-4}$ \\
+$1_{2}$         & none             & $1.0_{2}\times2^{0}$ \\
+$10.0_{2}$      & $1$ place left   & $1.0_{2}\times2^{1}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Now look at what every entry in the right-hand column has in common.
+The digit before the point is $1$. It is $1$ in every row, and it must be: base
+$2$ has exactly one nonzero digit, and normalized form demands that the leading
+digit be nonzero. A quantity that is the same in every case carries no
+information, and there is no reason to spend storage on it. That observation is
+worth a full bit, and \S3.8 collects it.
+
+\begin{rmk}
+Zero is the exception, and it has to be. It has no nonzero leading digit, so it
+has no normalized form at all, and no choice of $e$ produces it. It is handled
+by a reserved bit pattern instead --- \S3.10.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A standard: IEEE 754}
+%------------------------------------------------------------------------------
+Normalized form tells us \emph{what} to store: a sign, a mantissa and an
+exponent. It does not say how many bits each gets, in what order, how to round
+what will not fit, or what to do when a result is too large to represent. Before
+the mid-1980s each manufacturer answered those questions its own way. The same
+program, compiled on two machines, could return two different numbers, and there
+was no way to say which was correct.
+
+The \textbf{Institute of Electrical and Electronics Engineers} --- the IEEE,
+pronounced ``eye-triple-E'' --- ended that with the IEEE 754 standard, first
+published in 1985 and revised since. It fixes the formats, the rounding rules
+and the behaviour on overflow and on invalid operations. Essentially every
+processor and every language you will use implements it, so ``floating point''
+in practice means IEEE 754. The rest of this section is a description of that
+standard.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{IEEE name} & \textbf{Common name} & \textbf{Width} & \textbf{Typical use} \\
+\midrule
+binary16  & half precision   & $16$ bits  & machine learning, graphics \\
+binary32  & single precision, \texttt{float}  & $32$ bits  & graphics, embedded, ML \\
+binary64  & double precision, \texttt{double} & $64$ bits  & the default nearly everywhere \\
+binary128 & quadruple precision & $128$ bits & specialised high-accuracy work \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent We will work with binary16 and binary32, because they are short enough
+to write out in full on the page. Everything said about them holds verbatim for
+binary64 with three numbers changed.
+
+%------------------------------------------------------------------------------
+\subsection{The three fields, and the hidden 1}
+%------------------------------------------------------------------------------
+A floating-point number is one bit string, cut into three consecutive fields.
+
+\begin{center}
+\begin{tikzpicture}[x=0.62cm,y=0.62cm]
+  \fill[RoyalBlue!14]   (0,0)  rectangle (1,1);
+  \fill[BrickRed!13]    (1,0)  rectangle (6,1);
+  \fill[ForestGreen!14] (6,0)  rectangle (16,1);
+  \foreach \i in {0,...,15} { \draw[gray!55] (\i,0) rectangle ++(1,1); }
+  \foreach \i/\b in {0/0, 1/1,2/0,3/0,4/1,5/0,
+                     6/1,7/0,8/1,9/1,10/0,11/1,12/1,13/0,14/0,15/0}
+     { \node[font=\small] at (\i+0.5,0.5) {\texttt{\b}}; }
+  \draw[decorate,decoration={brace,amplitude=4pt,mirror},gray!75]
+        (0,-0.18)  -- (1,-0.18);
+  \draw[decorate,decoration={brace,amplitude=4pt,mirror},gray!75]
+        (1,-0.18)  -- (6,-0.18);
+  \draw[decorate,decoration={brace,amplitude=4pt,mirror},gray!75]
+        (6,-0.18)  -- (16,-0.18);
+  \node[below,align=center,font=\scriptsize,RoyalBlue]   at (0.5,-0.6)
+       {sign\\$1$ bit};
+  \node[below,align=center,font=\scriptsize,BrickRed]    at (3.5,-0.6)
+       {exponent field $E$\\$5$ bits};
+  \node[below,align=center,font=\scriptsize,ForestGreen] at (11,-0.6)
+       {mantissa $f$\\$10$ bits};
+  \node[above,font=\scriptsize,gray] at (8,1.15)
+       {binary16, holding $13.6875$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Write $s$ for the sign bit, $E$ for the exponent field read as an
+unsigned integer, and $f$ for the mantissa read as the digits after a binary
+point. For a \emph{normal} number the value stored is
+\[
+  \boxed{\;x \;=\; (-1)^{s}\times 1.f \times 2^{\,E-\text{bias}}\;}
+\]
+with the bias a fixed constant of the format, discussed in \S3.9.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l c c c c c@{}}
+\toprule
+\textbf{Format} & \textbf{Total} & \textbf{Sign} & \textbf{Exponent $k$}
+                & \textbf{Mantissa $m$} & \textbf{Bias} \\
+\midrule
+binary16 & $16$ & $1$ & $5$  & $10$ & $15$ \\
+binary32 & $32$ & $1$ & $8$  & $23$ & $127$ \\
+binary64 & $64$ & $1$ & $11$ & $52$ & $1023$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{The hidden 1}
+Notice what the formula does and the bit string does not. The value is built
+from $1.f$, but only $f$ is stored. The leading $1$ is never written down
+anywhere in the sixteen bits --- the hardware supplies it when decoding. It is
+called the \textbf{hidden bit}, or the implicit leading bit, and \S3.6 is the
+reason it can be omitted: in normalized binary the leading digit is always $1$,
+so writing it would be storing a constant.
+
+\begin{defn}[Precision]
+The \textbf{precision} $p$ of a binary floating-point format is the number of
+significand digits, counting the hidden bit. If the mantissa field holds $m$
+bits then
+\[
+  p = m+1 .
+\]
+\end{defn}
+
+\noindent So binary16 has $p=11$ from a $10$-bit field, binary32 has $p=24$ from
+$23$ bits, and binary64 has $p=53$ from $52$. The hidden bit is a free doubling
+of the number of representable values, at no storage cost --- and it is
+available only because we are in base $2$. In base $10$ the leading digit could
+be any of $1$ through $9$, and would have to be written down.
+
+\begin{ex}[Encoding]
+Store $13.6875$ in binary16.
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=2.4em,itemsep=3pt,topsep=4pt]
+  \item \emph{Sign.} The number is positive, so $s=0$.
+  \item \emph{Convert.} By \S3.5, $13.6875 = 1101.1011_{2}$.
+  \item \emph{Normalize.} By \S3.6, $1101.1011_{2}=1.1011011_{2}\times2^{3}$, so
+        $e=3$ and the mantissa digits are $1011011$.
+  \item \emph{Bias the exponent.} $E = e+15 = 18 = 10010_{2}$, five bits.
+  \item \emph{Pad the mantissa} on the right to ten bits:
+        $1011011\underline{000}$.
+\end{enumerate}
+The stored string is
+\[
+  \underbrace{\texttt{0}}_{s}\;
+  \underbrace{\texttt{10010}}_{E=18}\;
+  \underbrace{\texttt{1011011000}}_{f},
+\]
+which is the string in the diagram above. In binary32 the same number becomes
+\[
+  \underbrace{\texttt{0}}_{s}\;
+  \underbrace{\texttt{10000010}}_{E=130}\;
+  \underbrace{\texttt{10110110000000000000000}}_{f},
+\]
+the exponent field now holding $3+127=130$ and the mantissa padded to
+$23$ bits. \hfill$\blacksquare$
+\end{ex}
+
+\begin{ex}[Decoding]
+What binary16 number is $\texttt{1}\;\texttt{10001}\;\texttt{0100000000}$?
+
+The sign bit is $1$, so the number is negative. The exponent field reads
+$10001_{2}=17$, and unbiasing gives $e=17-15=2$. Restoring the hidden bit, the
+significand is $1.01_{2}=1.25$. Hence
+\begin{equation*}
+  x = (-1)^{1}\times 1.25\times 2^{2} = -5 .
+  \tag*{$\blacksquare$}
+\end{equation*}
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The bias, and the range of the exponent}
+%------------------------------------------------------------------------------
+Exponents must be allowed to be negative --- that is what represents numbers
+smaller than $1$. There are two ways to store a signed integer in a fixed field,
+and IEEE 754 chose the simpler one: store not $e$ but $e+\text{bias}$, an
+unsigned integer, where for a $k$-bit exponent field
+\[
+  \text{bias} = 2^{\,k-1}-1 .
+\]
+For $k=5$ that is $15$, for $k=8$ it is $127$, for $k=11$ it is $1023$ --- the
+constants tabulated in \S3.8. Decoding just subtracts: $e = E-\text{bias}$.
+
+Two exponent fields are not available for this, because they are reserved to
+mark the special values of \S3.10: the all-zeros field $E=0$ and the all-ones
+field $E=2^{k}-1$. So a normal number has $E$ somewhere in
+$1\le E\le 2^{k}-2$, and subtracting the bias gives the range of usable
+exponents.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+\textbf{Format} & \textbf{Stored $E$} & \textbf{Exponent $e=E-\text{bias}$}
+                & \textbf{Range of $e$} \\
+\midrule
+binary16 & $1\ldots30$   & $E-15$   & $-14 \le e \le 15$ \\
+binary32 & $1\ldots254$  & $E-127$  & $-126 \le e \le 127$ \\
+binary64 & $1\ldots2046$ & $E-1023$ & $-1022 \le e \le 1023$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{rmk}
+Why bias rather than a sign bit on the exponent? Because biasing makes the
+exponent fields sort in the same order as the exponents they denote. A
+consequence is that two positive floats can be compared simply by comparing
+their bit strings as unsigned integers --- the hardware needs no special
+floating-point comparison circuit at all. That the sign bit comes first, the
+exponent second and the mantissa last is part of the same design: it puts the
+fields in decreasing order of significance.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The reserved patterns: zero, infinity and NaN}
+%------------------------------------------------------------------------------
+The two reserved exponent fields, combined with whether the mantissa is zero,
+give four cases.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Exponent field $E$} & \textbf{Mantissa $f$} & \textbf{Meaning}
+  & \textbf{Value} \\
+\midrule
+all zeros & $f=0$    & signed zero  & $\pm 0$ \\
+all zeros & $f\neq0$ & subnormal    & $(-1)^{s}\,0.f\times2^{\,1-\text{bias}}$ \\
+$1\ldots2^{k}-2$ & any & normal     & $(-1)^{s}\,1.f\times2^{\,E-\text{bias}}$ \\
+all ones  & $f=0$    & infinity     & $\pm\infty$ \\
+all ones  & $f\neq0$ & not a number & \texttt{NaN} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent In binary16, for instance,
+\[
+  \texttt{0}\;\texttt{11111}\;\texttt{0000000000} = +\infty,
+  \qquad
+  \texttt{1}\;\texttt{11111}\;\texttt{0000000000} = -\infty,
+  \qquad
+  \texttt{0}\;\texttt{11111}\;\texttt{1000000000} = \texttt{NaN} .
+\]
+
+\subsubsection*{Infinity: $\pm\infty$}
+Infinity is produced by \emph{overflow} --- a result whose magnitude exceeds the
+largest representable number --- and by division of a nonzero number by zero. It
+is a value, not a crash: the computation continues, with $\infty+1=\infty$ and
+$1/\infty = 0$. Two infinities are needed because the two directions of overflow
+must be distinguished.
+
+\subsubsection*{Subnormals}
+The pattern $E=0$ with $f\neq0$ drops the hidden bit and reads the significand as
+$0.f$, which fills in the gap between zero and the smallest normal number with a
+few evenly spaced values. Without them there would be a sudden cliff at the
+bottom of the range, and two distinct small numbers could have a difference that
+rounds to zero even though they are not equal.
+
+\subsubsection*{Not a number: \texttt{NaN}}
+\texttt{NaN} stands for \emph{not a number}, and it is what an operation returns
+when no numerical answer is defensible: $0/0$, $\infty-\infty$, $\infty/\infty$,
+$\sqrt{-1}$. Two properties make it worth knowing about.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item \texttt{NaN} \emph{propagates}. Any arithmetic operation with a
+        \texttt{NaN} input returns \texttt{NaN}. One of them entering a long
+        computation contaminates everything downstream of it.
+  \item \texttt{NaN} is not equal to itself. The comparison
+        $\texttt{NaN}=\texttt{NaN}$ is false --- it is the only value in the
+        system for which $x=x$ fails.
+\end{itemize}
+
+\begin{warn}[A vector of \texttt{NaN}s]
+The second property is deliberate, and it is how you test for one: the idiom
+\texttt{x != x} is true exactly when \texttt{x} is \texttt{NaN}. The first
+property is why, when a numerical program goes wrong, the symptom is so often an
+output vector every entry of which is \texttt{NaN}. The final state tells you
+nothing about the cause; a single division by zero thousands of operations
+earlier will produce it. Finding where the contamination started, rather than
+where it surfaced, is the work.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{The range of a floating-point system}
+%------------------------------------------------------------------------------
+With the exponent range from \S3.9 we can say exactly how large and how small
+the members of $\F$ are. The largest magnitude pairs the largest exponent
+$e_{\max}=\text{bias}$ with the largest significand, which is
+$1.11\cdots1_{2}$ with $p-1$ ones, namely $2-2^{\,1-p}$. The smallest positive
+normal magnitude pairs the smallest exponent $e_{\min}=1-\text{bias}$ with the
+smallest significand, $1.00\cdots0_{2}=1$. So
+\[
+  x_{\max} = \bigl(2-2^{\,1-p}\bigr)\,2^{\,e_{\max}},
+  \qquad
+  x_{\min} = 2^{\,e_{\min}} .
+\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Format} & \textbf{Smallest positive normal} & \textbf{Largest}
+  & \textbf{Precision $p$} \\
+\midrule
+binary16 & $2^{-14}\approx6.10\times10^{-5}$    & $65504$
+         & $11$ \\
+binary32 & $2^{-126}\approx1.18\times10^{-38}$  & $\approx3.40\times10^{38}$
+         & $24$ \\
+binary64 & $2^{-1022}\approx2.23\times10^{-308}$& $\approx1.80\times10^{308}$
+         & $53$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Anything larger in magnitude than $x_{\max}$ overflows to $\pm\infty$;
+anything smaller than the smallest subnormal underflows to $\pm0$. And note
+which field controls which: the \emph{exponent} bits buy range, the
+\emph{mantissa} bits buy precision, and they are two independent budgets. Going
+from binary16 to binary32 spends $3$ more bits on range and $13$ more on
+precision.
+
+\begin{rmk}
+Binary16's ceiling of $65504$ is low enough to hit by accident, which is exactly
+what happens when neural networks are trained in half precision for speed:
+intermediate quantities overflow to $\infty$, the $\infty$ turns into a
+\texttt{NaN} at the next subtraction, and training collapses. The standard
+remedy --- multiplying through by a constant to move the computation into range,
+then dividing it out afterwards --- is called loss scaling, and it is a working
+engineer's response to the table above.
+\end{rmk}
+
+\lookahead We now know precisely which numbers a machine can hold. The
+remaining question is the one that matters for computation: what happens to
+everything else. How far apart are the dots, how much is lost when a real number
+is pushed to the nearest one, and what does that do to an algorithm that
+performs the operation five thousand times?
+
+%==============================================================================
+\section{Precision, spacing and error}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Machine precision}
+%------------------------------------------------------------------------------
+Start at $1$ and ask for the next floating-point number. In normalized form
+$1 = 1.00\cdots0_{2}\times2^{0}$, and the smallest change we can make is to set
+the last mantissa bit, giving $1.00\cdots01_{2}\times2^{0}=1+2^{-(p-1)}$. There
+is nothing in between, because there is no bit left to change.
+
+\begin{defn}[Machine precision]
+The \textbf{machine precision}, or machine epsilon, of a binary floating-point
+system of precision $p$ is
+\[
+  \epsm = 2^{\,1-p},
+\]
+the distance from $1$ to the next larger floating-point number.
+\end{defn}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l c l l@{}}
+\toprule
+\textbf{Format} & \textbf{$p$} & \textbf{$\epsm=2^{1-p}$}
+  & \textbf{Decimal digits} \\
+\midrule
+binary16 & $11$ & $2^{-10}\approx9.77\times10^{-4}$  & about $3$ \\
+binary32 & $24$ & $2^{-23}\approx1.19\times10^{-7}$  & about $7$ \\
+binary64 & $53$ & $2^{-52}\approx2.22\times10^{-16}$ & about $16$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The last column is where the informal claim of \S3.3 came from. A
+\texttt{float} was said to carry ``about $7$ decimal digits'' and a
+\texttt{double} ``about $16$''; those are just $\epsm$
+written in scientific notation and the exponent read off.
+
+\begin{warn}[$\epsm$ is not the smallest positive number]
+These are two different quantities answering two different questions, and they
+differ by more than thirty orders of magnitude. In binary32 the smallest
+positive normal number is about $1.18\times10^{-38}$, while
+$\epsm$ is about $1.19\times10^{-7}$. The first asks how
+small a magnitude the format can reach, and is set by the exponent field. The
+second asks how finely the format separates numbers near $1$, and is set by the
+mantissa field. A number far smaller than $\epsm$ is
+perfectly representable; what you cannot do is \emph{add} it to $1$ and see any
+change.
+\end{warn}
+
+\noindent One companion constant, needed in \S4.5. Half of the machine precision
+is called the \textbf{unit roundoff},
+\[
+  u = \tfrac12\epsm = 2^{-p},
+\]
+and it will turn out to be the largest relative error that rounding can commit.
+
+%------------------------------------------------------------------------------
+\subsection{Units in the last place}
+%------------------------------------------------------------------------------
+Machine precision measures the spacing near $1$. Everywhere else the spacing is
+different, and \S3.2 already showed the pattern in a picture. Here is the
+statement behind it.
+
+Fix an exponent $e$ and consider all the numbers with that exponent: they are
+$1.f\times2^{e}$ with $f$ running over every one of the $(p-1)$-bit mantissa
+patterns. Consecutive ones differ by one unit in the last mantissa bit, which is
+$2^{-(p-1)}$ in the significand, hence $2^{-(p-1)}\times2^{e}$ in value.
+
+\begin{defn}[Unit in the last place]
+Let $x$ satisfy $2^{e}\le|x|<2^{e+1}$. The \textbf{unit in the last place} at
+$x$ is the distance between consecutive floating-point numbers there:
+\[
+  \operatorname{ulp}(x) = 2^{\,e-(p-1)} = 2^{e}\,\epsm .
+\]
+\end{defn}
+
+\noindent Read the formula twice, once for each factor.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item The $2^{e}$ says the \emph{absolute} spacing scales with the magnitude:
+        double the number and you double the gap to its neighbour. This is the
+        doubling visible in the figure of \S3.2.
+  \item The $\epsm$ says the \emph{relative} spacing does
+        not change. Dividing through, $\operatorname{ulp}(x)/|x|$ lies between
+        $\epsm/2$ and $\epsm$ wherever
+        $x$ sits. The system carries the same number of significant digits at
+        every scale.
+\end{itemize}
+
+\noindent The second point is what the name \emph{floating} point refers to. The
+binary point is not nailed to a fixed column, as it is in a fixed-point system
+where all numbers are equally spaced; it floats to wherever the leading digit
+is, so that the available digits are always spent on the part of the number that
+matters.
+
+\subsubsection*{A toy system, $p=2$}
+Take base $2$, precision $p=2$ --- one hidden bit and a single mantissa bit ---
+and exponents $-1\le e\le2$. The significand is either $1.0_{2}=1$ or
+$1.1_{2}=1.5$, and that is all. Every positive number in this $\F$:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l c c c c c@{}}
+\toprule
+\textbf{Significand} & & $e=-1$ & $e=0$ & $e=1$ & $e=2$ \\
+\midrule
+$1.0_{2}$ & $=1$   & $0.5$  & $1$   & $2$ & $4$ \\
+$1.1_{2}$ & $=1.5$ & $0.75$ & $1.5$ & $3$ & $6$ \\
+\midrule
+$\operatorname{ulp}=2^{\,e-1}$ & & $0.25$ & $0.5$ & $1$ & $2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.72,yscale=1]
+  % binade boundaries
+  \foreach \x in {1,2,4,8}
+     { \draw[gray!35,dashed] (\x,-1.05) -- (\x,0.30); }
+  \draw[RoyalBlue!70,line width=1.1pt] (-0.4,0) -- (8.55,0)
+        node[right,font=\scriptsize,black]{$\R$};
+  % the members of the toy system
+  \foreach \x in {0, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6}
+     { \fill[BrickRed] (\x,0) circle (2.1pt); }
+  % 8 bounds the next binade and is not a member: it would need e = 3
+  \draw[gray!60,fill=white] (8,0) circle (2.1pt);
+  \foreach \x/\lab in {0/0, 0.5/0.5, 1/1, 2/2, 3/3, 4/4, 6/6, 8/8}
+     { \node[font=\scriptsize,gray] at (\x,0.27) {$\lab$}; }
+  \foreach \x/\lab in {0.75/0.75, 1.5/1.5}
+     { \node[font=\scriptsize,gray] at (\x,0.67) {$\lab$}; }
+  \node[font=\scriptsize,BrickRed] at (4.4,1.14)
+        {the dots are every positive number of the toy system, $p=2$};
+  % spacing within each binade
+  \draw[gray!60,{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+        (1,-0.45) -- (1.5,-0.45);
+  \node[font=\scriptsize,gray] at (1.25,-0.82) {$0.5$};
+  \draw[gray!60,{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+        (2,-0.45) -- (3,-0.45);
+  \node[font=\scriptsize,gray] at (2.5,-0.82) {$1$};
+  \draw[gray!60,{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+        (4,-0.45) -- (6,-0.45);
+  \node[font=\scriptsize,gray] at (5,-0.82) {$2$};
+  \node[left,font=\scriptsize,gray] at (-0.2,-0.45) {$\operatorname{ulp}$:};
+\end{tikzpicture}
+\end{center}
+
+\noindent The open circle at $8$ is not a member of the toy system: it would
+need $e=3$, and the exponent stops at $2$. Check the definition against the
+picture. Between $1$ and $2$ the
+spacing is $\operatorname{ulp}=2^{0-1}=0.5$; between $2$ and $4$ it is
+$2^{1-1}=1$; between $4$ and $8$ it is $2^{2-1}=2$. And the machine precision of
+this system is $\epsm=2^{1-2}=0.5$, which is exactly the gap
+from $1$ to the next number, $1.5$. Small as it is, this system has every
+feature of binary64; it merely has $8$ positive numbers instead of about
+$10^{308}$.
+
+%------------------------------------------------------------------------------
+\subsection{Rounding to nearest}
+%------------------------------------------------------------------------------
+A real number that is not a dot must be moved to one. Which one is a policy
+decision, and IEEE 754 offers several \emph{rounding modes}. One is the default
+everywhere, and it is the only one we will use.
+
+\begin{defn}[Round to nearest]
+The map $\operatorname{round}:\R\to\F$ sends $x$ to the floating-point number
+closest to it. When $x$ falls exactly halfway between two neighbours, the tie is
+broken by choosing the one whose last mantissa bit is $0$ --- ``round half to
+even''.
+\end{defn}
+
+\begin{ex}
+In the toy system of \S4.2:
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt,topsep=3pt]
+  \item $\operatorname{round}(2.6)=3$. The neighbours are $2$ and $3$, at
+        distances $0.6$ and $0.4$.
+  \item $\operatorname{round}(1.2)=1$. The neighbours are $1$ and $1.5$, at
+        distances $0.2$ and $0.3$.
+  \item $\operatorname{round}(2.5)=2$. The neighbours $2$ and $3$ are both at
+        distance $0.5$, so this is a tie. Now $2=1.0_{2}\times2^{1}$ has last
+        mantissa bit $0$ and $3=1.1_{2}\times2^{1}$ has last mantissa bit $1$,
+        so the rule selects $2$.
+\end{itemize}
+\end{ex}
+
+\begin{rmk}
+The tie rule looks fussy and is not. Always rounding halves upward would push
+every tie in the same direction, and in a sum of a million terms those pushes
+accumulate into a systematic drift. Sending half the ties down and half up lets
+them cancel instead.
+\end{rmk}
+
+\noindent The bound that matters follows immediately from \S4.2. If $x$ lies in
+the normalized range, it sits between two neighbours a distance
+$\operatorname{ulp}(x)$ apart, and the nearer of the two can be no further away
+than half of that:
+\[
+  \boxed{\;\bigl|\operatorname{round}(x)-x\bigr|
+        \;\le\; \tfrac12\operatorname{ulp}(x) = 2^{\,e-p}\;}
+\]
+whenever $2^{e}\le|x|<2^{e+1}$. Everything in \S4.5 is a consequence of that one
+line. Outside the normalized range the bound does not apply: above $x_{\max}$
+rounding overflows to $\pm\infty$, and below the subnormal floor it underflows
+to $\pm0$.
+
+%------------------------------------------------------------------------------
+\subsection{Absolute and relative error}
+%------------------------------------------------------------------------------
+We need vocabulary for how wrong an approximation is. Two measures, and they
+answer different questions.
+
+\begin{defn}[Absolute and relative error]
+Let $\hat{x}$ approximate a real number $x$. The \textbf{absolute error} is
+\[
+  E_{\text{abs}} = \lvert \hat{x}-x\rvert ,
+\]
+and, for $x\neq0$, the \textbf{relative error} is
+\[
+  E_{\text{rel}} = \frac{\lvert \hat{x}-x\rvert}{\lvert x\rvert} .
+\]
+\end{defn}
+
+\begin{ex}
+In the toy system, $\operatorname{round}(2.6)=3$. So
+\[
+  E_{\text{abs}} = |3-2.6| = 0.4,
+  \qquad
+  E_{\text{rel}} = \frac{0.4}{2.6} \approx 0.1538 .
+\]
+Compare that relative error with the unit roundoff of this system,
+$u = 2^{-p}=2^{-2}=0.25$. As promised, $0.1538 \le 0.25$. \hfill$\blacksquare$
+\end{ex}
+
+\noindent Relative error is the one that travels. An absolute error of $0.4$ is
+catastrophic in a quantity of size $1$ and beneath notice in a quantity of size
+$10^{6}$; the number alone does not say which situation you are in. Relative
+error is scale-free, and --- by the second reading of $\operatorname{ulp}$ in
+\S4.2 --- it is precisely the quantity a floating-point system holds under
+control. The absolute spacing of $\F$ varies over three hundred orders of
+magnitude; the relative spacing never leaves a factor of two.
+
+\subsubsection*{The same definitions for vectors}
+Nothing changes except the measuring stick. Where a scalar used absolute value,
+a vector uses a norm --- the Euclidean norm of the vector unit, \S2, will do.
+
+\begin{defn}[Error in a vector]
+Let $\hat{\vc{v}}$ approximate $\vc{v}\in\R^{n}$. Then
+\[
+  E_{\text{abs}} = \norm{\hat{\vc{v}}-\vc{v}},
+  \qquad
+  E_{\text{rel}} = \frac{\norm{\hat{\vc{v}}-\vc{v}}}{\norm{\vc{v}}}
+  \quad (\vc{v}\neq\vc{0}) .
+\]
+\end{defn}
+
+\noindent Both are single numbers describing the whole vector, not one number
+per entry. What they measure is the length of the \emph{error vector}
+$\hat{\vc{v}}-\vc{v}$, which is exactly the picture the vector unit built:
+$\norm{\hat{\vc{v}}-\vc{v}}$ is the distance between the two points.
+
+\begin{ex}
+Take $\vc{v}=(1,\,2.6)$ and round each entry into the toy system, giving
+$\hat{\vc{v}}=(1,\,3)$. The error vector is $\hat{\vc{v}}-\vc{v}=(0,\,0.4)$, so
+\[
+  E_{\text{abs}} = \norm{(0,0.4)} = 0.4,
+  \qquad
+  E_{\text{rel}} = \frac{0.4}{\norm{(1,2.6)}}
+                 = \frac{0.4}{\sqrt{7.76}} \approx 0.1436 .
+\]
+Note that the first entry was stored exactly and contributed nothing; the
+relative error of the vector is not the relative error of its worst entry.
+\hfill$\blacksquare$
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Floating-point arithmetic}
+%------------------------------------------------------------------------------
+Here is the difficulty the whole section has been building towards. Let
+$x,y\in\F$. Their exact sum $x+y$ is a real number, and there is no reason
+whatever for it to lie in $\F$ --- in the toy system, $1.5$ and $2$ are both
+members and $1.5+2=3.5$ is not. So the machine \emph{cannot} return $x+y$. What
+it returns instead is fixed by the standard.
+
+\begin{defn}[Floating-point arithmetic]
+For $x,y\in\F$ and an operation $\ast\in\{+,-,\times,\div\}$, the corresponding
+machine operation is
+\[
+  \operatorname{fl}(x\ast y) = \operatorname{round}(x\ast y) :
+\]
+form the exact result, then round it once to the nearest floating-point number.
+IEEE 754 requires this of all four arithmetic operations and of the square root.
+\end{defn}
+
+\noindent This is a strong guarantee, and it is worth being clear about what it
+does and does not promise. It does not say the answer is correct. It says the
+answer is the \emph{best possible} --- the closest member of $\F$ to the true
+result --- and that each operation commits at most one rounding. A machine that
+did anything less would be much harder to reason about.
+
+Now we can quantify the damage.
+
+\begin{thm}[Rounding as a relative perturbation]
+Let $x$ be any real number in the normalized range of a binary floating-point
+system with precision $p$. Then
+\[
+  \operatorname{round}(x) = x(1+\delta)
+  \qquad\text{for some } \delta \text{ with }
+  |\delta| < \epsm .
+\]
+\end{thm}
+
+\begin{proof}
+If $x=0$ then $\operatorname{round}(x)=0$ and $\delta=0$ works, so assume
+$x\neq0$ and let $e$ be the exponent with $2^{e}\le|x|<2^{e+1}$. Define
+\[
+  \delta = \frac{\operatorname{round}(x)-x}{x},
+\]
+which is legitimate since $x\neq0$, and rearranges at once to
+$\operatorname{round}(x)=x(1+\delta)$. It remains to bound $\delta$. By the
+rounding bound of \S4.3 the numerator satisfies
+$|\operatorname{round}(x)-x|\le\tfrac12\operatorname{ulp}(x)=2^{\,e-p}$, and the
+denominator satisfies $|x|\ge2^{e}$. Therefore
+\[
+  |\delta| = \frac{|\operatorname{round}(x)-x|}{|x|}
+           \;\le\; \frac{2^{\,e-p}}{2^{e}}
+           \;=\; 2^{-p}
+           \;=\; \tfrac12\epsm
+           \;<\; \epsm . \qedhere
+\]
+\end{proof}
+
+\begin{rmk}
+The proof delivers slightly more than the statement: it gives
+$|\delta|\le 2^{-p}=u$, the unit roundoff of \S4.1, which is half of
+$\epsm$. Both forms are in common use, and the sharper one
+is the standard hypothesis in numerical analysis. Nothing in what follows
+depends on which you carry.
+\end{rmk}
+
+\noindent Combining the theorem with the definition of $\operatorname{fl}$ gives
+the statement that every error analysis in numerical linear algebra starts from:
+for $x,y\in\F$ and $\ast\in\{+,-,\times,\div\}$,
+\[
+  \boxed{\;\operatorname{fl}(x\ast y) = (x\ast y)(1+\delta),
+          \qquad |\delta|\le u .\;}
+\]
+Read it in words: \emph{every floating-point operation returns the exact answer,
+perturbed by a relative amount no larger than the unit roundoff}. One operation
+is harmless --- in binary64 the perturbation is at the sixteenth digit. The
+subject begins when you chain $N$ of them together, because those $N$
+perturbations may cancel or may compound, and which one happens is a property of
+the algorithm rather than of the hardware. An algorithm whose errors stay
+controlled is called \emph{stable}, and one whose errors amplify is not; two
+mathematically identical formulas, like the two versions of the projection in
+\S1.6, can differ in this respect as well as in cost.
+
+\begin{warn}[Addition is not associative]
+In $\R$, $(a+b)+c=a+(b+c)$ always. In $\F$ it can fail. Work in binary16, where
+$\epsm=2^{-10}$, and take $a=1$, $b=c=2^{-11}$.
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt,topsep=3pt]
+  \item \emph{Left to right.} The exact sum $1+2^{-11}$ falls exactly halfway
+        between $1$ and $1+2^{-10}$, its two neighbours. Round half to even
+        selects $1$. Adding $c$ to that repeats the same tie, so
+        $\operatorname{fl}\bigl(\operatorname{fl}(a+b)+c\bigr) = 1$.
+  \item \emph{Right to left.} First $2^{-11}+2^{-11}=2^{-10}$, which is exactly
+        representable, so no rounding occurs. Then $1+2^{-10}$ is exactly
+        representable too, giving
+        $\operatorname{fl}\bigl(a+\operatorname{fl}(b+c)\bigr) = 1+2^{-10}$.
+\end{itemize}
+The two orders disagree. The practical consequences are real: summing a long
+list of numbers gives different answers depending on the order, running the same
+sum in parallel gives a different answer again because the partial sums combine
+differently, and a compiler that reorders arithmetic to go faster changes your
+output. None of this is a defect in the hardware. It is what working in a finite
+set costs.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{FLOPs}
+%------------------------------------------------------------------------------
+We can now close the loop back to \S1. That section defined an \emph{operation}
+as one addition, subtraction, multiplication, division or square root, and
+counted them on vectors in $\R^{n}$ --- but $\R^{n}$ was a fiction, as this
+section has spent its length establishing. The operations were on $\F$ all
+along, and the standard name says so.
+
+\begin{defn}[FLOP]
+A \textbf{floating-point operation}, or \textbf{FLOP}, is a single arithmetic
+operation --- one add, subtract, multiply, divide or square root --- performed
+on floating-point numbers.
+\end{defn}
+
+\noindent Nothing about the counting changes; only the name, which is now
+accurate. Restating the results of \S1 in the standard vocabulary: for
+$\vc{u},\vc{v}\in\F^{n}$,
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Computation} & \textbf{Cost} & \textbf{Complexity} \\
+\midrule
+$\vc{u}+\vc{v}$                    & $n$ FLOPs    & $O(n)$ \\
+$\langle\vc{u},\vc{v}\rangle$      & $2n-1$ FLOPs & $O(n)$ \\
+$\norm{\vc{u}}$                    & $2n$ FLOPs   & $O(n)$ \\
+$\proj{\vc{u}}{\vc{v}}$            & $5n-1$ FLOPs & $O(n)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent And there is a second reading of the table now available. Each of
+those FLOPs, by \S4.5, perturbs its result by a relative amount up to $u$. A dot
+product in $\R^{1000}$ performs $1999$ of them, so it commits $1999$ roundings
+on the way to a single number. Its cost and its accuracy are both consequences
+of the same count.
+
+\begin{warn}[FLOPs and FLOPS are different things]
+The two are distinguished, unhelpfully, by the case of the final letter.
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt,topsep=3pt]
+  \item \textbf{FLOPs} --- lower-case \emph{s}, a plural --- counts operations.
+        It is a property of an algorithm, and it is what \S1 computed.
+  \item \textbf{FLOPS} --- upper-case \emph{S}, for \emph{per second} --- is a
+        rate. It is a property of hardware. A processor rated at $30$
+        teraFLOPS performs up to $3\times10^{13}$ floating-point operations
+        every second.
+\end{itemize}
+Dividing one by the other estimates a running time,
+\[
+  \text{time} \;\approx\; \frac{\text{FLOPs}}{\text{FLOPS}} ,
+\]
+which is optimistic --- it assumes the processor never waits for data to arrive
+from memory, and in practice it often does --- but it is the right first
+calculation, and it is why a FLOP count is worth having as a number and not only
+as a complexity class.
+\end{warn}
+
+\noindent FLOP counts are the standard currency of scientific computing. The
+cost of solving a linear system, of factoring a matrix, of training a neural
+network, is quoted in FLOPs, and the capability of a machine is quoted in FLOPS.
+Both halves of this lecture were needed to make sense of either.
+
+\lookahead Three tools have been assembled here: an exact operation count
+(\S1), the growth rate that count belongs to (\S2), and the arithmetic the count
+is actually performed in (\S3--\S4). From this point on, every algorithm we meet
+gets reported the same way --- what it costs in FLOPs, what its complexity is,
+and what rounding does to its answer. The first of them will operate not on
+vectors but on matrices, and its cost will not be $O(n)$.
 
 \end{document}
