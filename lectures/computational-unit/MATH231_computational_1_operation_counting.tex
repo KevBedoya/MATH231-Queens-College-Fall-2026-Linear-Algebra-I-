@@ -64,6 +64,9 @@
 
 %--------------------------------------------------------------- notation ----
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
 \newcommand{\vc}[1]{\mathbf{#1}}
 \newcommand{\norm}[1]{\lVert #1\rVert}
 \newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
@@ -808,5 +811,191 @@ bits. What a computer actually stores is a \emph{floating-point} number, and
 arithmetic on those is not quite the arithmetic of $\R$ --- sums can depend on
 the order you add them, and quantities that should cancel exactly do not. That
 is the next topic, and the last of this lecture.
+
+%==============================================================================
+\section{The set a computer actually works in}
+%==============================================================================
+%------------------------------------------------------------------------------
+\subsection{Every subject starts with a set}
+%------------------------------------------------------------------------------
+Mathematical subjects share a structural pattern, and it is worth naming before
+we disturb it. In each one there is a \emph{set} of objects and a collection of
+\emph{operations} or rules that act on them. Everything else --- the questions,
+the observations, the conjectures, the theorems --- grows out of asking what
+happens to those objects under those rules in one scenario after another.
+
+Calculus is a clear case. The underlying set is the real numbers, together with
+functions built from them. The operations on functions are governed by
+properties of $\R$, and out of those properties comes the limit; out of the
+limit comes the derivative; and out of the derivative comes the rest of the
+subject. Nothing in that chain was available until the set was fixed.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Underlying set} & \textbf{Some operations} & \textbf{What grows from it} \\
+\midrule
+$\R$, and functions on it & limits, derivatives, integrals & calculus, real analysis \\
+$\C$                      & complex arithmetic, conjugation & complex analysis \\
+$\Z$                      & divisibility, congruence, counting & number theory, combinatorics \\
+$\R^{n}$, later matrices  & addition, scaling, the dot product & linear algebra \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The underlying set plants the seed for a whole garden of mathematical
+knowledge.
+
+\begin{rmk}
+The vector unit was exactly this pattern, carried out in front of you. We fixed
+the set --- $\R^{2}$, later $\R^{n}$ --- then fixed the operations, and then
+spent five parts asking what followed: when do two vectors span, when are they
+independent, what does orthogonality buy, which subsets are closed. None of
+those questions could even be \emph{stated} before the set and the operations
+were on the table.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A computer works in a different set}
+%------------------------------------------------------------------------------
+Here is the disturbance. When a computer tackles a mathematical problem --- and
+especially a \emph{continuous} one, a problem posed over the real numbers --- it
+does not work in $\R$. It works in a peculiar set of its own.
+
+\begin{defn}[Floating-point numbers, informally]
+The \textbf{floating-point numbers}, written $\F$, are a \emph{finite} set of
+numbers used to approximate the real numbers, each carrying only a fixed,
+finite number of digits.
+\end{defn}
+
+\noindent Two consequences follow immediately, and both matter.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item $\F$ is \emph{finite}, while $\R$ is not merely infinite but
+        uncountable. So $\F\subset\R$: every floating-point number is a real
+        number, and almost no real number is a floating-point number. The
+        machine is working inside a very sparse subset of the set the problem
+        was posed in.
+  \item The elements of $\F$ are \emph{not evenly spaced}. They crowd together
+        near zero and spread apart as the magnitude grows, because a fixed
+        number of digits buys finer resolution for small numbers than for large
+        ones.
+\end{itemize}
+
+\noindent The picture below shows both facts at once. It uses a miniature
+floating-point system --- three digits of precision in base $2$, with only four
+exponents --- so that the whole set fits on the page; a real system has vastly
+more points but is spaced in exactly this pattern.
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.55,yscale=1]
+  \draw[RoyalBlue!70,line width=1.1pt] (-0.35,0) -- (7.6,0)
+        node[right,font=\scriptsize,black]{$\R$};
+  % two label rows, kept well apart: axis values just under the line, and the
+  % neighbour spacings lower down with their own caption
+  \foreach \x/\lab in {0/0, 1/1, 2/2, 4/4, 7/7}
+     { \draw[gray!60] (\x,0.11) -- (\x,-0.11);
+       \node[below=4pt,font=\scriptsize,gray] at (\x,-0.11) {$\lab$}; }
+  \draw[gray!45,dashed] (1,-0.62) -- (1,0.28);
+  \draw[gray!45,dashed] (2,-0.62) -- (2,0.28);
+  \draw[gray!45,dashed] (4,-0.62) -- (4,0.28);
+  \foreach \x in {0, 0.5,0.625,0.75,0.875, 1,1.25,1.5,1.75,
+                  2,2.5,3,3.5, 4,5,6,7}
+     { \fill[BrickRed] (\x,0) circle (1.9pt); }
+  \node[font=\scriptsize,BrickRed] at (3.6,0.52)
+        {the dots are $\F$ --- finitely many};
+  \node[font=\scriptsize,gray] at (1.5,-0.86) {$0.25$};
+  \node[font=\scriptsize,gray] at (3,-0.86)   {$0.5$};
+  \node[font=\scriptsize,gray] at (5.5,-0.86) {$1$};
+  \node[font=\scriptsize,gray] at (3,-1.28)   {spacing between neighbours};
+\end{tikzpicture}
+\end{center}
+
+\noindent Read the spacing across the picture: it \emph{doubles} at every power
+of two. Between $1$ and $2$ the representable numbers are $0.25$ apart; between
+$2$ and $4$ they are $0.5$ apart; between $4$ and $8$ they are $1$ apart. Near
+zero they are packed tightly, and far from zero they are strewn thinly. The line
+is continuous; the dots are all the machine has.
+
+Everything in $\R$ that is not a dot must be \emph{rounded} to the nearest dot
+before the machine can hold it. That rounding is small, and for a single number
+it is harmless. The question --- which is what makes this a topic rather than a
+footnote --- is what happens when millions of such roundings accumulate through
+an algorithm like the ones we counted in \S1.
+
+%------------------------------------------------------------------------------
+\subsection{Floats and doubles}
+%------------------------------------------------------------------------------
+You have almost certainly met this set already. Programming languages expose it
+directly, and name the members by their \textbf{precision} --- the number of
+digits each one carries:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Name} & \textbf{Storage} & \textbf{Roughly} \\
+\midrule
+\texttt{float}, single precision, \texttt{float32}
+  & $32$ bits & about $7$ decimal digits \\
+\texttt{double}, double precision, \texttt{float64}
+  & $64$ bits & about $16$ decimal digits \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent A \texttt{double} is the default nearly everywhere it matters: it is
+what Python's \texttt{float} is, what MATLAB uses unless told otherwise, and
+what numerical libraries assume. A \texttt{float} halves the storage and the
+precision, which is a real trade in graphics and machine learning and a
+liability almost everywhere else.
+
+The word \emph{precision} is the one to hold on to. It does not mean the numbers
+are approximately right in some vague sense; it means each one carries a
+specific, countable number of digits, and everything past that is gone.
+
+%------------------------------------------------------------------------------
+\subsection{Base 2}
+%------------------------------------------------------------------------------
+One more ingredient before we can say what a floating-point number actually
+\emph{is}. A classical computer stores everything --- numbers included --- as
+patterns of $0$s and $1$s, which is to say in \textbf{binary}.
+
+Binary is not exotic. It is simply a numerical \emph{base}, base $2$, and we
+have been conditioned by a decade of schooling to think in base $10$ instead ---
+for no better reason than that people have ten fingers. In any base $b$, a
+string of digits is shorthand for a sum of multiples of powers of $b$:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+& \textbf{Place values} & \textbf{Value} \\
+\midrule
+$237_{10}$  & $2(10^{2}) + 3(10^{1}) + 7(10^{0})$
+            & $200+30+7 = 237$ \\
+$1011_{2}$  & $1(2^{3}) + 0(2^{2}) + 1(2^{1}) + 1(2^{0})$
+            & $8+0+2+1 = 11$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The same idea continues to the right of the point, with negative
+powers:
+\[
+  0.101_{2}
+  = 1\bigl(2^{-1}\bigr) + 0\bigl(2^{-2}\bigr) + 1\bigl(2^{-3}\bigr)
+  = \tfrac12 + \tfrac18
+  = 0.625 .
+\]
+So the toy system in the figure above was nothing more than this: a few binary
+digits, scaled by a power of two.
+
+\lookahead A base is a choice of bookkeeping, and normally an innocent one ---
+$0.625$ is $0.625$ whether you write it in base $10$ or as $0.101_{2}$. But the
+choice is not always innocent, because a fraction that terminates in one base
+need not terminate in another. That is where the surprises live, and it is where
+we pick up next.
 
 \end{document}
