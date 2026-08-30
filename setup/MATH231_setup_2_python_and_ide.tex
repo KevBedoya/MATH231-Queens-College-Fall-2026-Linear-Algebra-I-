@@ -1,0 +1,433 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  SETUP GUIDE 2 -- Python, pip, and an IDE
+%
+%  AUDIENCE: students, some of whom have never installed a programming language.
+%  Companion to Setup Guide 1 (git and GitHub).  Same conventions: numbered
+%  steps, per-platform instructions, a Checkpoint after every step, and a
+%  troubleshooting section keyed to real error messages.
+%
+%  The package list is deliberately short.  numpy is the only one installed
+%  here, as practice; scipy and matplotlib arrive when the course needs them.
+%
+%  Compile with pdflatex (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{listings}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}
+                      {\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{16pt}{7pt}
+
+\lstdefinestyle{term}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single, rulecolor=\color{gray!45},
+  framesep=5pt, xleftmargin=8pt, xrightmargin=8pt,
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, aboveskip=8pt, belowskip=8pt
+}
+\lstdefinestyle{py}{
+  style=term, language=Python,
+  keywordstyle=\color{RoyalBlue}\bfseries,
+  commentstyle=\color{gray!80}\itshape,
+  stringstyle=\color{ForestGreen},
+  emph={np,numpy}, emphstyle=\color{BrickRed}
+}
+\lstset{style=term}
+
+\newcommand{\plat}[1]{\smallskip\noindent
+  \textcolor{BrickRed}{\sffamily\bfseries #1}\par\nopagebreak\smallskip}
+\newcommand{\checkpoint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{ForestGreen}{\textbf{Checkpoint.}}\ #1}\par\smallskip}
+\newcommand{\heads}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{BrickRed}{\textbf{Watch out.}}\ #1}\par\smallskip}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Setup Guide 2 \textbullet\ Python, pip, and an IDE}\\[2pt]
+       {\normalsize\sffamily Queens College, CUNY \textbullet\ Fall 2026
+        \textbullet\ Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.4cm}
+
+\noindent\textbf{What this guide does.} By the end you will have Python
+installed, the package installer \texttt{pip} working, a code editor set up, the
+\texttt{numpy} package installed, and a short program that runs and prints two
+vectors. That is the complete toolkit for every piece of programming in this
+course.
+
+\medskip
+\noindent\textbf{No experience assumed.} If you have never written a line of
+code, you are in the right place --- Python is genuinely one of the friendlier
+languages to start with, and programming will never be assessed on an exam in
+this course. Follow the steps in order and check the
+\textcolor{ForestGreen}{\sffamily\bfseries Checkpoint} after each. Section \S8
+is troubleshooting.
+
+\medskip
+\noindent\textbf{Everything here is free.} No licences, no trials, no credit
+card.
+
+%==============================================================================
+\section{What you are installing, and why}
+%==============================================================================
+Three separate pieces. They are often confused, so it is worth naming them.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l p{10.2cm}@{}}
+\toprule
+\textbf{Piece} & \textbf{What it is} \\
+\midrule
+\textbf{Python} & The language itself, plus the program that runs your code.
+                  Without it, a \texttt{.py} file is just text. \\
+\textbf{pip}    & Python's package installer. It fetches libraries other people
+                  have written --- like \texttt{numpy} --- and puts them where
+                  Python can find them. It comes bundled with Python. \\
+\textbf{An IDE} & Where you write the code. Technically optional, but it gives
+                  you syntax colouring, error highlighting, and a Run button. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Install them in that order: Python first, since pip arrives with it,
+and the IDE last, since it needs to find the Python you installed.
+
+%==============================================================================
+\section{Install Python}
+%==============================================================================
+Find your operating system.
+
+\plat{Windows}
+\begin{enumerate}[leftmargin=2.0em,itemsep=4pt]
+  \item Go to \url{https://www.python.org/downloads/} and click the big
+        \textbf{Download Python 3.x} button.
+  \item Run the installer. On the very first screen, \textbf{tick the box at the
+        bottom that says ``Add python.exe to PATH''}.
+  \item Then click \textbf{Install Now} and let it finish.
+\end{enumerate}
+
+\heads{That checkbox is the single most important step in this guide. It is off
+by default, it is easy to miss, and skipping it is the cause of roughly every
+``Python is not recognised'' message. If you are not sure whether you ticked it,
+run the installer again and choose \emph{Modify} --- reinstalling does no
+harm.}
+
+\plat{macOS}
+Go to \url{https://www.python.org/downloads/} and run the macOS installer,
+accepting the defaults. Alternatively, if you already use Homebrew:
+
+\begin{lstlisting}
+brew install python
+\end{lstlisting}
+
+\heads{macOS ships with an old Python that the system uses for its own purposes.
+Leave it alone. On a Mac, always type \texttt{python3} and \texttt{pip3} rather
+than \texttt{python} and \texttt{pip}.}
+
+\plat{Linux}
+Python 3 is usually already installed. Check first, and install only if it is
+missing:
+
+\begin{lstlisting}
+sudo apt update && sudo apt install python3 python3-pip   # Ubuntu, Debian, Mint
+sudo dnf install python3 python3-pip                      # Fedora
+\end{lstlisting}
+
+\subsection*{Check that it worked}
+Open a \textbf{new} terminal window --- new, because an already-open one will not
+know about a program installed a minute ago --- and run:
+
+\begin{lstlisting}
+python --version        # Windows
+python3 --version       # macOS and Linux
+\end{lstlisting}
+
+\checkpoint{You see something like \texttt{Python 3.12.4}. Any version starting
+with \texttt{3.} is fine. If it says \texttt{2.7}, see \S8.4.}
+
+%==============================================================================
+\section{Check pip}
+%==============================================================================
+There is nothing to install --- pip ships with every modern Python. You only
+need to confirm it is there:
+
+\begin{lstlisting}
+python -m pip --version        # Windows
+python3 -m pip --version       # macOS and Linux
+\end{lstlisting}
+
+\noindent The \texttt{-m} means \emph{run the module named pip using this
+Python}. It is slightly longer to type than plain \texttt{pip}, and worth the
+habit: it guarantees that packages get installed into the same Python that runs
+your code. Most beginner package problems come from those two being different.
+
+\checkpoint{You see a line like \texttt{pip 24.0 from ... (python 3.12)}.}
+
+\medskip
+\noindent Optionally, bring pip up to date:
+
+\begin{lstlisting}
+python -m pip install --upgrade pip
+\end{lstlisting}
+
+%==============================================================================
+\section{Install an IDE}
+%==============================================================================
+An \textbf{IDE} (integrated development environment) is a text editor built for
+code. Pick \emph{one} of the two below --- both are free, both are widely used
+in industry, and either is completely fine for this course.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l p{9.6cm}@{}}
+\toprule
+\textbf{Option} & \textbf{Choose it if} \\
+\midrule
+\textbf{VS Code} & You want something light and general-purpose that also
+                   handles other languages, or you already use it. \\
+\textbf{PyCharm} & You want everything preconfigured for Python specifically,
+                   with less setup and more built in. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{VS Code}
+\begin{enumerate}[leftmargin=2.0em,itemsep=4pt]
+  \item Download from \url{https://code.visualstudio.com} and install it.
+  \item Open it and click the \textbf{Extensions} icon in the left sidebar (four
+        small squares).
+  \item Search for \textbf{Python} and install the one published by
+        \textbf{Microsoft}. This is what makes VS Code understand Python rather
+        than treating your file as plain text.
+  \item Press \texttt{Ctrl}+\texttt{Shift}+\texttt{P}
+        (\texttt{Cmd}+\texttt{Shift}+\texttt{P} on a Mac), type
+        \textbf{Python: Select Interpreter}, and choose the Python 3 you
+        installed in \S2.
+\end{enumerate}
+
+\subsection{PyCharm}
+\begin{enumerate}[leftmargin=2.0em,itemsep=4pt]
+  \item Download from \url{https://www.jetbrains.com/pycharm/download/}.
+  \item Choose the \textbf{Community Edition} --- it is free and has everything
+        this course needs. You do not need the paid Professional edition.
+  \item Install and open it. When you create a new project, PyCharm will find
+        your Python installation on its own.
+\end{enumerate}
+
+\checkpoint{You can open your editor, create a file called \texttt{test.py}, and
+see the code coloured rather than uniformly black.}
+
+%==============================================================================
+\section{Install your first package: numpy}
+%==============================================================================
+A \textbf{package} is code somebody else wrote that you can use in your own
+programs. \texttt{numpy} --- ``Numerical Python'' --- is the standard package
+for numerical work, and it is the one we will lean on most this semester, since
+it is built around exactly the object this course is about: the vector.
+
+\medskip
+\noindent Install it:
+
+\begin{lstlisting}
+python -m pip install numpy        # Windows
+python3 -m pip install numpy       # macOS and Linux
+\end{lstlisting}
+
+\noindent It will print a few lines of download progress and finish with a line
+beginning \texttt{Successfully installed numpy}.
+
+\checkpoint{Run the line below. It should print a version number and no errors.}
+
+\begin{lstlisting}
+python -c "import numpy; print(numpy.__version__)"
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Later packages.} We will add others as the course needs them
+--- \texttt{scipy} and \texttt{matplotlib} are the likely next two --- and each
+is installed the same way, by swapping the name in the command above. There is
+nothing to install ahead of time; I will say when.
+
+%==============================================================================
+\section{Your first program}
+%==============================================================================
+Time to check that all three pieces work together.
+
+\begin{enumerate}[leftmargin=2.0em,itemsep=4pt]
+  \item In your editor, create a new file named \texttt{main.py}.
+  \item Type the following into it. Three lines of work, plus the import that
+        makes \texttt{numpy} available.
+\end{enumerate}
+
+\begin{lstlisting}[style=py]
+import numpy as np
+u = np.array([1, 2, 3])
+v = np.array([4, 5, 6])
+print(u, v)
+\end{lstlisting}
+
+\noindent Line by line:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt,topsep=4pt]
+  \item \texttt{import numpy as np} loads the package and gives it the short
+        nickname \texttt{np}. Essentially all Python code in the world writes it
+        this way, so it is worth copying the convention.
+  \item \texttt{np.array([1, 2, 3])} builds a numpy array --- which for our
+        purposes is a vector --- from an ordinary list of numbers. We store one
+        in \texttt{u} and another in \texttt{v}.
+  \item \texttt{print(u, v)} writes both to the terminal.
+\end{itemize}
+
+\noindent Save the file, then run it. Either press the \textbf{Run} button in
+your IDE, or from a terminal in the same folder as the file:
+
+\begin{lstlisting}
+python main.py         # Windows
+python3 main.py        # macOS and Linux
+\end{lstlisting}
+
+\checkpoint{The terminal prints exactly this:}
+
+\begin{lstlisting}
+[1 2 3] [4 5 6]
+\end{lstlisting}
+
+\noindent Note that numpy separates components with spaces rather than commas,
+which is how you can tell a numpy array from an ordinary Python list at a
+glance.
+
+\medskip
+\noindent If you see that output, your setup is complete: Python runs, pip
+installed a package, the package imported, and your editor can execute a file.
+Nothing further is needed until the first assignment.
+
+%==============================================================================
+\section{Where your code goes}
+%==============================================================================
+Assignments are submitted through the private GitHub repository set up in
+\textbf{Setup Guide 1}. Save your \texttt{.py} files into the matching folder
+--- \texttt{homework/}, \texttt{projects/}, or \texttt{extra-credit/} --- inside
+your \texttt{QC\_MATH231} folder, then stage, commit, and push:
+
+\begin{lstlisting}
+git add .
+git commit -m "Finish homework 1"
+git push
+\end{lstlisting}
+
+\noindent Work that has not been pushed is not visible to me and cannot be
+graded. If any of that is unfamiliar, it is covered in Setup Guide 1, \S7.
+
+%==============================================================================
+\section{Troubleshooting}
+%==============================================================================
+
+\subsection{``python is not recognized'' / command not found}
+\begin{lstlisting}
+'python' is not recognized as an internal or external command
+\end{lstlisting}
+Almost always the \emph{Add python.exe to PATH} checkbox from \S2. Two fixes, in
+order of effort:
+
+\begin{enumerate}[leftmargin=2.0em,itemsep=3pt]
+  \item \textbf{Open a new terminal.} An open terminal does not pick up a
+        program installed after it started.
+  \item \textbf{Try the launcher.} On Windows, \texttt{py} often works even when
+        \texttt{python} does not:
+\begin{lstlisting}
+py --version
+\end{lstlisting}
+        If that works, use \texttt{py} in place of \texttt{python} everywhere,
+        including \texttt{py -m pip install numpy}.
+  \item \textbf{Reinstall.} Run the installer again, choose \textbf{Modify}, and
+        make sure the PATH option is ticked.
+\end{enumerate}
+
+\subsection{Typing \texttt{python} opens the Microsoft Store}
+A Windows default that intercepts the command when no real Python is on the
+PATH. Either install Python properly from \url{https://python.org} with the PATH
+box ticked, or turn the stub off: \textbf{Settings} $\to$ \textbf{Apps} $\to$
+\textbf{Advanced app settings} $\to$ \textbf{App execution aliases}, then switch
+off both \texttt{python.exe} and \texttt{python3.exe}.
+
+\subsection{``pip is not recognized''}
+Use the longer form, which works whenever Python itself works:
+
+\begin{lstlisting}
+python -m pip install numpy
+\end{lstlisting}
+
+\subsection{\texttt{python --version} says 2.7}
+You are on a Mac or an older Linux system where \texttt{python} means the legacy
+version. Use \texttt{python3} and \texttt{pip3} instead --- everywhere, for the
+whole semester. Python 2 will not run this course's code.
+
+\subsection{``ModuleNotFoundError: No module named numpy''}
+\begin{lstlisting}
+ModuleNotFoundError: No module named 'numpy'
+\end{lstlisting}
+numpy went into a different Python than the one running your file. This is the
+most common cause of confusion when more than one Python is installed. Fix it by
+installing through the same interpreter that runs your code:
+
+\begin{lstlisting}
+python -m pip install numpy
+\end{lstlisting}
+
+\noindent If it still fails inside your IDE but works in the terminal, the IDE is
+pointed at the wrong interpreter. In VS Code, press
+\texttt{Ctrl}+\texttt{Shift}+\texttt{P} $\to$ \textbf{Python: Select
+Interpreter} and choose the same Python 3 you have been using. In PyCharm:
+\textbf{Settings} $\to$ \textbf{Project} $\to$ \textbf{Python Interpreter}.
+
+\subsection{Permission denied while installing}
+Do not reach for \texttt{sudo}. Install into your own user account instead:
+
+\begin{lstlisting}
+python -m pip install --user numpy
+\end{lstlisting}
+
+\subsection{``SyntaxError'' on a line that looks fine}
+Check the line \emph{above} the one reported --- an unclosed bracket or quote
+makes Python complain about the next line down. Also check that you have not
+mixed tabs and spaces for indentation; most editors have a setting to insert
+spaces for tabs.
+
+\subsection{The program runs but prints nothing}
+You probably saved the file without the \texttt{print} line, or ran a different
+file than the one you edited. Confirm the filename in the terminal output
+matches the file you are looking at, and that you saved before running.
+
+\subsection{Still stuck}
+Email me at \url{Kevin.Bedoya32@stu-mail.qc.cuny.edu} or ask on the class
+Discord. Include:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item your operating system,
+  \item the exact command you ran, and
+  \item the full error message, copied as text or as a screenshot.
+\end{itemize}
+
+\noindent Installation problems are ordinary and everyone hits at least one.
+Sort yours out early --- well before the first assignment is due --- so that
+when the deadline arrives the only thing you are thinking about is the linear
+algebra.
+
+\end{document}
