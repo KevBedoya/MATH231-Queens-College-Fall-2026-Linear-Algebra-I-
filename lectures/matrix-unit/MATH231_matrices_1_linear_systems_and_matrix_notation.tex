@@ -9,10 +9,36 @@
 %  because a bare "Sec. 1.5" is now ambiguous three ways.  The front matter
 %  states that convention for students.
 %
-%  STATUS: in progress.  This part motivates the matrix and stops at Vx = u.
+%  STATUS: complete.  Sections 1-8.
+%
+%    Sec. 1-2   motivate the matrix from the coordinate problem and stop at
+%               Vx = u.  (These came first and are unchanged.)
+%    Sec. 3-8   step back and define the matrix in general: what it is, what
+%               shapes exist, and the operations on it.
+%
 %  HOW to solve a system -- elimination, pivoting, existence and uniqueness --
-%  is the announced sequel and is deliberately NOT begun here; Sec. 2.6 flags
-%  it forward.
+%  is the announced sequel and is deliberately NOT begun here.  The closing
+%  Looking-ahead in Sec. 8.6 flags it, and Sec. 4.4 plants the hint that the
+%  method works by making the matrix triangular.
+%
+%  ORDER OF SEC. 7 AND 8 is deliberate and slightly unusual: inner and outer
+%  products come BEFORE matrix multiplication is defined.  This is not an
+%  oversight.  Sec. 7.1 multiplies a 1xn by an nx1, which introduces the
+%  row-times-column atom on the smallest possible case, and Sec. 8.1 then opens
+%  by saying matrix multiplication IS that atom applied to every (row, column)
+%  pair.  It makes the rule feel derived rather than decreed, which matters
+%  because no motivation for the rule is offered at this stage.  Do not reorder
+%  these two sections without replacing that bridge.
+%
+%  CORRECTION against the drafted outline.  The outline said that R^(m x n) "is
+%  formally called a field".  It is not one.  R is a field; R^(m x n) is merely
+%  the SET of m x n real matrices, and it fails to be a field for a reason the
+%  document can already state -- there is no general division by a matrix, and
+%  by Sec. 8.4 multiplication does not even commute.  The outline's actual
+%  intent (notation for "which set the matrices belong to", with the formal
+%  definition of a field out of scope) is preserved exactly: Sec. 3.2 attaches
+%  the word "field" to R where it belongs, defines R^(m x n) as a set, and adds
+%  a short confusion box so no student carries away the wrong claim.
 %
 %  AUDIENCE: distributed to students.  Keep it free of instructor-facing
 %  apparatus -- time budgets, pacing notes, teaching cues.
@@ -87,7 +113,12 @@
 \newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
 \newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
 \newcommand{\bas}{\mathcal{B}}
+\newcommand{\T}{^{\mathsf{T}}}          % transpose
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
 \DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\diagop}{diag}
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
@@ -877,12 +908,1013 @@ vector unit, \S18.4), hence not a basis, and its span is a line rather than
 $\R^{2}$ --- a line that does not contain $[\,3,\,1\,]$. With the basis
 hypothesis gone, so is the guarantee of \S1.1 that a solution exists at all.
 
-\lookahead We can now state the problem in one line but not yet solve it, and
-substitution --- fine for the $2\times2$ case of \S1.5 --- is not a method that
-scales. What is needed is a procedure that works on $\mt{V}$ directly, applies
-to any size, and terminates with the answer or with a definite report that there
-is none. That procedure is \emph{Gaussian elimination}, and it is next. With it
-come the questions that P5 has already raised: when does a system have a
-solution, when is it unique, and what does the matrix look like in each case.
+\lookahead We can now state the problem in one line but not yet solve it. Before
+a method for solving it is worth writing down, the object it operates on
+deserves a proper definition. So far $\mt{V}$ has been \emph{a} matrix --- the
+one that happened to fall out of one particular problem, with the basis vectors
+down its columns. The rest of this document steps back from that problem
+entirely and asks what a matrix is in general, what shapes they come in, and
+what you are allowed to do to them.
+
+%==============================================================================
+\section{What a matrix is}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Matrix]
+Let $m,n\in\N$. An \textbf{$m\times n$ matrix} (read ``$m$ by $n$'') is a
+two-dimensional grid of numbers arranged in $m$ rows and $n$ columns. The
+numbers $m$ and $n$ are its \textbf{dimensions}. Each number in the grid is an
+\textbf{entry}, and the entry in row $i$ and column $j$ is written $a_{ij}$.
+\end{defn}
+
+\noindent Written out, a matrix $\mt{A}$ is
+\[
+  \mt{A} \;=\;
+  \begin{bmatrix}
+    a_{11} & a_{12} & a_{13} & \cdots & a_{1n}\\
+    a_{21} & a_{22} & a_{23} & \cdots & a_{2n}\\
+    a_{31} & a_{32} & a_{33} & \cdots & a_{3n}\\
+    \vdots & \vdots & \vdots & \ddots & \vdots\\
+    a_{m1} & a_{m2} & a_{m3} & \cdots & a_{mn}
+  \end{bmatrix} .
+\]
+Read an index in two steps: $a_{ij}$ sits in \emph{row $i$}, then \emph{column
+$j$}. Row first, column second --- always. So $a_{23}$ is in the second row and
+third column, and $a_{32}$ is in the third row and second column; these are
+different positions and in general different numbers. Every entry has exactly
+one such address, and every address names exactly one entry, which is what makes
+the grid an unambiguous way of storing $mn$ numbers.
+
+\lookback This is the same convention \S1.3 fixed for the basis vectors, where
+$v_{ki}$ meant component $k$ of vector $i$ and sat in row $k$, column $i$ of
+$\mt{V}$. Nothing has changed; it is now stated for a matrix in general rather
+than for that one matrix.
+
+\begin{warn}[$2\times3$ is not $3\times2$]
+The dimensions are an \emph{ordered} pair and the order is rows-then-columns. A
+$2\times3$ matrix is short and wide --- two rows, three columns. A $3\times2$
+matrix is tall and narrow. Reversing them describes a different object, and in
+\S8 it will be the difference between a product that is defined and one that is
+not.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Where the entries come from}
+%------------------------------------------------------------------------------
+The definition said ``numbers'' without saying which. The entries are drawn from
+some agreed numerical set: the real numbers $\R$, the integers $\Z$, the complex
+numbers $\C$, and others besides. A set of numbers in which you can add,
+subtract, multiply, and divide, and have the familiar rules of arithmetic hold,
+is called a \textbf{field}. Both $\R$ and $\C$ are fields. The formal definition
+is beyond this course; we need the word only to say where the entries live.
+
+\medskip
+\noindent\textbf{For the remainder of this document, every matrix entry is a
+real number.}
+
+Once the entry set is fixed, we can name the collection of all matrices of a
+given shape.
+
+\begin{defn}[The set $\R^{m\times n}$]
+$\R^{m\times n}$ denotes the set of all $m\times n$ matrices whose entries are
+real numbers. Writing $\mt{A}\in\R^{m\times n}$ says that $\mt{A}$ is an
+$m\times n$ matrix holding $mn$ real scalars.
+\end{defn}
+
+\noindent The notation is deliberately parallel to $\R^{n}$ from the vector
+unit's \S24.1: there, $n$ real numbers in a list; here, $m\times n$ real numbers
+in a grid. In both cases the superscript records the shape.
+
+\begin{warn}[$\R^{m\times n}$ is not a field]
+$\R$ is a field. $\R^{m\times n}$ is not, and the notation is not claiming it
+is --- it is only the \emph{name of a set}, exactly as $\R^{n}$ was. The
+difference is easy to state even now: in a field you can divide by any nonzero
+element, and there is no general way to divide by a matrix. We will see in \S8
+that matrices fail an even more basic test, since $\mt{A}\mt{B}$ and
+$\mt{B}\mt{A}$ need not be equal.
+\end{warn}
+
+\noindent As \S2.2 already noted, capital letters conventionally denote
+matrices, lower case denotes vectors and scalars. That convention is why
+$\mt{A}\in\R^{m\times n}$ can be read at a glance.
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}
+Three matrices from three different sets.
+\[
+  \mt{A}=\begin{bmatrix}1&0\\0&1\end{bmatrix}\in\R^{2\times2},
+  \qquad
+  \mt{B}=\begin{bmatrix}2&3\\4&5\\6&7\end{bmatrix}\in\R^{3\times2},
+  \qquad
+  \mt{D}=\begin{bmatrix}
+    \pi & e & \pi & e\\[2pt]
+    \tfrac12 & \tfrac13 & \tfrac14 & \tfrac15
+  \end{bmatrix}\in\R^{2\times4} .
+\]
+Reading entries out of them:
+\[
+  a_{12}=0,\qquad
+  b_{32}=7,\qquad
+  b_{21}=4,\qquad
+  d_{14}=e,\qquad
+  d_{23}=\tfrac14 .
+\]
+Check $b_{32}$ against the grid: third row, second column --- the row is
+$[\,6,\ 7\,]$ and its second entry is $7$. And note that $\mt{B}$ has no entry
+$b_{23}$: it has only two columns, so the address does not exist.
+\end{ex}
+
+\begin{rmk}
+$\mt{A}$ above is a matrix you have already met. Its columns are $\vc{e}_1$ and
+$\vc{e}_2$, the standard basis of $\R^{2}$, so it is the matrix that appeared in
+P4 of \S2.6 --- the one for which $\mt{V}\vc{x}=\vc{x}$. It gets a name in
+\S4.3.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{A vector is a matrix}
+%------------------------------------------------------------------------------
+Nothing in the definition forbids $m=1$ or $n=1$. Those two cases should look
+familiar.
+
+If $\mt{A}\in\R^{1\times n}$ then $\mt{A}$ has one row and $n$ columns:
+\[
+  \mt{A}=\begin{bmatrix}a_{11}&a_{12}&a_{13}&\cdots&a_{1n}\end{bmatrix} ,
+\]
+which is a list of $n$ numbers --- a vector. Laid out this way it is called a
+\textbf{row vector}. If instead $\mt{A}\in\R^{m\times1}$, there is one column
+and $m$ rows:
+\[
+  \mt{A}=\begin{bmatrix}a_{11}\\a_{21}\\a_{31}\\\vdots\\a_{m1}\end{bmatrix} ,
+\]
+a \textbf{column vector}. Both hold the same kind of data as a vector in the
+sense of the vector unit; they differ only in whether that data is written
+across or down.
+
+\lookback \S2.3 flagged this and set it aside: the bracket notation
+$[\,v_1,\dots,v_n\,]$ never asserted a shape, and the row and column spellings
+denote the same vector. Now that matrices are defined in general, the two
+spellings are genuinely different \emph{matrices} --- one is $1\times n$, the
+other $n\times1$ --- even though they carry identical numbers. \S6.3 gives the
+operation that converts between them.
+
+%------------------------------------------------------------------------------
+\subsection{Rows and columns}
+%------------------------------------------------------------------------------
+Because a single row is a row vector and a single column is a column vector,
+an $m\times n$ matrix admits two readings, and both are useful.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l p{10.4cm}@{}}
+\toprule
+\textbf{Reading} & \textbf{What the matrix is} \\
+\midrule
+\textbf{By rows}    & A stack of $m$ row vectors, each with $n$ components,
+                      laid one on top of the next. \\
+\textbf{By columns} & A shelf of $n$ column vectors, each with $m$ components,
+                      standing side by side. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent For $\mt{B}\in\R^{3\times2}$ above, the row reading gives three
+vectors in $\R^{2}$ --- $[\,2,3\,]$, $[\,4,5\,]$, $[\,6,7\,]$ --- and the column
+reading gives two vectors in $\R^{3}$ --- $[\,2,4,6\,]$ and $[\,3,5,7\,]$.
+Same six numbers, grouped two different ways.
+
+\lookback Both readings have already done work. \S2.4 computed
+$\mt{V}\vc{x}$ by rows, as $n$ dot products; \S2.5 computed the same product by
+columns, as one linear combination of the basis vectors. That the two agree was
+the point of \S2.5, and it is a fact about every matrix, not just $\mt{V}$.
+
+%==============================================================================
+\section{Shapes and patterns}
+%==============================================================================
+Matrices are classified first by shape --- the relationship between $m$ and $n$
+--- and then by where their nonzero entries sit. The vocabulary below is used
+constantly, because knowing that a matrix has a particular pattern usually means
+there is a faster way to work with it.
+
+%------------------------------------------------------------------------------
+\subsection{Square and rectangular}
+%------------------------------------------------------------------------------
+\begin{defn}
+A matrix $\mt{A}\in\R^{n\times n}$, with as many rows as columns, is
+\textbf{square}. A matrix $\mt{A}\in\R^{m\times n}$ with $m\neq n$ is
+\textbf{rectangular}.
+\end{defn}
+
+\noindent The distinction matters more than it looks. A square matrix maps
+$\R^{n}$ to itself and can be multiplied by itself; a rectangular one cannot.
+The coefficient matrix $\mt{V}$ of \S2.2 was square precisely because a basis of
+$\R^{n}$ has exactly $n$ vectors, each with $n$ components --- and that squareness
+is what made ``$n$ equations in $n$ unknowns'' possible.
+
+\[
+  \underbrace{\begin{bmatrix}1&5\\-2&3\end{bmatrix}}_{2\times2,\ \text{square}}
+  \qquad
+  \underbrace{\begin{bmatrix}2&3\\4&5\\6&7\end{bmatrix}}_{3\times2,\ \text{rectangular}}
+  \qquad
+  \underbrace{\begin{bmatrix}1&0&4&2\\7&1&0&3\end{bmatrix}}_{2\times4,\ \text{rectangular}}
+\]
+
+\begin{rmk}[The $1\times1$ case]
+A $1\times1$ matrix $[\,a_{11}\,]$ is technically square, but it holds a single
+number and behaves like one. It is normally read as the scalar $a_{11}$ rather
+than treated as a matrix at all. This is not a quibble --- \S7.1 depends on it.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{The diagonal}
+%------------------------------------------------------------------------------
+The entries $a_{11},a_{22},a_{33},\dots$ --- those with equal row and column
+index --- form the \textbf{main diagonal}, running from the top-left corner
+downward. Everything else is \emph{off-diagonal}.
+
+\begin{defn}
+A square matrix is \textbf{diagonal} if every off-diagonal entry is zero:
+$a_{ij}=0$ whenever $i\neq j$.
+\end{defn}
+
+\[
+  \begin{bmatrix}3&0&0\\0&-1&0\\0&0&5\end{bmatrix}
+  \quad\text{is diagonal, and is written }\ \diagop(3,-1,5).
+\]
+
+\noindent A diagonal matrix is described completely by $n$ numbers rather than
+$n^{2}$, and almost everything one does with matrices becomes easy when they are
+diagonal --- a recurring theme later in the course.
+
+%------------------------------------------------------------------------------
+\subsection{The identity}
+%------------------------------------------------------------------------------
+\begin{defn}
+The \textbf{identity matrix} $\mt{I}_n\in\R^{n\times n}$ is the diagonal matrix
+whose diagonal entries are all $1$:
+\[
+  (\mt{I}_n)_{ij}=\begin{cases}1&i=j\\0&i\neq j\end{cases}
+  \qquad
+  \mt{I}_3=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix} .
+\]
+The subscript is dropped when the size is clear.
+\end{defn}
+
+\noindent Its columns are exactly $\vc{e}_1,\dots,\vc{e}_n$, so $\mt{I}$ is the
+matrix of the standard basis --- which is why P4 of \S2.6 found
+$\mt{I}\vc{x}=\vc{x}$. \S8.4 states the corresponding fact for matrices.
+
+%------------------------------------------------------------------------------
+\subsection{Triangular}
+%------------------------------------------------------------------------------
+\begin{defn}
+A square matrix is \textbf{upper triangular} if every entry below the main
+diagonal is zero ($a_{ij}=0$ for $i>j$), and \textbf{lower triangular} if every
+entry above it is zero ($a_{ij}=0$ for $i<j$).
+\end{defn}
+
+\[
+  \underbrace{\begin{bmatrix}1&2&3\\0&4&5\\0&0&6\end{bmatrix}}_{\text{upper triangular}}
+  \qquad\qquad
+  \underbrace{\begin{bmatrix}1&0&0\\2&3&0\\4&5&6\end{bmatrix}}_{\text{lower triangular}}
+\]
+
+\noindent A matrix that is both upper and lower triangular has zeros above
+\emph{and} below the diagonal --- that is, it is diagonal.
+
+\lookahead Triangular matrices are not a curiosity. A triangular system of
+equations can be solved by reading off one unknown at a time and substituting
+backwards, with no simultaneous juggling at all. Turning a general system into a
+triangular one is exactly what the solution method announced at the end of this
+document does.
+
+%------------------------------------------------------------------------------
+\subsection{Banded}
+%------------------------------------------------------------------------------
+\begin{defn}
+A matrix is \textbf{banded} if its nonzero entries are confined to a band of
+diagonals around the main diagonal --- that is, $a_{ij}=0$ whenever $|i-j|$
+exceeds some small fixed width.
+\end{defn}
+
+\noindent The narrowest interesting case is \textbf{tridiagonal}: nonzeros only
+on the main diagonal and the two diagonals adjacent to it, so $a_{ij}=0$ when
+$|i-j|>1$.
+\[
+  \begin{bmatrix}
+     2&-1& 0& 0\\
+    -1& 2&-1& 0\\
+     0&-1& 2&-1\\
+     0& 0&-1& 2
+  \end{bmatrix}
+\]
+Diagonal matrices are the case $|i-j|>0$, so ``diagonal'' is the narrowest band
+of all. Bands of width $1$ and $2$ turn up constantly in problems where each
+quantity interacts only with its immediate neighbours.
+
+%------------------------------------------------------------------------------
+\subsection{Sparse and dense}
+%------------------------------------------------------------------------------
+\begin{defn}
+A matrix is \textbf{sparse} if most of its entries are zero, and \textbf{dense}
+if most are nonzero.
+\end{defn}
+
+\noindent Unlike the previous definitions this one is deliberately informal ---
+there is no fixed fraction at which a matrix becomes sparse. The working test is
+practical: a matrix is sparse if it pays to store and process only the nonzero
+entries and ignore the rest.
+\[
+  \underbrace{\begin{bmatrix}
+    0&0&4&0&0\\
+    0&0&0&0&0\\
+    7&0&0&0&1\\
+    0&0&0&0&0\\
+    0&2&0&0&0
+  \end{bmatrix}}_{\text{sparse: }5\text{ nonzeros out of }25}
+  \qquad\qquad
+  \underbrace{\begin{bmatrix}
+    3&1&4\\1&5&9\\2&6&5
+  \end{bmatrix}}_{\text{dense: no zeros at all}}
+\]
+Diagonal, triangular and banded matrices are all sparse, and their sparsity has
+a \emph{known shape} --- you can say in advance which entries are zero. General
+sparse matrices need not have any pattern; they are simply mostly empty. Real
+problems produce enormous sparse matrices routinely: a matrix with a million
+rows and only a handful of nonzeros per row is entirely ordinary, and storing it
+as a full grid would be hopeless.
+
+%------------------------------------------------------------------------------
+\subsection{Summary}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l p{6.5cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Condition} & \textbf{In words} \\
+\midrule
+Square      & $m=n$                       & as many rows as columns \\
+Rectangular & $m\neq n$                   & more of one than the other \\
+Diagonal    & $a_{ij}=0$ for $i\neq j$    & only the main diagonal survives \\
+Identity    & diagonal, all $a_{ii}=1$    & the diagonal is all ones \\
+Upper triangular & $a_{ij}=0$ for $i>j$   & nothing below the diagonal \\
+Lower triangular & $a_{ij}=0$ for $i<j$   & nothing above the diagonal \\
+Banded      & $a_{ij}=0$ for $|i-j|>w$    & confined near the diagonal \\
+Sparse      & mostly zeros                & few enough nonzeros to exploit \\
+Dense       & mostly nonzeros             & no structure to exploit \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\section{Adding matrices}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Matrix addition]
+Let $\mt{A},\mt{B}\in\R^{m\times n}$ --- \emph{the same shape}. Their
+\textbf{sum} $\mt{A}+\mt{B}\in\R^{m\times n}$ is formed entrywise:
+\[
+  (\mt{A}+\mt{B})_{ij} \;=\; a_{ij}+b_{ij}
+  \qquad\text{for every } i,j .
+\]
+Subtraction is defined the same way, $(\mt{A}-\mt{B})_{ij}=a_{ij}-b_{ij}$.
+\end{defn}
+
+\noindent Each entry minds its own business: the entry in row $i$, column $j$ of
+the answer depends only on the entries in that same position of the two inputs.
+Nothing mixes across positions.
+
+\begin{warn}[The shapes must match]
+$\mt{A}+\mt{B}$ is \emph{undefined} unless $\mt{A}$ and $\mt{B}$ have the same
+number of rows \emph{and} the same number of columns. There is no way to add a
+$3\times2$ to a $2\times2$: some entries would have no partner. This is the same
+restriction the vector unit placed on adding vectors (\S7.1) --- you cannot add
+a vector in $\R^{2}$ to one in $\R^{3}$ --- and for the same reason.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}
+Three sums and one non-sum.
+\[
+  \begin{bmatrix}1&2\\3&4\end{bmatrix}
+  +\begin{bmatrix}5&6\\7&8\end{bmatrix}
+  =\begin{bmatrix}1{+}5&2{+}6\\3{+}7&4{+}8\end{bmatrix}
+  =\begin{bmatrix}6&8\\10&12\end{bmatrix}
+\]
+\[
+  \begin{bmatrix}5&6\\7&8\end{bmatrix}
+  -\begin{bmatrix}1&2\\3&4\end{bmatrix}
+  =\begin{bmatrix}4&4\\4&4\end{bmatrix},
+  \qquad
+  \begin{bmatrix}2&3\\4&5\\6&7\end{bmatrix}
+  +\begin{bmatrix}0&1\\1&0\\-6&-7\end{bmatrix}
+  =\begin{bmatrix}2&4\\5&5\\0&0\end{bmatrix}
+\]
+\[
+  \begin{bmatrix}2&3\\4&5\\6&7\end{bmatrix}
+  +\begin{bmatrix}1&0\\0&1\end{bmatrix}
+  \quad\text{is undefined: } 3\times2 \text{ against } 2\times2 .
+\]
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Scaling a matrix}
+%------------------------------------------------------------------------------
+One more operation is needed before the laws can be stated. For a scalar
+$c\in\R$ and $\mt{A}\in\R^{m\times n}$, the \textbf{scalar multiple} $c\mt{A}$
+multiplies every entry by $c$:
+\[
+  (c\mt{A})_{ij}=c\,a_{ij},
+  \qquad\text{for example}\qquad
+  3\begin{bmatrix}1&-2\\0&4\end{bmatrix}
+  =\begin{bmatrix}3&-6\\0&12\end{bmatrix} .
+\]
+In particular $-\mt{A}=(-1)\mt{A}$ negates every entry, and
+$\mt{A}-\mt{B}=\mt{A}+(-\mt{B})$ --- subtraction is addition of the negative,
+exactly as it was for vectors (\S7.3 of the vector unit).
+
+The \textbf{zero matrix} $\mt{0}\in\R^{m\times n}$ has every entry equal to $0$.
+
+%------------------------------------------------------------------------------
+\subsection{The algebraic laws}
+%------------------------------------------------------------------------------
+Because addition is entrywise, every law is inherited from the arithmetic of
+$\R$ one entry at a time. Each proof is the same sentence: \emph{compare the
+$(i,j)$ entries of both sides and apply the corresponding law for real
+numbers.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Law} & \textbf{Name} \\
+\midrule
+\textbf{A1} & $\mt{A}+\mt{B}=\mt{B}+\mt{A}$
+            & commutativity \\
+\textbf{A2} & $(\mt{A}+\mt{B})+\mt{C}=\mt{A}+(\mt{B}+\mt{C})$
+            & associativity \\
+\textbf{A3} & $\mt{A}+\mt{0}=\mt{A}$
+            & additive identity \\
+\textbf{A4} & $\mt{A}+(-\mt{A})=\mt{0}$
+            & additive inverse \\
+\midrule
+\textbf{S1} & $c(\mt{A}+\mt{B})=c\mt{A}+c\mt{B}$
+            & distributivity over matrix sums \\
+\textbf{S2} & $(c+d)\mt{A}=c\mt{A}+d\mt{A}$
+            & distributivity over scalar sums \\
+\textbf{S3} & $c(d\mt{A})=(cd)\mt{A}$
+            & compatibility of scaling \\
+\textbf{S4} & $1\mt{A}=\mt{A}$
+            & scaling identity \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent To see A1 in full: the $(i,j)$ entry of $\mt{A}+\mt{B}$ is
+$a_{ij}+b_{ij}$, the $(i,j)$ entry of $\mt{B}+\mt{A}$ is $b_{ij}+a_{ij}$, and
+these are equal because addition of \emph{real numbers} commutes. Since the two
+matrices agree in every position, they are the same matrix. The rest go
+identically.
+
+\begin{rmk}
+This is the identical list the vector unit proved in \S8.4 and \S11.8, with
+matrices in place of vectors. That is not a coincidence, and it is worth
+noticing: a set whose elements can be added and scaled subject to exactly these
+eight laws is what the course will eventually call a \emph{vector space}. By
+that standard $\R^{m\times n}$ qualifies --- matrices are, for the purposes of
+addition and scaling, vectors with a rectangular filing system. What separates
+them arrives in \S8.
+\end{rmk}
+
+%==============================================================================
+\section{The transpose}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Transpose]
+Let $\mt{A}\in\R^{m\times n}$. Its \textbf{transpose} $\mt{A}\T\in\R^{n\times m}$
+is the matrix whose $(i,j)$ entry is the $(j,i)$ entry of $\mt{A}$:
+\[
+  (\mt{A}\T)_{ij} \;=\; a_{ji} .
+\]
+\end{defn}
+
+\noindent Two things happen at once. The indices swap, so the entry at row $i$,
+column $j$ comes from row $j$, column $i$; and consequently the \emph{shape}
+swaps, an $m\times n$ matrix becoming $n\times m$.
+
+Geometrically it is a reflection across the main diagonal. The diagonal entries
+$a_{ii}$ stay where they are --- swapping $i$ with $i$ changes nothing --- and
+everything else is mirrored through that line. Operationally, the cleanest way
+to compute it: \textbf{the rows of $\mt{A}$ become the columns of $\mt{A}\T$},
+in order.
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}
+Taking $\mt{B}$ from \S3.3:
+\[
+  \mt{B}=\begin{bmatrix}2&3\\4&5\\6&7\end{bmatrix}\in\R^{3\times2},
+  \qquad
+  \mt{B}\T=\begin{bmatrix}2&4&6\\3&5&7\end{bmatrix}\in\R^{2\times3} .
+\]
+The rows of $\mt{B}$ --- $[\,2,3\,]$, $[\,4,5\,]$, $[\,6,7\,]$ --- are the
+columns of $\mt{B}\T$. Checking one entry: $(\mt{B}\T)_{12}=b_{21}=4$.
+\ \checkmark
+
+A square example, where the shape does not change but the entries still move:
+\[
+  \begin{bmatrix}1&2&3\\4&5&6\\7&8&9\end{bmatrix}\T
+  =\begin{bmatrix}1&4&7\\2&5&8\\3&6&9\end{bmatrix} .
+\]
+The diagonal $1,5,9$ is fixed; every other entry has traded places with its
+mirror image.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Row and column vectors}
+%------------------------------------------------------------------------------
+The transpose is precisely the operation \S3.4 promised. A vector
+$\vc{v}\in\R^{n}$ written as a column is an $n\times1$ matrix; transposing it
+gives a $1\times n$ matrix, which is the same vector written as a row:
+\[
+  \vc{v}=\begin{bmatrix}v_1\\v_2\\\vdots\\v_n\end{bmatrix}\in\R^{n\times1},
+  \qquad
+  \vc{v}\T=\begin{bmatrix}v_1&v_2&\cdots&v_n\end{bmatrix}\in\R^{1\times n} .
+\]
+
+\medskip
+\noindent\textbf{Convention.} From here on, an unadorned vector $\vc{v}$ means a
+\emph{column} vector, and $\vc{v}\T$ is its row form. This settles the ambiguity
+\S2.3 set aside: the bracket notation $[\,v_1,\dots,v_n\,]$ remains a convenient
+way to write a vector inline, but whenever shape matters, $\vc{v}$ is $n\times1$.
+
+%------------------------------------------------------------------------------
+\subsection{Properties}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Law} & \textbf{In words} \\
+\midrule
+\textbf{T1} & $(\mt{A}\T)\T=\mt{A}$
+            & transposing twice returns the original \\
+\textbf{T2} & $(\mt{A}+\mt{B})\T=\mt{A}\T+\mt{B}\T$
+            & transpose distributes over addition \\
+\textbf{T3} & $(c\mt{A})\T=c\,\mt{A}\T$
+            & scalars pass through \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Each is an entry comparison. For T1, the $(i,j)$ entry of
+$(\mt{A}\T)\T$ is the $(j,i)$ entry of $\mt{A}\T$, which is the $(i,j)$ entry of
+$\mt{A}$; the indices swap twice and land back where they started.
+
+\lookahead There is a fourth law, for the transpose of a \emph{product}, and it
+contains a surprise. It has to wait for \S8.4, since products are not defined
+yet.
+
+%------------------------------------------------------------------------------
+\subsection{Symmetric matrices}
+%------------------------------------------------------------------------------
+\begin{defn}
+A matrix $\mt{A}$ is \textbf{symmetric} if $\mt{A}\T=\mt{A}$, that is, if
+$a_{ij}=a_{ji}$ for every $i$ and $j$.
+\end{defn}
+
+\noindent A symmetric matrix must be square: $\mt{A}\T$ has shape $n\times m$
+and $\mt{A}$ has shape $m\times n$, so they cannot be equal unless $m=n$.
+Beyond that, symmetry says the matrix is unchanged by reflection across its
+main diagonal --- whatever sits above the diagonal is mirrored below it.
+\[
+  \mt{S}=\begin{bmatrix}1&2&3\\2&5&4\\3&4&6\end{bmatrix}
+  \quad\text{is symmetric:}\quad
+  s_{12}=s_{21}=2,\quad s_{13}=s_{31}=3,\quad s_{23}=s_{32}=4 .
+\]
+The diagonal entries are unconstrained; only the off-diagonal pairs must agree.
+A symmetric $n\times n$ matrix is therefore determined by
+$n(n+1)/2$ numbers rather than $n^{2}$ --- the diagonal plus one triangle.
+
+\begin{rmk}
+Diagonal matrices are symmetric, since all their off-diagonal entries are $0$
+and $0=0$. A triangular matrix that is symmetric must be diagonal.
+\end{rmk}
+
+%==============================================================================
+\section{Inner and outer products}
+%==============================================================================
+The transpose lets us write something we already know in a new way --- and the
+new way turns out to generalise.
+
+%------------------------------------------------------------------------------
+\subsection{The dot product as \texorpdfstring{$\vc{v}\T\vc{u}$}{v'u}}
+%------------------------------------------------------------------------------
+Take $\vc{u},\vc{v}\in\R^{n}$, both columns, so both $n\times1$. Then $\vc{v}\T$
+is $1\times n$. Place them side by side and multiply row-by-column, the way
+\S2.3 multiplied a row of $\mt{V}$ into $\vc{x}$:
+\[
+  \vc{v}\T\vc{u}
+  =\begin{bmatrix}v_1&v_2&\cdots&v_n\end{bmatrix}
+   \begin{bmatrix}u_1\\u_2\\\vdots\\u_n\end{bmatrix}
+  = v_1u_1+v_2u_2+\cdots+v_nu_n
+  = \sum_{k=1}^{n} v_ku_k .
+\]
+That sum is the dot product $\langle\vc{v},\vc{u}\rangle$ of the vector unit's
+\S11.3, unchanged. What is new is the packaging.
+
+\medskip
+\noindent\textbf{Why the result is a scalar.} Track the shapes. A $1\times n$
+against an $n\times1$ produces a matrix with $1$ row and $1$ column --- a
+$1\times1$ matrix. And by the remark in \S4.1, a $1\times1$ matrix holds a single
+number and is read as that number. So
+\[
+  \vc{v}\T\vc{u} \in \R^{1\times1} = \text{a scalar},
+\]
+which is exactly what the dot product is required to be. The notation and the
+definition agree. Written this way the dot product is called the \textbf{inner
+product}, and $\vc{v}\T\vc{u}$ is the standard way to write it from here on.
+
+\begin{ex}
+For $\vc{v}=[\,1,2,3\,]$ and $\vc{u}=[\,4,5,6\,]$,
+\[
+  \vc{v}\T\vc{u}
+  =\begin{bmatrix}1&2&3\end{bmatrix}\begin{bmatrix}4\\5\\6\end{bmatrix}
+  = 4+10+18 = 32 .
+\]
+One number, as promised.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The outer product}
+%------------------------------------------------------------------------------
+Now reverse the order. If $\vc{v}\T\vc{u}$ is a $1\times n$ times an $n\times1$,
+then $\vc{u}\vc{v}\T$ is an $n\times1$ times a $1\times n$ --- and the shapes
+say the result is $n\times n$. This is a different object entirely.
+
+\begin{defn}[Outer product]
+For $\vc{u}\in\R^{m}$ and $\vc{v}\in\R^{n}$, the \textbf{outer product} is the
+$m\times n$ matrix $\vc{u}\vc{v}\T$ whose $(i,j)$ entry is $u_iv_j$:
+\[
+  \vc{u}\vc{v}\T
+  =\begin{bmatrix}u_1\\u_2\\\vdots\\u_m\end{bmatrix}
+   \begin{bmatrix}v_1&v_2&\cdots&v_n\end{bmatrix}
+  =\begin{bmatrix}
+    u_1v_1 & u_1v_2 & \cdots & u_1v_n\\
+    u_2v_1 & u_2v_2 & \cdots & u_2v_n\\
+    \vdots & \vdots & \ddots & \vdots\\
+    u_mv_1 & u_mv_2 & \cdots & u_mv_n
+  \end{bmatrix} .
+\]
+\end{defn}
+
+\noindent Note what the definition does \emph{not} require: $\vc{u}$ and
+$\vc{v}$ need not have the same number of components. The inner product demands
+it --- the sum $\sum_k v_ku_k$ is meaningless otherwise --- but the outer product
+pairs every component of $\vc{u}$ with every component of $\vc{v}$, and that
+makes sense for any two lengths. It simply produces a rectangular matrix.
+
+\begin{ex}
+With $\vc{u}=[\,1,2,3\,]\in\R^{3}$ and $\vc{v}=[\,4,5\,]\in\R^{2}$:
+\[
+  \vc{u}\vc{v}\T
+  =\begin{bmatrix}1\\2\\3\end{bmatrix}\begin{bmatrix}4&5\end{bmatrix}
+  =\begin{bmatrix}4&5\\8&10\\12&15\end{bmatrix}\in\R^{3\times2} .
+\]
+Here $\vc{v}\T\vc{u}$ would be undefined --- a $1\times2$ against a $3\times1$
+has nothing to pair up.
+\end{ex}
+
+\begin{warn}[Order changes everything]
+$\vc{v}\T\vc{u}$ and $\vc{u}\vc{v}\T$ are built from the same two vectors and
+are not remotely the same thing. The first is a single number; the second is a
+whole matrix. The transpose's position is what distinguishes them, so it is not
+decoration --- read it carefully.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{The norm, rewritten}
+%------------------------------------------------------------------------------
+Set $\vc{u}=\vc{v}$ in the inner product:
+\[
+  \vc{v}\T\vc{v} = \sum_{k=1}^{n} v_k^{2}
+                 = v_1^{2}+v_2^{2}+\cdots+v_n^{2} .
+\]
+That sum is the square of the Euclidean norm from the vector unit's \S11.9. So
+\begin{equation}\label{eq:normT}
+  \vc{v}\T\vc{v} \;=\; \norm{\vc{v}}^{2},
+  \qquad\text{equivalently}\qquad
+  \norm{\vc{v}} \;=\; \sqrt{\vc{v}\T\vc{v}} .
+\end{equation}
+The vector unit wrote this as $\langle\vc{v},\vc{v}\rangle=\norm{\vc{v}}^{2}$;
+\eqref{eq:normT} is the same identity in transpose notation.
+
+\begin{ex}
+For $\vc{v}=[\,3,4\,]$: $\ \vc{v}\T\vc{v}=9+16=25$, so
+$\norm{\vc{v}}=\sqrt{25}=5$. \checkmark
+\end{ex}
+
+%==============================================================================
+\section{Matrix multiplication}
+%==============================================================================
+This section defines the operation that makes matrices more than rectangular
+storage. We give it here as a \emph{procedure} --- a rule for producing one
+matrix from two others. No attempt is made yet to justify why the rule is
+this one; that motivation comes later in the course. What can be said now is
+that it is among the most consequential operations in all of scientific
+computing, and that everything built on matrices from here forward runs
+through it.
+
+%------------------------------------------------------------------------------
+\subsection{The rule}
+%------------------------------------------------------------------------------
+You have already computed the basic step twice. \S2.3 multiplied a row of
+$\mt{V}$ into a column $\vc{x}$; \S7.1 multiplied a $1\times n$ row into an
+$n\times1$ column. Both took a row and a column of matching length and returned
+one number --- their dot product.
+
+Matrix multiplication is that step, performed for every row of the first matrix
+against every column of the second.
+
+\begin{defn}[Matrix multiplication]
+Let $\mt{A}\in\R^{m\times p}$ and $\mt{B}\in\R^{p\times n}$. Their
+\textbf{product} $\mt{C}=\mt{A}\mt{B}$ is the $m\times n$ matrix whose $(i,j)$
+entry is the dot product of row $i$ of $\mt{A}$ with column $j$ of $\mt{B}$:
+\[
+  c_{ij} \;=\; \sum_{k=1}^{p} a_{ik}\,b_{kj} .
+\]
+\end{defn}
+
+\noindent Read the formula as a walk: $k$ runs along row $i$ of $\mt{A}$
+left-to-right while simultaneously running down column $j$ of $\mt{B}$
+top-to-bottom, multiplying the pair it lands on and accumulating the total. The
+row index $i$ and column index $j$ are held fixed throughout; they select
+\emph{which} entry of the answer is being computed.
+
+%------------------------------------------------------------------------------
+\subsection{The dimensions must line up}
+%------------------------------------------------------------------------------
+The sum $\sum_{k=1}^{p}a_{ik}b_{kj}$ only makes sense if row $i$ of $\mt{A}$ and
+column $j$ of $\mt{B}$ have the \emph{same length}. Row $i$ of $\mt{A}$ has as
+many entries as $\mt{A}$ has columns; column $j$ of $\mt{B}$ has as many entries
+as $\mt{B}$ has rows. So:
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+$\mt{A}\mt{B}$ is defined exactly when the number of \textbf{columns of
+$\mt{A}$} equals the number of \textbf{rows of $\mt{B}$}.
+\[
+  (m\times \underbrace{p)\ (p}_{\text{must match}}\times n)
+  \;\longrightarrow\; m\times n
+\]
+\end{minipage}}
+\end{center}
+
+\noindent The matching pair --- the two $p$'s --- are the \textbf{inner}
+dimensions, and they vanish from the answer. The \textbf{outer} dimensions $m$
+and $n$ survive and give the product its shape. Writing the shapes side by side
+and checking that the inner two agree is the first thing to do before any matrix
+multiplication, and it catches most errors before any arithmetic happens.
+
+\begin{ex}[Dimension bookkeeping]
+\[
+  \begin{array}{llll}
+    (2\times3)(3\times4) & \to\ 2\times4 & \text{defined} & (3=3)\\
+    (3\times2)(2\times2) & \to\ 3\times2 & \text{defined} & (2=2)\\
+    (2\times3)(2\times3) & \to\ \text{---} & \text{undefined} & (3\neq2)\\
+    (1\times n)(n\times1) & \to\ 1\times1 & \text{defined} & \text{the inner product, \S7.1}\\
+    (m\times1)(1\times n) & \to\ m\times n & \text{defined} & \text{the outer product, \S7.2}
+  \end{array}
+\]
+The last two lines are worth dwelling on: the inner and outer products are not
+special constructions at all. They are ordinary matrix multiplication applied to
+the two thinnest possible shapes.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}[Two square matrices]
+Let $\mt{A}=\begin{bmatrix}1&2\\3&4\end{bmatrix}$ and
+$\mt{B}=\begin{bmatrix}5&6\\7&8\end{bmatrix}$, both $2\times2$, so the product
+is $2\times2$. Each entry is one dot product:
+\[
+  \mt{A}\mt{B}=
+  \begin{bmatrix}
+    1(5)+2(7) & 1(6)+2(8)\\[2pt]
+    3(5)+4(7) & 3(6)+4(8)
+  \end{bmatrix}
+  =\begin{bmatrix}19&22\\43&50\end{bmatrix} .
+\]
+The entry $19$ came from row $1$ of $\mt{A}$ against column $1$ of $\mt{B}$; the
+entry $43$ from row $2$ against column $1$. Trace one of them by hand before
+reading on.
+\end{ex}
+
+\begin{ex}[Rectangular]
+Let $\mt{A}=\begin{bmatrix}1&2&3\\4&5&6\end{bmatrix}\in\R^{2\times3}$ and
+$\mt{B}=\begin{bmatrix}7&8\\9&10\\11&12\end{bmatrix}\in\R^{3\times2}$. The inner
+dimensions are both $3$, so the product is defined and is $2\times2$:
+\[
+  \mt{A}\mt{B}=
+  \begin{bmatrix}
+    1(7)+2(9)+3(11) & 1(8)+2(10)+3(12)\\[2pt]
+    4(7)+5(9)+6(11) & 4(8)+5(10)+6(12)
+  \end{bmatrix}
+  =\begin{bmatrix}58&64\\139&154\end{bmatrix} .
+\]
+Note that $\mt{B}\mt{A}$ is \emph{also} defined here --- $(3\times2)(2\times3)$
+--- but produces a $3\times3$ matrix. The two products are not merely different
+numbers; they are different sizes.
+\end{ex}
+
+\begin{ex}[Multiplying by the identity]
+\[
+  \begin{bmatrix}1&0\\0&1\end{bmatrix}
+  \begin{bmatrix}a&b\\c&d\end{bmatrix}
+  =\begin{bmatrix}1(a)+0(c) & 1(b)+0(d)\\ 0(a)+1(c) & 0(b)+1(d)\end{bmatrix}
+  =\begin{bmatrix}a&b\\c&d\end{bmatrix} .
+\]
+The identity leaves its partner untouched, which is where it gets its name.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The algebraic laws}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Law} & \textbf{Name} \\
+\midrule
+\textbf{M1} & $(\mt{A}\mt{B})\mt{C}=\mt{A}(\mt{B}\mt{C})$
+            & associativity \\
+\textbf{M2} & $\mt{A}(\mt{B}+\mt{C})=\mt{A}\mt{B}+\mt{A}\mt{C}$
+            & left distributivity \\
+\textbf{M3} & $(\mt{A}+\mt{B})\mt{C}=\mt{A}\mt{C}+\mt{B}\mt{C}$
+            & right distributivity \\
+\textbf{M4} & $c(\mt{A}\mt{B})=(c\mt{A})\mt{B}=\mt{A}(c\mt{B})$
+            & scalars move freely \\
+\textbf{M5} & $\mt{I}\mt{A}=\mt{A}\mt{I}=\mt{A}$
+            & multiplicative identity \\
+\textbf{M6} & $(\mt{A}\mt{B})\T=\mt{B}\T\mt{A}\T$
+            & transpose of a product \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Each assumes the shapes are compatible; M2 and M3 need two separate
+statements precisely \emph{because} the sides cannot be interchanged.
+
+\medskip
+\noindent\textbf{M6 reverses the order.} This is the surprise promised in \S6.4.
+The shapes alone force it: if $\mt{A}$ is $m\times p$ and $\mt{B}$ is $p\times
+n$, then $(\mt{A}\mt{B})\T$ is $n\times m$. The only way to build an $n\times m$
+matrix from $\mt{A}\T$ ($p\times m$) and $\mt{B}\T$ ($n\times p$) is
+$\mt{B}\T\mt{A}\T$ --- writing $\mt{A}\T\mt{B}\T$ would put $m$ against $n$ and
+usually not even be defined.
+
+\begin{warn}[Multiplication does not commute]
+$\mt{A}\mt{B}$ and $\mt{B}\mt{A}$ are in general \emph{different}. There is no
+law M0 saying otherwise, and this is the single most important way matrix
+arithmetic departs from arithmetic with numbers. It can fail three ways, in
+increasing order of severity:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item $\mt{B}\mt{A}$ may be \emph{undefined} while $\mt{A}\mt{B}$ is fine ---
+        try $(2\times3)(3\times4)$.
+  \item Both may be defined but have \emph{different shapes} --- the
+        $(2\times3)(3\times2)$ example above gives $2\times2$ one way and
+        $3\times3$ the other.
+  \item Both may be defined and the same shape and still differ. With $\mt{A}$
+        and $\mt{B}$ from the first example,
+        \[
+          \mt{A}\mt{B}=\begin{bmatrix}19&22\\43&50\end{bmatrix},
+          \qquad
+          \mt{B}\mt{A}=\begin{bmatrix}23&34\\31&46\end{bmatrix} .
+        \]
+\end{itemize}
+So the order in which matrices are written is part of the statement, never a
+stylistic choice. This is also the promised reason $\R^{m\times n}$ is not a
+field.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Matrix--vector products, revisited}
+%------------------------------------------------------------------------------
+A vector is a matrix (\S3.4), so the matrix--vector product of \S2.3 needs no
+separate definition --- it is matrix multiplication with $n=1$. For
+$\mt{A}\in\R^{m\times p}$ and $\vc{x}\in\R^{p}$ written as a $p\times1$ column,
+\[
+  (m\times p)(p\times 1)\;\longrightarrow\; m\times 1 ,
+\]
+so $\mt{A}\vc{x}$ is a column vector with $m$ components, and its $i$-th
+component is
+\[
+  (\mt{A}\vc{x})_i=\sum_{k=1}^{p}a_{ik}x_k ,
+\]
+the dot product of row $i$ of $\mt{A}$ with $\vc{x}$. That is precisely the
+definition given in \S2.3, now arriving as a special case rather than as its own
+rule.
+
+\begin{ex}
+$\begin{bmatrix}1&2\\3&4\end{bmatrix}\begin{bmatrix}5\\6\end{bmatrix}
+ =\begin{bmatrix}1(5)+2(6)\\3(5)+4(6)\end{bmatrix}
+ =\begin{bmatrix}17\\39\end{bmatrix}$, a $2\times1$ column.
+\end{ex}
+
+\noindent And $\mt{V}\vc{x}=\vc{u}$, the equation this document was built to
+write down, is now an equation between two $n\times1$ matrices.
+
+%------------------------------------------------------------------------------
+\subsection{Practice: shapes first}
+%------------------------------------------------------------------------------
+For each, state whether the product is defined and give its dimensions. Compute
+only where indicated.
+
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.6em,itemsep=5pt]
+  \item $\mt{A}\in\R^{4\times3}$, $\mt{B}\in\R^{3\times5}$: is $\mt{A}\mt{B}$
+        defined? Is $\mt{B}\mt{A}$?
+  \item $\vc{u}\in\R^{5}$, $\vc{v}\in\R^{5}$, both columns. Give the shapes of
+        $\vc{u}\T\vc{v}$ and $\vc{u}\vc{v}\T$.
+  \item Compute
+        $\begin{bmatrix}2&1\\0&3\end{bmatrix}
+         \begin{bmatrix}1&4\\5&2\end{bmatrix}$
+        and
+        $\begin{bmatrix}1&4\\5&2\end{bmatrix}
+         \begin{bmatrix}2&1\\0&3\end{bmatrix}$.
+  \item $\mt{A}\in\R^{3\times2}$. What are the shapes of $\mt{A}\T\mt{A}$ and
+        $\mt{A}\mt{A}\T$? Are they the same matrix?
+  \item Compute
+        $\begin{bmatrix}1&2&0\\0&1&3\end{bmatrix}
+         \begin{bmatrix}2\\1\\4\end{bmatrix}$.
+\end{enumerate}
+
+\subsubsection*{Answers}
+
+\noindent\textbf{P1.} $\mt{A}\mt{B}$: inner dimensions $3$ and $3$ agree, so it
+is defined and is $4\times5$. $\mt{B}\mt{A}$: the shapes are
+$(3\times5)(4\times3)$, and $5\neq4$, so it is undefined.
+
+\smallskip
+\noindent\textbf{P2.} $\vc{u}\T\vc{v}$ is $(1\times5)(5\times1)=1\times1$, a
+scalar --- the inner product. $\vc{u}\vc{v}\T$ is
+$(5\times1)(1\times5)=5\times5$, a matrix. Same two vectors, wildly different
+objects.
+
+\smallskip
+\noindent\textbf{P3.}
+\[
+  \begin{bmatrix}2&1\\0&3\end{bmatrix}\begin{bmatrix}1&4\\5&2\end{bmatrix}
+   =\begin{bmatrix}2{+}5&8{+}2\\0{+}15&0{+}6\end{bmatrix}
+   =\begin{bmatrix}7&10\\15&6\end{bmatrix},
+  \qquad
+  \begin{bmatrix}1&4\\5&2\end{bmatrix}\begin{bmatrix}2&1\\0&3\end{bmatrix}
+   =\begin{bmatrix}2{+}0&1{+}12\\10{+}0&5{+}6\end{bmatrix}
+   =\begin{bmatrix}2&13\\10&11\end{bmatrix}.
+\]
+Both defined, both $2\times2$, and not equal --- another instance of the warning
+in \S8.4.
+
+\smallskip
+\noindent\textbf{P4.} $\mt{A}\T$ is $2\times3$. So $\mt{A}\T\mt{A}$ is
+$(2\times3)(3\times2)=2\times2$, and $\mt{A}\mt{A}\T$ is
+$(3\times2)(2\times3)=3\times3$. Different shapes, so certainly not the same
+matrix. Both are defined for \emph{any} $\mt{A}$, and by M6 both are symmetric:
+$(\mt{A}\T\mt{A})\T=\mt{A}\T(\mt{A}\T)\T=\mt{A}\T\mt{A}$.
+
+\smallskip
+\noindent\textbf{P5.} $(2\times3)(3\times1)=2\times1$:
+$\begin{bmatrix}1(2)+2(1)+0(4)\\0(2)+1(1)+3(4)\end{bmatrix}
+ =\begin{bmatrix}4\\13\end{bmatrix}$.
+
+\lookahead Two threads are now open. First, we can state the coordinate problem
+as $\mt{V}\vc{x}=\vc{u}$ but still cannot solve it, and substitution --- fine for
+the $2\times2$ case of \S1.5 --- is not a method that scales. What is needed is a
+procedure that works on $\mt{V}$ directly, applies to any size, and terminates
+with the answer or with a definite report that there is none. That procedure is
+\emph{Gaussian elimination}, and it is next. With it come the questions P5 of
+\S2.6 already raised: when does a system have a solution, when is it unique, and
+what does the matrix look like in each case --- and \S4.4 has already hinted that
+the answer involves making the matrix triangular.
+
+Second, matrix multiplication was given here as a rule to follow, with its cost
+left uncounted. Taken as an algorithm it has a definite operation count, and
+that count is examined in the computational unit.
 
 \end{document}
