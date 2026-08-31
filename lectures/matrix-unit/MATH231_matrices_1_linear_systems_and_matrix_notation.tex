@@ -9,12 +9,19 @@
 %  because a bare "Sec. 1.5" is now ambiguous three ways.  The front matter
 %  states that convention for students.
 %
-%  STATUS: complete.  Sections 1-8.
+%  STATUS: complete.  Sections 1-9.
 %
 %    Sec. 1-2   motivate the matrix from the coordinate problem and stop at
 %               Vx = u.  (These came first and are unchanged.)
-%    Sec. 3-8   step back and define the matrix in general: what it is, what
+%    Sec. 3-9   step back and define the matrix in general: what it is, what
 %               shapes exist, and the operations on it.
+%
+%  SEC. 9 (TRACE) SITS AFTER MULTIPLICATION deliberately.  The trace could be
+%  defined as soon as Sec. 3 -- it needs only the diagonal -- but placing it
+%  after Sec. 8 buys tr(AB) = tr(BA), which is the one non-obvious fact about
+%  it and which pairs directly against Sec. 8.4's warning that AB and BA differ.
+%  The example reuses Example 8.3's matrices so the 2x2 and the 3x3 can be seen
+%  agreeing on 212.
 %
 %  HOW to solve a system -- elimination, pivoting, existence and uniqueness --
 %  is the announced sequel and is deliberately NOT begun here.  The closing
@@ -177,6 +184,11 @@ coefficient matrix $\mt{V}$ and the coordinate vector $\vc{x}$; state the
 definition of a matrix--vector product and compute one; write a system as
 $\mt{V}\vc{x}=\vc{u}$; and read that single equation in both directions ---
 by rows as $n$ dot products, and by columns as one linear combination.
+Then: define a matrix and address its entries; name the standard shapes and
+patterns; add, scale and transpose matrices and recognise symmetry; write the
+dot product, the outer product and the norm in transpose notation; multiply two
+matrices and check in advance whether the product exists; and compute the trace
+of a square matrix.
 
 %==============================================================================
 \section{The problem a basis leaves behind}
@@ -1902,6 +1914,122 @@ $(\mt{A}\T\mt{A})\T=\mt{A}\T(\mt{A}\T)\T=\mt{A}\T\mt{A}$.
 \noindent\textbf{P5.} $(2\times3)(3\times1)=2\times1$:
 $\begin{bmatrix}1(2)+2(1)+0(4)\\0(2)+1(1)+3(4)\end{bmatrix}
  =\begin{bmatrix}4\\13\end{bmatrix}$.
+
+%==============================================================================
+\section{The trace}
+%==============================================================================
+One more quantity, extracted from a matrix by ignoring almost all of it.
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Trace]
+Let $\mt{A}\in\R^{n\times n}$ be square. Its \textbf{trace} is the sum of its
+diagonal entries:
+\[
+  \operatorname{tr}(\mt{A}) \;=\; \sum_{i=1}^{n} a_{ii}
+  \;=\; a_{11}+a_{22}+\cdots+a_{nn} .
+\]
+\end{defn}
+
+\noindent The trace is a \emph{scalar} --- one number summarising an $n\times n$
+grid. It is defined only for square matrices, since a rectangular matrix has no
+full diagonal to sum. Every off-diagonal entry is discarded.
+
+\begin{ex}
+\[
+  \operatorname{tr}\begin{bmatrix}1&2\\3&4\end{bmatrix}=1+4=5,
+  \qquad
+  \operatorname{tr}\begin{bmatrix}1&2&3\\2&5&4\\3&4&6\end{bmatrix}=1+5+6=12,
+  \qquad
+  \operatorname{tr}(\mt{I}_n)=\underbrace{1+1+\cdots+1}_{n}=n .
+\]
+The middle matrix is the symmetric $\mt{S}$ of \S6.5; only its diagonal
+mattered. The last is worth remembering: the trace of the $n\times n$ identity
+is $n$, not $1$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Properties}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Law} & \textbf{Name} \\
+\midrule
+\textbf{R1} & $\operatorname{tr}(\mt{A}+\mt{B})
+              =\operatorname{tr}(\mt{A})+\operatorname{tr}(\mt{B})$
+            & additivity \\
+\textbf{R2} & $\operatorname{tr}(c\mt{A})=c\operatorname{tr}(\mt{A})$
+            & scalars pass through \\
+\textbf{R3} & $\operatorname{tr}(\mt{A}\T)=\operatorname{tr}(\mt{A})$
+            & transpose leaves it alone \\
+\textbf{R4} & $\operatorname{tr}(\mt{A}\mt{B})=\operatorname{tr}(\mt{B}\mt{A})$
+            & the order does not matter \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent R1 and R2 are immediate: addition and scaling are entrywise, so they
+act on the diagonal entries the same way they act on all the others. R3 holds
+because transposing fixes the diagonal --- $(\mt{A}\T)_{ii}=a_{ii}$, so the sum
+is unchanged.
+
+R4 is the interesting one.
+
+%------------------------------------------------------------------------------
+\subsection{Why \texorpdfstring{$\operatorname{tr}(\mt{A}\mt{B})
+            =\operatorname{tr}(\mt{B}\mt{A})$}{tr(AB) = tr(BA)}}
+%------------------------------------------------------------------------------
+Take $\mt{A}\in\R^{m\times p}$ and $\mt{B}\in\R^{p\times m}$, so that both
+products exist. Write each trace out with the definition of the product from
+\S8.1:
+\[
+  \operatorname{tr}(\mt{A}\mt{B})
+  =\sum_{i=1}^{m}(\mt{A}\mt{B})_{ii}
+  =\sum_{i=1}^{m}\sum_{k=1}^{p} a_{ik}b_{ki},
+  \qquad
+  \operatorname{tr}(\mt{B}\mt{A})
+  =\sum_{k=1}^{p}(\mt{B}\mt{A})_{kk}
+  =\sum_{k=1}^{p}\sum_{i=1}^{m} b_{ki}a_{ik} .
+\]
+These are the same double sum. Every product $a_{ik}b_{ki}$ appears exactly once
+on each side; the two expressions differ only in which index is summed first,
+and a finite sum does not care about that. Hence the two traces are equal.
+
+\begin{rmk}
+Notice how strong this is. \S8.4 warned that $\mt{A}\mt{B}$ and $\mt{B}\mt{A}$
+are in general different matrices --- and here they need not even be the
+\emph{same size}: $\mt{A}\mt{B}$ is $m\times m$ while $\mt{B}\mt{A}$ is
+$p\times p$. Two different matrices, of two different shapes, nevertheless have
+identical traces.
+\end{rmk}
+
+\begin{ex}
+Take $\mt{A}$ and $\mt{B}$ from Example~8.3, where
+$\mt{A}\mt{B}=\begin{bmatrix}58&64\\139&154\end{bmatrix}$ was computed. Its
+trace is $58+154=212$. Now $\mt{B}\mt{A}$ is $3\times3$, and R4 says we need
+only its diagonal:
+\[
+  (\mt{B}\mt{A})_{11}=7(1)+8(4)=39,\quad
+  (\mt{B}\mt{A})_{22}=9(2)+10(5)=68,\quad
+  (\mt{B}\mt{A})_{33}=11(3)+12(6)=105,
+\]
+and $39+68+105=212$. \checkmark\ A $2\times2$ matrix and a $3\times3$ matrix
+agreeing on a single number.
+\end{ex}
+
+\begin{rmk}
+Setting $\mt{B}=\mt{A}\T$ gives a useful special case. The $(i,i)$ entry of
+$\mt{A}\T\mt{A}$ is the dot product of column $i$ of $\mt{A}$ with itself, so
+\[
+  \operatorname{tr}(\mt{A}\T\mt{A})=\sum_{i}\sum_{j} a_{ij}^{2},
+\]
+the sum of the squares of \emph{every} entry of $\mt{A}$. This is the matrix
+counterpart of $\vc{v}\T\vc{v}=\norm{\vc{v}}^{2}$ from \S7.3, and it is one
+sensible way to measure the size of a matrix.
+\end{rmk}
 
 \lookahead Two threads are now open. First, we can state the coordinate problem
 as $\mt{V}\vc{x}=\vc{u}$ but still cannot solve it, and substitution --- fine for
