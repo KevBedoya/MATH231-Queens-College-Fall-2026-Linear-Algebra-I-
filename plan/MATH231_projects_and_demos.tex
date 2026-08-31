@@ -1,0 +1,178 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  PLAN / NOT FINALIZED -- Computational projects, application demos, and a
+%  draft assessment mapping.
+%
+%  Split out of MATH231_progression so the progression document states what the
+%  course covers rather than what it might.  Which projects get assigned is
+%  still open.
+%
+%  NOTE: the assessment mapping below predates the finalized grading split and
+%  disagrees with it (4 projects / 10 homework here vs. 3 projects / 5 homework
+%  actual).  Kept for the unit-coverage sketch only.  See plan/README.md.
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+
+\titleformat{\section}{\Large\bfseries\sffamily\color{RoyalBlue}}{}{0pt}{}
+\titleformat{\subsection}{\large\bfseries\sffamily}{}{0pt}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\newcommand{\pri}[1]{\textcolor{BrickRed}{\small\sffamily[#1]}}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Computational Projects \& Application Demos}\\[2pt]
+       {\normalsize\sffamily Fall 2026 \textbullet\ working draft --- not finalized}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.3cm}
+
+\begin{center}
+\fcolorbox{BrickRed!50}{BrickRed!7}{%
+\begin{minipage}{0.93\textwidth}
+\small\sffamily
+\textbf{This document is not finalized.} It is a menu of candidates, not a list
+of assignments. Nothing here is part of the syllabus, and no item should be
+treated as assigned unless it has been officially announced. Where this document
+and an official course document disagree, the official document is correct.
+\end{minipage}}
+\end{center}
+
+\bigskip
+
+%==============================================================================
+\section{Assessment mapping (draft)}
+%==============================================================================
+\noindent\emph{Counts here are stale:} this sketch shows four projects and ten
+homework assignments, while the course carries \textbf{three projects and five
+homework assignments}. Retained for the unit-coverage mapping only; the root
+\texttt{README.md} holds the authoritative weights.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l p{4.0cm} p{6.4cm}@{}}
+\toprule
+\textbf{Assessment} & \textbf{Units covered} & \textbf{Suggested focus} \\
+\midrule
+Exam 1              & 1--6    & vector spaces, norms, complex, matrices, calculus, conditioning \\
+Exam 2              & 7--10   & systems, maps, subspaces, least squares \\
+Final Exam & 1--12 (weighted to 11--12) & eigen/SVD, optimization, synthesis \\
+\midrule
+Project 1 & after 2  & \#1 K-means image color segmentation \\
+Project 2 & after 11 & \#5 Eigencats via PCA \\
+Project 3 & after 12 & \#7 Mini-ML: OLS + SVM + KNN with validation \\
+Project 4 & after 12 & \#8 Signal trilateration: Gauss--Newton / LM \\
+Lecture demos & 10--12 & \#2 SVD+DCT, \#3 LSA, \#4 collab.\ filtering, \#6 PageRank, \#9 embeddings \\
+\midrule
+Homework & one per unit (Units 1--12, some combined) & mixed hand computation + Python verification \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\section{The project menu}
+%==============================================================================
+This is a \emph{menu}, not an assignment quota: every item below is documented,
+but only a small subset is assigned to students as an implementation; the
+complement are instructor-led demos that still put the application in front of
+the class. The list is open --- further items may be appended as \#10, \#11,
+\dots\ without disturbing the ordering.
+
+\smallskip
+\noindent\emph{Outline additions these items introduced:} DCT / orthogonal
+transforms (Unit~10); Perron--Frobenius theorem and stochastic matrices
+(Unit~11); TF--IDF term--document weighting (Unit~11); masked-loss / ALS
+factorization and train/validation/test model selection (Unit~12).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}c l c c p{4.6cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Project} & \textbf{Role} & \textbf{Prereq} & \textbf{LA machinery} \\
+\midrule
+1 & K-means color segmentation   & Assigned & U2  & K-means, image vectorization, $\ell_2$ distance \\
+2 & SVD + DCT image compression  & Demo     & U11 & SVD, Eckart--Young, DCT orthonormal basis \\
+3 & LSA file-system search       & Demo     & U11 & truncated SVD, TF--IDF, cosine similarity \\
+4 & Collaborative filtering      & Demo     & U12 & masked low-rank factorization, ALS/SGD \\
+5 & Eigencats (PCA)              & Assigned & U11 & PCA, covariance eigenbasis / SVD \\
+6 & PageRank                     & Demo     & U11 & power method, stochastic matrix, Perron--Frobenius \\
+7 & Mini-ML (OLS/SVM/KNN)        & Assigned & U12 & OLS, SVM, KNN, train/val/test \\
+8 & Signal trilateration         & Assigned & U12 & Gauss--Newton, Levenberg--Marquardt, Jacobian \\
+9 & Semantic embedding geometry  & Demo     & U11 & cosine similarity, KNN, PCA, vector arithmetic \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent All implementations are in \textbf{Python}.
+
+%==============================================================================
+\section{Candidate assigned implementations}
+%==============================================================================
+\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=6pt]
+\item[\#1 -- K-means image color segmentation (after Unit 2)]
+  Cluster an image's pixels in RGB (or CIELAB) space into $k$ colors and replace
+  each pixel by its cluster centroid; display the quantized/segmented image as a
+  function of $k$. \emph{LA focus:} $\ell_2$ distance, centroids as means,
+  Lloyd's iteration and its convergence. Python (NumPy/Pillow).
+\item[\#5 -- Eigencats via PCA (after Unit 11)]
+  Assemble a data matrix of aligned cat (or face) images, mean-center, and
+  compute principal components via the SVD; visualize the top ``eigencats,''
+  reconstruct images from $r$ components, and plot reconstruction error and
+  variance-explained vs.\ $r$. \emph{LA focus:} covariance eigenstructure, SVD,
+  low-rank reconstruction. Python.
+\item[\#7 -- Mini-ML with validation (after Unit 12)]
+  Three sub-tasks on suitable datasets: OLS for a regression problem, an SVM for
+  a classification problem, and KNN for a multiclass problem; use a
+  train/validation/test split, report generalization metrics, and justify model
+  choice. \emph{LA focus:} normal equations vs.\ QR (OLS), margin/kernels (SVM),
+  distance metrics (KNN), validation methodology. Python (hand-implement the
+  cores; library baselines allowed).
+  \emph{Depends on topics currently listed as not guaranteed --- see
+  \texttt{MATH231\_tentative\_topics}.}
+\item[\#8 -- Signal trilateration (after Unit 12)]
+  From noisy range measurements to known anchors, estimate an emitter's position
+  by nonlinear least squares; implement Gauss--Newton and Levenberg--Marquardt
+  and compare convergence/robustness vs.\ initialization and noise.
+  \emph{LA focus:} residual Jacobian, GN normal-equation step, LM damping,
+  conditioning. Python.
+\end{description}
+
+%==============================================================================
+\section{Candidate lecture demos}
+%==============================================================================
+\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=6pt]
+\item[\#2 -- SVD + DCT image compression (Unit 11)]
+  Sweep the rank $r$ of an image's SVD and watch quality vs.\ storage; then show
+  the $8\times8$ block DCT that JPEG actually uses, connecting a \emph{fixed}
+  orthonormal basis to the data-adaptive SVD basis. Motivates Eckart--Young.
+\item[\#3 -- Latent Semantic Analysis search (Unit 11)]
+  Build a small term--document matrix over a mock file system, TF--IDF weight it,
+  truncate its SVD, and answer queries by cosine similarity in the reduced
+  ``concept'' space; contrast with exact keyword matching.
+\item[\#4 -- Collaborative filtering (Unit 12)]
+  On a toy ratings matrix with missing entries, fit a low-rank factorization by
+  ALS/SGD over \emph{observed} entries and predict held-out ratings; frames
+  recommendation as matrix completion.
+\item[\#6 -- PageRank (Unit 11)]
+  Model a small web graph as a stochastic matrix, run the power method, and watch
+  the ranking vector converge to the dominant eigenvector; connect to
+  Perron--Frobenius and the damping factor.
+\item[\#9 -- Semantic embedding geometry (Unit 11, static)]
+  With pretrained word vectors: nearest neighbors under cosine similarity,
+  analogy arithmetic ($\text{king}-\text{man}+\text{woman}\approx\text{queen}$),
+  PCA to $2$-D for visualization, and clustering --- purely linear algebra, no
+  model training.
+\end{description}
+
+\end{document}

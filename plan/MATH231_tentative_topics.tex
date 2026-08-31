@@ -1,0 +1,140 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  PLAN / NOT FINALIZED -- Topics that are NOT guaranteed to be covered.
+%
+%  Two groups:
+%    (1) topics that remain in the progression document, tagged Recommended or
+%        Enrichment, and are gathered here so the full set is visible at once;
+%    (2) topics MIGRATED out of Unit 12, which now names them only under
+%        "If time permits".
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+
+\titleformat{\section}{\Large\bfseries\sffamily\color{RoyalBlue}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Topics Not Guaranteed to Be Covered}\\[2pt]
+       {\normalsize\sffamily Fall 2026 \textbullet\ working draft --- not finalized}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.3cm}
+
+\begin{center}
+\fcolorbox{BrickRed!50}{BrickRed!7}{%
+\begin{minipage}{0.93\textwidth}
+\small\sffamily
+\textbf{This document is not finalized.} Every topic listed here is one the
+course \emph{may} reach, not one it promises to. Nothing here is part of the
+syllabus and none of it should be studied in expectation of assessment unless it
+has been officially announced. Where this document and an official course
+document disagree, the official document is correct.
+\end{minipage}}
+\end{center}
+
+\bigskip
+\noindent The course progression is deliberately broader than one semester, so
+that topics can be selected by interest and available time rather than fixed in
+advance. This document collects, in one place, everything across the four arcs
+that falls outside the guaranteed core --- so the boundary between
+\emph{will cover} and \emph{might cover} is visible at a glance instead of
+scattered across twelve units.
+
+%==============================================================================
+\section{Across the arcs}
+%==============================================================================
+These remain in the progression document, tagged \emph{Recommended} or
+\emph{Enrichment}. They are gathered here because a tag buried in a unit is easy
+to miss.
+
+{\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{@{}p{4.4cm} c p{9.0cm}@{}}
+\toprule
+\textbf{Topic} & \textbf{Unit} & \textbf{What it would add} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Topic} & \textbf{Unit} & \textbf{What it would add} \\
+\midrule
+\endhead
+Quaternions & 3 &
+  Non-commutative multiplication and 3-D rotation composition; the natural
+  sequel to complex numbers as an algebra of rotations. \\
+$LU$ with partial pivoting & 7 &
+  Existence/uniqueness of the factorization once row interchanges are allowed;
+  the practical form of Gaussian elimination. \\
+Discrete Cosine Transform & 10 &
+  A \emph{fixed} orthonormal basis for compression, contrasted against the
+  data-adaptive SVD basis; the transform JPEG actually uses. \\
+Graph Laplacians \& spectral clustering & 11 &
+  $L = D - W$, and clustering a graph by the eigenvectors of its Laplacian. \\
+Stochastic (Markov) matrices & 11 &
+  Column-stochastic matrices and the dominant-eigenvector reading of a
+  steady state. \\
+Perron--Frobenius theorem & 11 &
+  Why a nonnegative/stochastic matrix has a positive dominant eigenvector ---
+  the result that makes PageRank well posed. \\
+Eckart--Young & 11 &
+  The truncated SVD is the best low-rank approximation; the theorem underneath
+  every compression demo. \\
+Randomized SVD & 11 &
+  Sketching a large matrix to approximate its leading singular subspace. \\
+Hutchinson trace estimation & 11 &
+  Estimating $\operatorname{tr}(A)$ from matrix--vector products alone. \\
+\bottomrule
+\end{longtable}}
+
+%==============================================================================
+\section{Migrated out of Unit 12}
+%==============================================================================
+Unit~12 (\emph{Numerical Optimization \& Machine-Learning Capstone}) previously
+carried the following as unit content. They have been moved here, and the unit
+now names them only under \textbf{If time permits}. What Unit~12 still commits
+to is gradient descent, Newton's method, and Gauss--Newton/Levenberg--Marquardt
+for nonlinear least squares.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}p{4.4cm} p{9.6cm}@{}}
+\toprule
+\textbf{Topic} & \textbf{What it would add} \\
+\midrule
+Quasi-Newton \textbf{BFGS} &
+  Building curvature information from successive gradients instead of forming
+  and solving with the Hessian directly. \\
+\textbf{Support vector machines} &
+  Constrained optimization under the Vapnik objective; the maximum-margin
+  classifier, and kernel methods reusing the similarity kernels from Unit~2.
+  Unit~2 retains a geometric preview of the SVM margin. \\
+Stochastic gradient descent (\textbf{SGD}) &
+  Descent on noisy estimates of the gradient; the method that makes
+  large-scale fitting tractable. Also underlies the masked-loss / ALS
+  factorization behind the collaborative-filtering demo. \\
+Model-selection methodology &
+  Train/validation/test splits and cross-validation as estimates of
+  generalization error. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+\noindent\textbf{Dependency worth noting.} Candidate project \#7
+(\emph{Mini-ML: OLS + SVM + KNN with validation}, in
+\texttt{MATH231\_projects\_and\_demos}) draws on both the support vector machine
+and model-selection methodology. If those topics are not reached, that project
+is not assignable in its current form.
+
+\end{document}

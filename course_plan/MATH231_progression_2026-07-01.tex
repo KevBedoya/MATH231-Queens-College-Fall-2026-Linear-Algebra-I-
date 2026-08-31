@@ -82,8 +82,7 @@ find most compelling and the instructor deems most essential.  Accordingly:
 \noindent\textbf{Domains used:} Pure Linear Algebra; Numerical Analysis /
 Numerical Linear Algebra; Multivariable Calculus; Optimization; Machine
 Learning; Spectral Graph Theory.\\[2pt]
-\textbf{Implementation languages:} C\texttt{++} (low-level kernels),
-Python (high-level demos), MATLAB (verification).\\[4pt]
+\textbf{Implementation language:} Python.\\[4pt]
 \textbf{Textbook reference keys} (each unit lists chapter/lecture-level pointers,
 not page-exact):
 \textbf{[BV]} Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra};
@@ -146,7 +145,7 @@ completed in Unit~11.
   Image vectorization (an image as a point in $\mathbb{R}^{HW}$);
   physical vectors (position/velocity/acceleration) as a motivating instance
   \pri{Recommended}.
-\ff{Languages} Python (construct/visualize vectors), C\texttt{++} \pri{Enrichment}.
+\ff{Languages} Python (construct/visualize vectors).
 \ff{Textbook refs}
   \textbf{[A]} Ch.~1--2 (vector spaces, independence, bases, dimension);
   \textbf{[S]} Ch.~2; \textbf{[BV]} Ch.~1, 5.
@@ -188,9 +187,7 @@ $\mathbb{R}^n$.
   vectors); retrieval; clustering; a geometric preview of the SVM margin
   \pri{Enrichment}.
 \ff{Languages}
-  C\texttt{++} kernels (inner product, cosine similarity, with compiler-flag
-  optimization) \pri{Core}; Python demos (KNN, $k$-means) \pri{Recommended};
-  MATLAB verification.
+  Python (inner product, cosine similarity, KNN, $k$-means) \pri{Core}.
 \ff{Textbook refs}
   \textbf{[A]} Ch.~6 (inner product spaces);
   \textbf{[TB]} Lec.~2--3 (orthogonal vectors, norms), Lec.~8 (Gram--Schmidt);
@@ -225,7 +222,7 @@ prove Cauchy--Schwarz, and run Gram--Schmidt to produce an orthonormal set.
 \ff{Applications}
   Signal representation (phasors) \pri{Recommended}; 3-D rotations in graphics
   and robotics \pri{Enrichment}; foreshadowing complex eigenvalues (Unit~11).
-\ff{Languages} Python (complex plane visualization); MATLAB.
+\ff{Languages} Python (complex plane visualization).
 \ff{Textbook refs}
   \textbf{[A]} Ch.~1 ($\mathbb{F}=\mathbb{R}$ or $\mathbb{C}$),
   Ch.~4 (polynomials, fundamental theorem of algebra);
@@ -268,8 +265,7 @@ Moivre, and interpret complex multiplication geometrically.
 \ff{Applications}
   Linear operators on data; adjacency/weight matrices (preview of graphs).
 \ff{Languages}
-  C\texttt{++} (matmul, mat--vec with \texttt{-O2/-O3}, cache blocking)
-  \pri{Core}; Python/MATLAB verification.
+  Python (matmul, mat--vec, blocking and timing experiments) \pri{Core}.
 \ff{Textbook refs}
   \textbf{[S]} Ch.~1 (matrix operations), Ch.~4 (determinants);
   \textbf{[A]} Ch.~3, Ch.~9 (trace, determinant);
@@ -310,7 +306,7 @@ spectral/nuclear norms \emph{mean} even before computing them.
 \ff{Applications}
   Sets the analytic foundation for all of Arc~IV (optimization, regression).
 \ff{Languages}
-  Python (surface/contour plots, gradient fields); MATLAB.
+  Python (surface/contour plots, gradient fields).
 \ff{Textbook refs}
   \textbf{[BV]} App.~C (derivatives \& optimization);
   Taylor's theorem and the Hessian \emph{supplementary}
@@ -348,7 +344,7 @@ $\frac{d}{dx}\ln x$ from first principles.
 \ff{Applications}
   Governs the reliability of every later algorithm (elimination, QR, eigen).
 \ff{Languages}
-  C\texttt{++} (float vs.\ double behavior); Python/MATLAB (epsilon,
+  Python (float vs.\ double behavior, machine epsilon,
   ill-conditioned examples).
 \ff{Textbook refs}
   \textbf{[TB]} Lec.~12--15 (conditioning, floating point, stability);
@@ -386,8 +382,8 @@ identify cancellation, and set a sensible tolerance for an iterative method.
 \ff{Applications}
   The computational workhorse behind regression, Newton steps, and more.
 \ff{Languages}
-  C\texttt{++} (elimination kernel) \pri{Recommended};
-  MATLAB (\texttt{lu}, verification) \pri{Core}.
+  Python (elimination by hand, \texttt{scipy.linalg.lu} verification)
+  \pri{Core}.
 \ff{Textbook refs}
   \textbf{[S]} Ch.~1 (Gaussian elimination);
   \textbf{[TB]} Lec.~20--22 (elimination, pivoting, stability);
@@ -419,7 +415,7 @@ produce/use an $LU$ factorization.
 \ff{Applications}
   Rotations/reflections/projections as maps; graphics transforms
   \pri{Recommended}; sets up the four subspaces and eigen-theory.
-\ff{Languages} Python (visualize $2$-D/$3$-D transforms); MATLAB.
+\ff{Languages} Python (visualize $2$-D/$3$-D transforms).
 \ff{Textbook refs}
   \textbf{[A]} Ch.~3 (linear maps);
   \textbf{[S]} App.~A (linear transformations);
@@ -451,7 +447,7 @@ apply rank--nullity, and change basis.
   Extract bases of all four subspaces from elimination \pri{Core}.
 \ff{Applications}
   Direct foundation for least squares (Unit~10) and PCA/SVD geometry (Unit~11).
-\ff{Languages} Python/MATLAB (rank, null-space bases).
+\ff{Languages} Python (rank, null-space bases).
 \ff{Textbook refs}
   \textbf{[S]} Ch.~2 (\S2.4, the four subspaces);
   \textbf{[A]} Ch.~3 (null space \& range, fundamental theorem of linear maps);
@@ -497,9 +493,8 @@ state their dimensions and orthogonality relations.
 \ff{Applications}
   Linear regression / curve fitting \pri{Core}; data whitening \pri{Enrichment}.
 \ff{Languages}
-  Python (linear regression demo) \pri{Core};
-  MATLAB (\texttt{qr}, \texttt{chol}, verification);
-  C\texttt{++} (QR kernel) \pri{Enrichment}.
+  Python (linear regression demo; \texttt{numpy.linalg.qr} and
+  \texttt{scipy.linalg.cholesky} verification) \pri{Core}.
 \ff{Textbook refs}
   \textbf{[TB]} Lec.~6--11 (projectors, QR, Gram--Schmidt, Householder, least
   squares), Lec.~23 (Cholesky);
@@ -556,9 +551,8 @@ stable than the normal equations.
   term--document matrix (document retrieval); PageRank; SVD/DCT image
   compression; static word-embedding geometry (see Projects appendix).
 \ff{Languages}
-  Python (PCA, SVD, Eigenfaces, spectral graph demos) \pri{Core};
-  MATLAB (\texttt{eig}, \texttt{svd}, verification);
-  C\texttt{++} (power iteration) \pri{Enrichment}.
+  Python (PCA, SVD, Eigenfaces, spectral graph demos;
+  \texttt{numpy.linalg.eig}/\texttt{svd} verification) \pri{Core}.
 \ff{Textbook refs}
   \textbf{[A]} Ch.~5, Ch.~7 (spectral theorem, SVD), Ch.~8 (Schur);
   \textbf{[S]} Ch.~5--6; \textbf{[TB]} Lec.~4--5 (SVD),
@@ -582,14 +576,15 @@ $\kappa_2$, and build a graph Laplacian for clustering.
   convergence and its dependence on conditioning (tie to Units~6,11).
   \textbf{Gradient descent}; \textbf{Newton's method} (Hessian solve $=$ a
   linear system, Unit~7). Nonlinear least squares: \textbf{Gauss--Newton} and
-  \textbf{Levenberg--Marquardt}. Quasi-Newton \textbf{BFGS} (mention).
-  Constrained optimization and the \textbf{support vector machine} under the
-  Vapnik objective; kernel methods (reuse Unit~2 kernels). Stochastic /
-  Monte-Carlo optimization (SGD) as an application \pri{Enrichment}.
-  Low-rank matrix factorization with a \emph{masked} loss over observed entries
-  (Alternating Least Squares / SGD) for collaborative filtering. Model-selection
-  methodology: train/validation/test splits and cross-validation as estimates of
-  generalization error (ties to Unit~6 tolerances) \pri{Recommended}.
+  \textbf{Levenberg--Marquardt}.
+\ff{If time permits}
+  The following are \emph{not} promised. If the semester allows, we will
+  discuss: quasi-Newton \textbf{BFGS}; constrained optimization and the
+  \textbf{support vector machine} under the Vapnik objective, with kernel
+  methods reusing the Unit~2 kernels; stochastic gradient descent
+  (\textbf{SGD}); and model-selection methodology (train/validation/test splits
+  and cross-validation as estimates of generalization error). These are carried
+  in \texttt{plan/} rather than committed to here.
 \ff{Key theorems}
   First-/second-order optimality conditions (via Taylor, Unit~5);
   convexity $\Rightarrow$ global optimum \pri{Recommended};
@@ -597,145 +592,28 @@ $\kappa_2$, and build a graph Laplacian for clustering.
 \ff{Tools / formulas}
   GD update $x_{k+1}=x_k-\alpha\nabla f$; Newton
   $x_{k+1}=x_k-H^{-1}\nabla f$; Gauss--Newton normal-equation step;
-  LM damped step $(J^\top J+\lambda I)\Delta=-J^\top r$; SVM margin/objective.
+  LM damped step $(J^\top J+\lambda I)\Delta=-J^\top r$.
 \ff{Algorithms}
   \textbf{Gradient descent} \pri{Core}; \textbf{Newton's method} \pri{Core};
   \textbf{Gauss--Newton} \pri{Recommended};
-  \textbf{Levenberg--Marquardt} \pri{Recommended};
-  \textbf{BFGS} (mention) \pri{Enrichment};
-  \textbf{SVM training} \pri{Recommended};
-  \textbf{SGD / Monte-Carlo} \pri{Enrichment}.
+  \textbf{Levenberg--Marquardt} \pri{Recommended}.
 \ff{Applications}
-  Model fitting; classification via SVM; the full ML pipeline tying the course
-  together (embeddings $\to$ similarity $\to$ optimization); collaborative-
-  filtering recommender; signal trilateration (GPS-style positioning).
+  Model fitting; the full pipeline tying the course together
+  (embeddings $\to$ similarity $\to$ optimization); signal trilateration
+  (GPS-style positioning).
 \ff{Languages}
-  Python (GD, Newton, SVM demos) \pri{Core};
-  MATLAB (\texttt{lsqnonlin}, verification) \pri{Recommended};
-  C\texttt{++} (GD kernel) \pri{Enrichment}.
+  Python (gradient descent, Newton, Gauss--Newton/LM demos) \pri{Core}.
 \ff{Textbook refs}
   \textbf{[BV]} Ch.~18--19 (nonlinear \& constrained least squares:
   Gauss--Newton, Levenberg--Marquardt), App.~C;
-  gradient descent, Newton, BFGS, SVM \emph{supplementary}.
+  gradient descent and Newton \emph{supplementary}.
 \ff{ENTER} Unit~5 (gradient/Hessian/Taylor); Unit~7 (linear solves); Unit~10 (least squares); Unit~11 (definiteness/conditioning).
 \end{unitfields}
 \begin{gateway}
 Course capstone: student can derive and implement gradient descent and Newton's
-method, choose Gauss--Newton/LM for nonlinear least squares, and train an SVM,
-articulating how each method's behavior depends on conditioning.
+method and choose Gauss--Newton/LM for nonlinear least squares, articulating how
+each method's behavior depends on conditioning.
 \end{gateway}
-
-%==============================================================================
-\section*{Assessment mapping (tentative)}
-%==============================================================================
-\begin{center}
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}l l l@{}}
-\toprule
-\textbf{Assessment} & \textbf{Units covered} & \textbf{Suggested focus} \\
-\midrule
-Exam 1              & 1--6    & vector spaces, norms, complex, matrices, calculus, conditioning \\
-Exam 2              & 7--10   & systems, maps, subspaces, least squares \\
-Final Exam (cheat sheet) & 1--12 (weighted to 11--12) & eigen/SVD, optimization, synthesis \\
-\midrule
-Project 1 [Assigned] & after 2  & \#1 K-means image color segmentation (Python / C\texttt{++}) \\
-Project 2 [Assigned] & after 11 & \#5 Eigencats via PCA (Python) \\
-Project 3 [Assigned] & after 12 & \#7 Mini-ML: OLS + SVM + KNN with validation (Python) \\
-Project 4 [Assigned] & after 12 & \#8 Signal trilateration: Gauss--Newton / LM (Python / MATLAB) \\
-Lecture demos       & 10--12  & \#2 SVD+DCT, \#3 LSA, \#4 collab.\ filtering, \#6 PageRank, \#9 embeddings \\
-\midrule
-Homework 1--10      & one per unit (Units 1--12, some combined) & mixed hand + MATLAB verification \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-%==============================================================================
-\section*{Computational Projects \& Application Demos}
-%==============================================================================
-This is a \emph{menu}, not an assignment quota: every item below is documented,
-but only a small subset is assigned to students as an implementation
-(\textbf{[Assigned]}); the complement are instructor-led \textbf{[Demo]}s that
-still put the application in front of the class. The list is open --- further
-items may be appended as \#10, \#11, \dots\ without disturbing the ordering.
-
-\smallskip
-\noindent\emph{Outline additions these items introduced:} DCT / orthogonal
-transforms (Unit~10); Perron--Frobenius theorem and stochastic matrices
-(Unit~11); TF--IDF term--document weighting (Unit~11); masked-loss / ALS
-factorization and train/validation/test model selection (Unit~12).
-
-\begin{center}
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}c l c c p{4.6cm}@{}}
-\toprule
-\textbf{\#} & \textbf{Project} & \textbf{Role} & \textbf{Prereq} & \textbf{LA machinery} \\
-\midrule
-1 & K-means color segmentation   & Assigned & U2  & K-means, image vectorization, $\ell_2$ distance \\
-2 & SVD + DCT image compression  & Demo     & U11 & SVD, Eckart--Young, DCT orthonormal basis \\
-3 & LSA file-system search       & Demo     & U11 & truncated SVD, TF--IDF, cosine similarity \\
-4 & Collaborative filtering      & Demo     & U12 & masked low-rank factorization, ALS/SGD \\
-5 & Eigencats (PCA)              & Assigned & U11 & PCA, covariance eigenbasis / SVD \\
-6 & PageRank                     & Demo     & U11 & power method, stochastic matrix, Perron--Frobenius \\
-7 & Mini-ML (OLS/SVM/KNN)        & Assigned & U12 & OLS, SVM, KNN, train/val/test \\
-8 & Signal trilateration        & Assigned & U12 & Gauss--Newton, Levenberg--Marquardt, Jacobian \\
-9 & Semantic embedding geometry  & Demo     & U11 & cosine similarity, KNN, PCA, vector arithmetic \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection*{Assigned implementations}
-\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=4pt]
-\item[\#1 -- K-means image color segmentation (after Unit 2)]
-  Cluster an image's pixels in RGB (or CIELAB) space into $k$ colors and replace
-  each pixel by its cluster centroid; display the quantized/segmented image as a
-  function of $k$. \emph{LA focus:} $\ell_2$ distance, centroids as means,
-  Lloyd's iteration and its convergence. Python (NumPy/Pillow) or a C\texttt{++}
-  kernel.
-\item[\#5 -- Eigencats via PCA (after Unit 11)]
-  Assemble a data matrix of aligned cat (or face) images, mean-center, and
-  compute principal components via the SVD; visualize the top ``eigencats,''
-  reconstruct images from $r$ components, and plot reconstruction error and
-  variance-explained vs.\ $r$. \emph{LA focus:} covariance eigenstructure, SVD,
-  low-rank reconstruction. Python.
-\item[\#7 -- Mini-ML with validation (after Unit 12)]
-  Three sub-tasks on suitable datasets: OLS for a regression problem, an SVM for
-  a classification problem, and KNN for a multiclass problem; use a
-  train/validation/test split, report generalization metrics, and justify model
-  choice. \emph{LA focus:} normal equations vs.\ QR (OLS), margin/kernels (SVM),
-  distance metrics (KNN), validation methodology. Python (hand-implement the
-  cores; library baselines allowed).
-\item[\#8 -- Signal trilateration (after Unit 12)]
-  From noisy range measurements to known anchors, estimate an emitter's position
-  by nonlinear least squares; implement Gauss--Newton and Levenberg--Marquardt
-  and compare convergence/robustness vs.\ initialization and noise.
-  \emph{LA focus:} residual Jacobian, GN normal-equation step, LM damping,
-  conditioning. Python or MATLAB.
-\end{description}
-
-\subsection*{Lecture demos}
-\begin{description}[leftmargin=0pt,style=nextline,font=\normalfont\sffamily\bfseries\color{RoyalBlue},itemsep=4pt]
-\item[\#2 -- SVD + DCT image compression (Unit 11)]
-  Sweep the rank $r$ of an image's SVD and watch quality vs.\ storage; then show
-  the $8\times8$ block DCT that JPEG actually uses, connecting a \emph{fixed}
-  orthonormal basis to the data-adaptive SVD basis. Motivates Eckart--Young.
-\item[\#3 -- Latent Semantic Analysis search (Unit 11)]
-  Build a small term--document matrix over a mock file system, TF--IDF weight it,
-  truncate its SVD, and answer queries by cosine similarity in the reduced
-  ``concept'' space; contrast with exact keyword matching.
-\item[\#4 -- Collaborative filtering (Unit 12)]
-  On a toy ratings matrix with missing entries, fit a low-rank factorization by
-  ALS/SGD over \emph{observed} entries and predict held-out ratings; frames
-  recommendation as matrix completion.
-\item[\#6 -- PageRank (Unit 11)]
-  Model a small web graph as a stochastic matrix, run the power method, and watch
-  the ranking vector converge to the dominant eigenvector; connect to
-  Perron--Frobenius and the damping factor.
-\item[\#9 -- Semantic embedding geometry (Unit 11, static)]
-  With pretrained word vectors: nearest neighbors under cosine similarity,
-  analogy arithmetic ($\text{king}-\text{man}+\text{woman}\approx\text{queen}$),
-  PCA to $2$-D for visualization, and clustering --- purely linear algebra, no
-  model training.
-\end{description}
 
 %==============================================================================
 \section*{One-semester carving suggestion}
