@@ -1,0 +1,837 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I, Section 10 (Queens College, CUNY -- Fall 2026)
+%  COURSE SYLLABUS
+%  Instructor: Kevin Bedoya
+%
+%  FILENAME is the department's required format: number_section_lastname, i.e.
+%  231_sec10_bedoya.pdf.  Do not rename the exported PDF.
+%
+%  SOURCES this document was assembled from, so that it can be re-checked:
+%    - welcome-letter/welcome-letter.pdf   (voice, logistics, grade weights,
+%      platforms, textbook stance, programming stance)
+%    - schedule/MATH231_Fall2026_schedule.pdf (28 meetings, the two lost days,
+%      the final-exam window)
+%    - tentative_textbooks/                (the four texts and their free links)
+%    - lectures/primer/                    (the pre-course foundations review)
+%    - "Instructor Guide.pdf" (Math Dept)  (VOE, exam/homework guidance, and the
+%      full contact list reproduced in Sec. 13)
+%    - https://www.qc.cuny.edu/cetll/whats-in-a-syllabus/
+%    - https://www.qc.cuny.edu/provost/effective-syllabus/
+%    - https://www.qc.cuny.edu/provost/course-processes/
+%    - QC undergraduate course listing (catalog description, hours, prereq)
+%
+%  THREE THINGS TO SET BEFORE HANDING THIS OUT.  Each is a single macro below:
+%    \officehours  -- currently a placeholder; announce at the first meeting.
+%    \midtermone / \midtermtwo -- tentative placements, see Sec. 7.
+%  Everything else is sourced.
+%
+%  OSDA, NOT SPSV.  The office formerly called Special Services (SPSV) is now
+%  the Office for Students with Disabilities and Access (OSDA), and its address
+%  is OSDA@qc.cuny.edu.  The CETLL syllabus page still shows the old
+%  qc.spsv@qc.cuny.edu; do not copy it back in.
+%
+%  ATTENDANCE.  Two different things are deliberately kept apart in Sec. 6: VOE
+%  attendance for the first three weeks, which is a registration matter, and
+%  grading, which does not use attendance -- per the Provost's guidance that
+%  attendance may not be used to evaluate students.
+%
+%  Compile with pdflatex.  Standard TeX Live packages only.
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{rule}{HTML}{C8D3DF}
+\definecolor{softbg}{HTML}{F2F6FA}
+\definecolor{warnbg}{HTML}{FDF3E7}
+\definecolor{warnrule}{HTML}{D98B3A}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  urlcolor=accent,
+  pdftitle={MATH 231 Linear Algebra I, Section 10 --- Syllabus, Fall 2026},
+  pdfauthor={Kevin Bedoya}
+}
+
+\titleformat{\section}{\large\bfseries\color{accent}}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.5em}{0.5em}
+\titleformat{\subsection}{\normalsize\bfseries\color{accent}}{\thesubsection.}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.35em}
+
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.25em, topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=0.25em, topsep=0.35em}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+% Shaded call-out boxes.  The content is collected into a savebox first because
+% \colorbox needs its whole argument at once and cannot straddle the
+% \begin/\end split of an environment.
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\color{accent}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+
+\newenvironment{alertbox}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\color{warnrule}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{warnbg}{\usebox{\qcbox}}\end{center}\medskip}
+
+% One MQR outcome: number, the official wording, the course-specific gloss,
+% and where it is assessed.  A four-column table made these unreadably narrow.
+\newcommand{\mqr}[4]{%
+  \par\medskip\needspace{4\baselineskip}%
+  {\bfseries\color{accent}MQR #1.}\ \emph{#2}\par\nobreak\vspace{0.2em}
+  \begingroup\leftskip=1.5em\relax
+  #3\par\nobreak\vspace{0.15em}
+  {\footnotesize\itshape Assessed by: #4.}\par
+  \endgroup}
+
+%--------------------------------------------------------- fill these in -----
+\newcommand{\officehours}{\emph{to be announced at the first class meeting and
+  posted on the class Discord}}
+\newcommand{\midtermone}{Thursday, October 8}
+\newcommand{\midtermtwo}{Thursday, November 12}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{accent} MATH 231: Linear Algebra I}\\[0.4em]
+  {\large\bfseries Section 10 \quad$\cdot$\quad Fall 2026}\\[0.5em]
+  {\normalsize Department of Mathematics \quad$\cdot$\quad
+   Queens College, City University of New York}
+\end{center}
+
+\vspace{0.3em}
+{\color{rule}\hrule height 1.2pt}
+\vspace{0.9em}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\bfseries}l l@{}}
+\toprule
+Instructor      & Kevin Bedoya \\
+Email           & \href{mailto:Kevin.Bedoya32@stu-mail.qc.cuny.edu}{Kevin.Bedoya32@stu-mail.qc.cuny.edu} \\
+Meetings        & Tuesdays \& Thursdays, 12:10--2:00 PM \\
+Location        & Kiely Hall 326 \\
+Mode            & In-person \\
+Office hours    & \officehours \\
+Office location & Kiely Hall 331 (the Math Lab) \\
+Credits         & 4 hours; 4 credits \\
+Prerequisite    & MATH 141 or MATH 151, minimum grade C$-$ \\
+Semester        & August 28 -- December 21, 2026 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{callout}{Email policy}
+Write from your QC email account and put \texttt{MATH 231} in the subject line.
+I answer within one business day on weekdays; replies over the weekend are
+likely but not promised. Questions that other students would benefit from ---
+about homework, a definition, an assignment deadline --- are better asked in
+the class Discord, where everyone can see the answer.
+\end{callout}
+
+%==============================================================================
+\section{Course description}
+%==============================================================================
+
+\textbf{Catalog description.} \emph{An introduction to linear algebra with
+emphasis on techniques and applications. Topics to be covered include solutions
+of systems of linear equations, vector spaces, bases and dimension, linear
+transformations, matrix algebra, determinants, eigenvalues, and inner products.
+Not open to students who are enrolled in or who have completed MATH 237.
+Students who fail or withdraw from this course multiple times may be prohibited
+from majoring in the sciences or mathematics; see the bulletin language for
+your major.}
+
+\textbf{How this section is taught.} Most students in this room are computer
+science majors or in applied-mathematics-adjacent programs, and the section is
+built accordingly. We cover the full catalog content, and we lean into the
+computational side of it: how much a calculation actually costs, how a machine
+really stores a number, and how the standard algorithms of data science are
+built out of the vector and matrix operations we develop. Along the way we will
+meet $k$-means clustering, $k$-nearest neighbours, the Gram--Schmidt process,
+gradient descent, Google's PageRank, and image compression.
+
+\textbf{On programming.} Our language is Python, used for homework, projects
+and extra credit. \textbf{Your programming ability will not be assessed on
+exams.} If you have never written a line of code, assignments come with
+walkthroughs covering the syntax and machinery you need; if you have taken
+CSCI 111, 211 or 212, you will be comfortable quickly. Projects are
+implementation-based: you will be asked to implement an algorithm that has
+already been developed in lecture. We will use \texttt{numpy}, \texttt{scipy}
+and \texttt{matplotlib}.
+
+%==============================================================================
+\section{Pathways learning outcomes}
+%==============================================================================
+
+MATH 231 satisfies the CUNY Pathways \textbf{Mathematical and Quantitative
+Reasoning} (MQR) requirement, and must meet all six MQR outcomes. Each is
+stated below in its official wording, followed by what it looks like concretely
+in this course and where it is assessed.
+
+\mqr{1}{Interpret and draw appropriate inferences from quantitative
+  representations, such as formulas, graphs, or tables.}
+ {Read a matrix as a table of coefficients and recover the linear system it
+  encodes; read an operation-count table and a growth plot to decide which of
+  two algorithms scales better; read a table of distances to classify a point;
+  read the spacing diagram of a floating-point system to say what precision is
+  available near a given magnitude.}
+ {homework, exams}
+
+\mqr{2}{Use algebraic, numerical, graphical, or statistical methods to draw
+  accurate conclusions and solve mathematical problems.}
+ {Solve linear systems by elimination; compute dot products, norms,
+  projections, determinants and eigenvalues; run the Gram--Schmidt process to
+  produce an orthonormal basis; execute Lloyd's algorithm and the
+  $k$-nearest-neighbours rule both by hand and in code.}
+ {homework, projects, exams}
+
+\mqr{3}{Represent quantitative problems expressed in natural language in a
+  suitable mathematical format.}
+ {Turn ``find the coordinates of this vector against this basis'' into the
+  matrix equation $V\mathbf{x}=\mathbf{u}$; turn a described collection of
+  objects into feature vectors in $\mathbb{R}^{n}$; turn a stated set of
+  simultaneous constraints into a linear system and its matrix.}
+ {homework, projects, exams}
+
+\mqr{4}{Effectively communicate quantitative analysis or solutions to
+  mathematical problems in written or oral form.}
+ {Written homework solutions that justify each step rather than only stating an
+  answer; a written report accompanying each project explaining the method, the
+  results, and the limits of both; explaining your reasoning aloud in class and
+  in office hours.}
+ {homework, projects}
+
+\mqr{5}{Evaluate solutions to problems for reasonableness using a variety of
+  means, including informed estimation.}
+ {Substitute a computed solution back into the original system to check it; use
+  a Big-O estimate to judge in advance whether a computation is feasible at a
+  given input size; use relative error and machine precision to decide how many
+  digits of a numerical answer can be trusted; sanity-check a clustering
+  against what the data plainly looks like.}
+ {homework, projects, exams}
+
+\mqr{6}{Apply mathematical methods to problems in other fields of study.}
+ {Apply linear algebra to problems in computer science and data science:
+  nearest-neighbour search and recommendation, clustering, image compression,
+  PageRank, and the least-squares fitting that underlies regression.}
+ {projects}
+
+%==============================================================================
+\section{Materials}
+%==============================================================================
+
+\textbf{No purchases are required.} Free online copies of every text are linked
+below and collected in the course GitHub repository. Lectures do not follow any
+single textbook --- I have written my own progression for this course. The
+texts supply additional reading, alternate perspectives, and problems.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{@{} >{\raggedright\arraybackslash}p{6.4cm} >{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{5.0cm} @{}}
+\toprule
+\textbf{Text} & \textbf{Role in the course} & \textbf{Free access} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Boyd \& Vandenberghe, \emph{Introduction to Applied Linear Algebra: Vectors,
+Matrices, and Least Squares} (Cambridge, 2018)
+ & Applied spine
+ & \url{https://web.stanford.edu/~boyd/vmls/vmls.pdf} \\
+Trefethen \& Bau, \emph{Numerical Linear Algebra} (SIAM, 1997)
+ & Numerical methods, conditioning, QR, SVD
+ & \url{https://www.stat.uchicago.edu/~lekheng/courses/309/books/Trefethen-Bau.pdf} \\
+Strang, \emph{Linear Algebra and Its Applications}, 4th ed.\ (Cengage, 2006)
+ & Subspaces and geometric intuition
+ & Linked in the course repository \\
+Axler, \emph{Linear Algebra Done Right}, 4th ed.\ (Springer, 2024)
+ & Theoretical foundation
+ & \url{https://linear.axler.net} \\
+\end{longtable}
+
+\subsection{Foundations primer --- read this first}
+
+A self-study primer, \emph{MATH 231 Foundations Review}, is posted in the course
+repository under \texttt{lectures/primer/}. It contains no new linear algebra:
+it collects the algebra, notation, summation and calculus you already have, so
+that we can speak a common language on day one. \textbf{Read it before or during
+the first week.} If a page feels like review, skim it; if a page feels new, slow
+down and work the examples with a pencil.
+
+\subsection{Platforms and setup}
+
+Everything below is free.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{center}
+\begin{longtable}{@{} >{\bfseries}l >{\raggedright\arraybackslash}p{11.4cm} @{}}
+\toprule
+\endhead
+\bottomrule
+\endlastfoot
+Discord & Primary communication. \textbf{All announcements go through the class
+Discord} --- schedule changes, homework, extra credit, projects, exams, and
+general information. Invite link distributed by email before the first meeting. \\
+GitHub & Lecture notes, homework, projects, practice exams, textbook links: \newline
+\url{https://github.com/KevinB88/MATH231-Queens-College-Fall-2026-Linear-Algebra-I-} \\
+Gradesly & Where grades are posted: \url{https://gradesly.com/}. You will sign
+up with your CUNY ID and a randomly generated passcode; setup instructions are
+distributed in week 1. \\
+Git + GitHub account & How you submit work. You will push homework, projects and
+extra credit to your own MATH 231 repository. A setup walkthrough --- creating an
+account, installing git, structuring your directory, and what git actually is ---
+is provided in week 1. \\
+Python + an IDE & VS Code or PyCharm. Both are free. \\
+\end{longtable}
+\end{center}
+
+\begin{alertbox}{We are not using Brightspace}
+Course materials, announcements and grades live on GitHub, Discord and Gradesly
+respectively. Do not wait for a Brightspace post; you will miss things. If you
+are not in the class Discord within the first week, email me.
+\end{alertbox}
+
+%==============================================================================
+\section{Course progression (tentative)}
+%==============================================================================
+
+The order below is the plan and is \textbf{tentative}. Pacing will be adjusted
+to the room, and the authoritative version of what has been covered is always
+the lecture notes posted in the repository. Announcements of any change go
+through Discord.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{center}
+\begin{longtable}{@{} >{\bfseries}c >{\raggedright\arraybackslash}p{4.5cm} >{\raggedright\arraybackslash}p{9.2cm} @{}}
+\toprule
+\textbf{Unit} & \textbf{Subject} & \textbf{Contents} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Unit} & \textbf{Subject} & \textbf{Contents} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+0 & Foundations primer & Self-study. Notation, algebra, summation, functions,
+    the calculus assumed from MATH 141. \\
+1 & Vectors & Vectors in $\mathbb{R}^{2}$ and $\mathbb{R}^{n}$; addition and
+    scaling; the dot product, angle and projection; norms, metrics and
+    Cauchy--Schwarz; span, basis, coordinates and dimension; linear
+    independence; orthogonality and subspaces. \\
+2 & Computational foundations & Counting operations; asymptotic analysis and
+    Big-O; floating-point arithmetic, machine precision and error;
+    $k$-nearest neighbours; $k$-means clustering; the Gram--Schmidt process;
+    matrix multiplication as an algorithm. \\
+3 & Matrices and linear systems & Linear systems from the coordinate problem;
+    the matrix and the matrix--vector product; Gaussian elimination; matrix
+    algebra, the transpose and the inverse; the determinant and the trace. \\
+4 & Linear maps and subspaces & Linear transformations and their matrices;
+    kernel and image; rank--nullity; the four fundamental subspaces;
+    change of basis. \\
+5 & Orthogonality and least squares & Orthogonal projection onto a subspace;
+    the normal equations; least-squares fitting; the QR factorization. \\
+6 & Eigenvalues and applications & Eigenvalues and eigenvectors;
+    diagonalization; an introduction to the singular value decomposition;
+    applications including PageRank and image compression. \\
+\end{longtable}
+\end{center}
+
+Complex numbers and quaternions appear as enrichment material alongside Unit 1
+and are not examinable unless announced otherwise.
+
+%==============================================================================
+\section{Grading}
+%==============================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{} l c >{\raggedright\arraybackslash}p{7.6cm} @{}}
+\toprule
+\textbf{Component} & \textbf{Weight} & \textbf{Notes} \\
+\midrule
+Homework (5 assignments) & 20\% & Submitted via your GitHub repository. \\
+Projects (3)             & 15\% & Python implementations with a written report. \\
+Midterm 1                & 20\% & In class, in person. \\
+Midterm 2                & 20\% & In class, in person. \\
+Final examination        & 25\% & Cumulative; during the December 15--21 period. \\
+\midrule
+\textbf{Total}           & \textbf{100\%} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Extra credit will be offered during the semester and announced on Discord.
+
+\subsection{Grade scale}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{} l l l l l l @{}}
+\toprule
+A+ & 97--100 & B+ & 87--89.9 & C+ & 77--79.9 \\
+A  & 93--96.9 & B  & 83--86.9 & C  & 73--76.9 \\
+A$-$ & 90--92.9 & B$-$ & 80--82.9 & C$-$ & 70--72.9 \\
+D+ & 67--69.9 & D & 63--66.9 & D$-$ & 60--62.9 \\
+F  & below 60 & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Late work and make-ups}
+
+\begin{itemize}
+  \item \textbf{Homework and projects} are accepted up to 48 hours late with a
+        10\% penalty per day. After 48 hours the grade is zero unless you have
+        arranged something with me \emph{in advance}.
+  \item \textbf{Exams} are in class and cannot be made up except for a
+        documented emergency, a religious observance (\S9.7), or an approved
+        accommodation (\S9.3). Contact me as far in advance as you can; for an
+        emergency, as soon as you are able.
+  \item Talk to me early. A problem raised before a deadline has many more
+        solutions than the same problem raised after it.
+\end{itemize}
+
+%==============================================================================
+\section{Attendance and Verification of Enrollment}
+%==============================================================================
+
+\begin{alertbox}{Verification of Enrollment (VOE) --- the first three weeks}
+CUNY requires me to take attendance at \textbf{every meeting during the first
+three weeks of the semester} and to submit Verification of Enrollment in
+CUNYfirst. For this section that means meetings 1 through 6:
+\textbf{September 1, 3, 8, 10, 15 and 17}.
+
+If you do not attend during this window, you may be reported as not actively
+participating and \textbf{dropped from the course}. This is also how CUNY
+verifies enrollment for \textbf{financial aid}, so a missed verification can
+affect your aid disbursement. If something prevents you from attending during
+the first three weeks, email me immediately --- before the fact if at all
+possible.
+\end{alertbox}
+
+\textbf{After the VOE window.} Attendance is not itself a graded component of
+this course. What is graded is listed in \S5. That said, this course moves
+quickly and builds on itself; the lecture notes are thorough but they are not a
+substitute for being in the room, and consistent absence reliably shows up in
+exam scores. If you must miss a class, get the notes, read them, and come to
+office hours with questions.
+
+\textbf{Lateness.} Class starts at 12:10. Please arrive on time; if you do
+arrive late, come in quietly and take a seat rather than waiting outside.
+
+%==============================================================================
+\section{Examinations}
+%==============================================================================
+
+There are three examinations: two midterms and a cumulative final. All are
+taken \textbf{in class, in person}. There are no take-home exams. Programming
+is not assessed on exams (\S1).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{} l l >{\raggedright\arraybackslash}p{7.4cm} @{}}
+\toprule
+\textbf{Exam} & \textbf{Date} & \textbf{Coverage} \\
+\midrule
+Midterm 1 & \midtermone\ \emph{(tentative)}
+  & Units 1--2: vectors, inner products, norms, basis and span, and the
+    computational material through Gram--Schmidt. \\
+Midterm 2 & \midtermtwo\ \emph{(tentative)}
+  & Units 3--4: linear systems, matrix algebra, determinants, linear maps and
+    subspaces. \\
+Final     & During December 15--21
+  & Cumulative, with emphasis on Units 5--6. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{callout}{How exam dates are confirmed}
+The two midterm dates above are \textbf{tentative}. Each will be confirmed on
+Discord and in class \textbf{at least two weeks in advance}, and once confirmed
+it will not move. The final examination is scheduled by the College within the
+December 15--21 period; our meeting slots in that window are Tuesday,
+December 15 and Thursday, December 17. The official date and time will be
+announced as soon as the College publishes the final examination schedule.
+\end{callout}
+
+Exams are designed so that a student who attends regularly, does the homework,
+and studies can do well. Questions will not be recycled verbatim from homework
+or review sheets: the goal is to test whether you understand the concepts, not
+whether you have memorized specific worked examples.
+
+%==============================================================================
+\section{Homework, projects and submission}
+%==============================================================================
+
+\textbf{Five homework assignments} and \textbf{three projects} across the
+semester. Both are submitted by committing and pushing to your own MATH 231
+GitHub repository; a walkthrough covering git, GitHub accounts and directory
+structure is provided in week 1.
+
+\begin{itemize}
+  \item \textbf{Homework} is a mix of hand computation and short proofs, with
+        some Python. Show your reasoning --- an unjustified correct answer
+        earns partial credit at best. This is MQR 4, and it is graded.
+  \item \textbf{Projects} ask you to implement, in Python, an algorithm already
+        developed in lecture, and to submit a short written report: what you
+        implemented, what you observed, and what the limits of the method are.
+  \item \textbf{Collaboration} is encouraged on homework --- talk to each other,
+        form study groups, work problems together at the board. What you submit
+        must be written by you, in your own words and your own code. Copying
+        another student's solution, or letting yours be copied, is a violation
+        of \S9.1.
+\end{itemize}
+
+%==============================================================================
+\section{Course policies}
+%==============================================================================
+
+\subsection{Academic integrity}
+
+\emph{Academic dishonesty is prohibited in the City University of New York and
+is punishable by penalties, including failing grades, suspension, and
+expulsion.} This course follows the CUNY Policy on Academic Integrity as adopted
+by the CUNY Board of Trustees; the College's policy page is at
+\url{https://www.qc.cuny.edu/cetll/academic-integrity}.
+
+Violations include plagiarism, copying another student's work, unauthorized
+collaboration on an exam, using prohibited materials during an exam, and
+submitting work you cannot explain as your own. Suspected violations are
+reported to the Office of Judicial Affairs. Queens College's Coordinator of
+Judicial Affairs is Emanuel Avila
+(\href{mailto:emanuel.avila@qc.cuny.edu}{emanuel.avila@qc.cuny.edu} or
+\href{mailto:studentconduct@qc.cuny.edu}{studentconduct@qc.cuny.edu},
+718-997-3971).
+
+\subsection{Generative artificial intelligence}
+
+You may use generative AI tools --- ChatGPT, Claude, GitHub Copilot and the like
+--- on \textbf{homework and projects}, to learn Python syntax, to debug, to get
+an explanation of a concept, or to check your understanding. I use these tools
+myself and I would rather teach you to use them well than pretend they do not
+exist. Two conditions:
+
+\begin{enumerate}
+  \item \textbf{Disclose it.} Say so in a comment in your code, or in your
+        project README: which tool, and what you used it for. A sentence is
+        enough.
+  \item \textbf{Own it.} You must be able to explain every line you submit. I
+        may ask you to.
+\end{enumerate}
+
+\textbf{Generative AI is not permitted on examinations.} Submitting AI-generated
+work that you cannot explain, or failing to disclose AI use, is a violation of
+\S9.1. Note also that these tools are confidently wrong about mathematics with
+some regularity --- a habit of checking their output against what you know is
+part of MQR 5.
+
+\subsection{Students with disabilities and accommodations}
+
+The \textbf{Office for Students with Disabilities and Access (OSDA)} supports
+students with qualifying disabilities under the Americans with Disabilities Act
+by arranging reasonable accommodations. If you have previously received
+accommodations, believe you may have a disability, or have a temporary
+disability, contact OSDA:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{} >{\bfseries}l l @{}}
+\toprule
+Main office & Kiely Hall 104/108 \\
+Phone       & 718-997-5870 \\
+Email       & \href{mailto:OSDA@qc.cuny.edu}{OSDA@qc.cuny.edu} \\
+Testing office & Kiely Hall 220, 718-997-3775,
+                 \href{mailto:osda.testing@qc.cuny.edu}{osda.testing@qc.cuny.edu} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Accommodations are not retroactive}, so register sooner rather than
+later. Once OSDA sends me your accommodation letter, come talk to me --- early
+in the semester if you can, and well before an exam --- so we can make the
+arrangements without a rush. You are never required to disclose the nature of a
+disability to me.
+
+\emph{Note: this office was formerly called the Office of Special Services
+(SPSV). Older documents may still use that name or the old email address.}
+
+\subsection{Student wellness}
+
+College is hard, and it is harder when something else is going wrong. Anxiety,
+difficulty concentrating, loss, illness and stressful life events all affect
+academic performance, and none of them are things you have to handle alone.
+Confidential mental-health services are available on campus through
+\textbf{Counseling Services}, on the first floor of Frese Hall:
+718-997-5420, \href{mailto:CounselingServices@qc.cuny.edu}{CounselingServices@qc.cuny.edu},
+\url{https://www.qc.cuny.edu/cs/}.
+
+\textbf{A 24/7 crisis counselor is available: text ``CUNY'' to 741741.}
+
+If something is going on that is affecting your work in this class, you are
+welcome to tell me as much or as little as you want to. I would much rather hear
+about it early than reconstruct it from a transcript at the end of the semester.
+
+\subsection{Course withdrawals and incomplete grades}
+
+Deadlines for dropping and withdrawing are set by the College, not by me, and
+the grades \texttt{W}, \texttt{WN}, \texttt{WU} and \texttt{WA} have different
+consequences for your record and your financial aid. Check the deadlines
+yourself and talk to me before you withdraw:
+\url{https://www.qc.cuny.edu/provost/withdrawals-incomplete-grades/}.
+
+An \texttt{INC} is possible only when most of the coursework is already complete
+and something outside your control prevents you from finishing; it is arranged
+in advance, never awarded automatically. CUNY's uniform grade glossary is at
+\url{https://www.cuny.edu/about/administration/offices/ur/resources/registrars-staff/CUNY_UNIFORM_GRADE_GLOSSARY091109.pdf}.
+
+\subsection{Repeating this course}
+
+Be aware of the College's policy on repeating courses and F-grade replacement:
+\url{https://www.qc.cuny.edu/aac/wp-content/uploads/sites/84/2022/04/Repeating-Courses-and-the-F-Grade-Replacement-Policy.pdf}.
+As the catalog description notes, students who fail or withdraw from MATH 231
+multiple times may be prohibited from majoring in the sciences or mathematics.
+
+\subsection{Religious observance}
+
+Queens College accommodates religious observance, including for examinations.
+If a scheduled exam or deadline conflicts with a religious obligation, tell me
+as far in advance as possible and we will arrange an alternative. The College's
+policy is at \url{https://www.qc.cuny.edu/provost/religious-accommodations/}.
+
+\subsection{Grade appeals}
+
+If you believe a grade is in error, come to me first --- most of these are
+arithmetic and take five minutes to fix. If we cannot resolve it, appeals go
+through the Undergraduate Scholastic Standards Committee:
+\url{https://www.qc.cuny.edu/saa/}.
+
+\subsection{Use of student work}
+
+Samples of student work are occasionally made available to accreditation
+professionals for periodic program reviews. Anonymity is assured under these
+circumstances.
+
+\subsection{Course evaluations}
+
+During the final four weeks of the semester you will be asked to complete an
+online course evaluation. All responses are completely anonymous; identifying
+information is erased once the evaluation has been submitted. I read these, and
+they change how I teach --- please fill it out.
+
+\subsection{Non-discrimination and privacy}
+
+Queens College does not discriminate against students on the basis of
+pregnancy, childbirth or related conditions. Your educational records are
+protected under the Family Educational Rights and Privacy Act (FERPA); see
+\url{https://www.qc.cuny.edu/provost/guide-to-ferpa/}.
+
+\subsection{Emergency drills}
+
+\textbf{A campus fire drill is scheduled for sometime during the week of
+September 28 -- October 1, 2026.} Two of our meetings fall in that window
+(Tuesday, September 29 and Thursday, October 1). If the alarm sounds during
+class, we evacuate Kiely Hall together by the nearest stairwell --- not the
+elevator --- and reassemble outside before returning. Any class time lost will
+be made up.
+
+%==============================================================================
+\section{Getting help}
+%==============================================================================
+
+In rough order of how quickly you will get an answer:
+
+\begin{enumerate}
+  \item \textbf{The class Discord.} Ask in the open channel. Other students will
+        often answer before I do, and answering someone else's question is one
+        of the best ways to find out whether you actually understand something.
+  \item \textbf{Office hours}, Kiely Hall 331. Come with a specific question or
+        come with nothing and we will find one. You do not need permission and
+        you are not interrupting.
+  \item \textbf{Email}, per the policy on page 1.
+  \item \textbf{The Math Lab}, Kiely Hall 331 --- free drop-in tutoring and a
+        library of videos: \url{https://sites.google.com/view/qc-mathtutoring/home}.
+  \item \textbf{The QC Learning Commons}, Kiely 131 and 144:
+        \url{https://www.qc.cuny.edu/academics/qclc/}.
+  \item \textbf{Form a study group.} Genuinely: the students who do well in
+        courses like this one are disproportionately the ones who work
+        together.
+\end{enumerate}
+
+%==============================================================================
+\section{Important contacts}
+%==============================================================================
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{@{} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{10.9cm} @{}}
+\toprule
+\textbf{Office} & \textbf{Contact} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Office} & \textbf{Contact} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Mathematics Department
+ & 718-997-5811 \newline
+   General: \href{mailto:Math@qc.cuny.edu}{Math@qc.cuny.edu} \newline
+   Registration: \href{mailto:MathRegistration@qc.cuny.edu}{MathRegistration@qc.cuny.edu} \newline
+   Placement: \href{mailto:MathPlacement@qc.cuny.edu}{MathPlacement@qc.cuny.edu} \newline
+   \emph{Write to these addresses only --- not to office staff individually.} \\
+
+Office for Students with Disabilities and Access (OSDA)
+ & Kiely Hall 104/108 \newline
+   718-997-5870 \newline
+   \href{mailto:OSDA@qc.cuny.edu}{OSDA@qc.cuny.edu} \\
+
+OSDA Testing Office
+ & Kiely Hall 220 \newline
+   718-997-3775 \newline
+   \href{mailto:osda.testing@qc.cuny.edu}{osda.testing@qc.cuny.edu} \\
+
+Academic Integrity / Judicial Affairs
+ & Emanuel Avila, Coordinator of Judicial Affairs \newline
+   718-997-3971 \newline
+   \href{mailto:emanuel.avila@qc.cuny.edu}{emanuel.avila@qc.cuny.edu} \ or \
+   \href{mailto:studentconduct@qc.cuny.edu}{studentconduct@qc.cuny.edu} \\
+
+Counseling Services
+ & Frese Hall, 1st floor \newline
+   718-997-5420 \newline
+   \href{mailto:CounselingServices@qc.cuny.edu}{CounselingServices@qc.cuny.edu} \newline
+   \url{https://www.qc.cuny.edu/cs/} \newline
+   \textbf{24/7 crisis counselor: text ``CUNY'' to 741741} \\
+
+Immigrant Student Support Services
+ & 718-997-3990 \newline
+   \href{mailto:ImmigrantSupport@qc.cuny.edu}{ImmigrantSupport@qc.cuny.edu} \newline
+   \url{https://www.qc.cuny.edu/immi/} \\
+
+Technology Services (ITS)
+ & I-Building 200 \newline
+   718-997-4444 \newline
+   \href{mailto:support@qc.cuny.edu}{support@qc.cuny.edu} \newline
+   Support tickets: \url{https://support.qc.cuny.edu/support/home} \\
+
+Security Office
+ & Main Gate \newline
+   718-997-5911 / 718-997-5912 \\
+
+Audio Visual (media equipment)
+ & 718-997-5960 \\
+
+Human Resources
+ & Kiely Hall 163 \newline
+   718-997-4455 \newline
+   \href{mailto:Ohr.Employeeservices@qc.cuny.edu}{Ohr.Employeeservices@qc.cuny.edu} \\
+
+Payroll Office
+ & Kiely Hall 151 \newline
+   718-997-5765 \newline
+   \href{mailto:Ohr.Payroll@qc.cuny.edu}{Ohr.Payroll@qc.cuny.edu} \\
+
+Provost --- course processes and policies
+ & \url{https://www.qc.cuny.edu/provost/course-processes/} \\
+
+CUNY academic calendar
+ & \url{https://www.cuny.edu/academics/academic-calendars} \\
+
+\end{longtable}
+
+%==============================================================================
+\section{Meeting schedule}
+%==============================================================================
+
+Twenty-eight regular lecture meetings, September 1 through December 10. Two
+scheduled meetings are lost to the College calendar. \textbf{This schedule is
+subject to change}; changes are announced on Discord.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{} c l c @{\hspace{2em}} c l c @{}}
+\toprule
+\textbf{\#} & \textbf{Date} & \textbf{Day} &
+\textbf{\#} & \textbf{Date} & \textbf{Day} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1  & Sep 1  & Tue & 15 & Oct 22 & Thu \\
+2  & Sep 3  & Thu & 16 & Oct 27 & Tue \\
+3  & Sep 8  & Tue & 17 & Oct 29 & Thu \\
+4  & Sep 10 & Thu & 18 & Nov 3  & Tue \\
+5  & Sep 15 & Tue & 19 & Nov 5  & Thu \\
+6  & Sep 17 & Thu & 20 & Nov 10 & Tue \\
+7  & Sep 22 & Tue & 21 & Nov 12 & Thu \\
+8  & Sep 24 & Thu & 22 & Nov 17 & Tue \\
+9  & Sep 29 & Tue & 23 & Nov 19 & Thu \\
+10 & Oct 1  & Thu & 24 & Nov 24 & Tue \\
+11 & Oct 6  & Tue & -- & \emph{Nov 26} & \emph{Thu} \\
+12 & Oct 8  & Thu & 25 & Dec 1  & Tue \\
+-- & \emph{Oct 13} & \emph{Tue} & 26 & Dec 3  & Thu \\
+13 & Oct 15 & Thu & 27 & Dec 8  & Tue \\
+14 & Oct 20 & Tue & 28 & Dec 10 & Thu \\
+\end{longtable}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Date} & \textbf{What happens} \\
+\midrule
+Sep 1--17 (meetings 1--6) & VOE attendance window (\S6) \\
+Sep 28 -- Oct 1           & Campus fire drill, exact day to be announced (\S9.12) \\
+\midtermone               & Midterm 1 \emph{(tentative --- confirmed two weeks ahead)} \\
+Tue, Oct 13               & \textbf{No class} --- College follows a Monday schedule \\
+\midtermtwo               & Midterm 2 \emph{(tentative --- confirmed two weeks ahead)} \\
+Thu, Nov 26               & \textbf{No class} --- College closed, Thanksgiving \\
+Thu, Dec 10               & Last regular lecture \\
+Dec 15--21                & Final examination period \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{1.2em}
+{\color{rule}\hrule height 1.2pt}
+\vspace{0.6em}
+
+\begin{center}
+\footnotesize\itshape
+This syllabus is subject to change. Any change will be announced in class and on
+the course Discord, and the current version is always the one in the course
+GitHub repository.\\[0.3em]
+MATH 231 Section 10 \textbullet\ Fall 2026 \textbullet\ Kevin Bedoya
+\end{center}
+
+\end{document}
