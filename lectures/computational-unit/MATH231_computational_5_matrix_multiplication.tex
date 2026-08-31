@@ -1,0 +1,393 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  COMPUTATIONAL UNIT, PART 5 -- Matrix Multiplication as an Algorithm
+%
+%  Section numbering runs CONTINUOUSLY across the parts of the computational
+%  unit:
+%
+%      Part 1  MATH231_computational_1_operation_counting        Sections 1-4
+%      Part 2  MATH231_computational_2_k_nearest_neighbours      Sections 5-10
+%      Part 3  MATH231_computational_3_k_means_clustering        Sections 11-15
+%      Part 4  MATH231_computational_4_gram_schmidt              Sections 16-20
+%      Part 5  MATH231_computational_5_matrix_multiplication     Sections 21-23
+%
+%  Hence \setcounter{section}{20}: this part opens at Section 21.
+%
+%  STATUS: complete.  Sections 21-23.  A SHORT part by design -- a mini lesson,
+%  not a full treatment.  The mathematics of the product belongs to the matrix
+%  unit (Sec. 8), which defines the rule and proves its laws; this part only
+%  asks what the rule COSTS.  Resist re-deriving the definition here.
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%
+%  THE COUNT.  c_ij needs p multiplications and p-1 additions = 2p-1 flops, and
+%  there are mn entries, giving mn(2p-1) ~ 2mnp.  The square case is 2n^3, the
+%  SAME leading term as Gram-Schmidt in Part 4 -- Sec. 23.3 points this out,
+%  because two different algorithms landing on 2n^3 for two different structural
+%  reasons is worth a student noticing.
+%
+%  Sec. 23.4 mentions that O(n^3) is not known to be optimal.  Keep it to a
+%  Looking-ahead: naming Strassen is enough, and the exponent race is a rabbit
+%  hole that would swamp a three-section part.
+%
+%  Compile with pdflatex (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From the matrix unit.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\T}{^{\mathsf{T}}}
+
+%--------------------------------------------------------------- pseudocode --
+\newcommand{\kw}[1]{\textsf{\bfseries #1}}
+\newcommand{\ind}{\hspace*{1.3em}}
+\newcommand{\indd}{\hspace*{2.6em}}
+\newcommand{\inddd}{\hspace*{3.9em}}
+\newcounter{algoline}
+\newenvironment{algo}[2]{%
+  \par\medskip\needspace{8\baselineskip}%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \hrule height 0.9pt \vspace{3pt}%
+  \noindent{\sffamily\bfseries #1}\par\vspace{2pt}%
+  \noindent{\small #2}\par\vspace{3pt}%
+  \hrule height 0.4pt \vspace{5pt}%
+  \begin{list}{\textbf{\arabic{algoline}:}}%
+    {\usecounter{algoline}\setlength{\leftmargin}{2.3em}%
+     \setlength{\labelwidth}{1.8em}\setlength{\labelsep}{0.5em}%
+     \setlength{\itemsep}{2pt}\setlength{\topsep}{0pt}%
+     \setlength{\parsep}{0pt}}%
+}{%
+  \end{list}\vspace{5pt}\hrule height 0.9pt%
+  \end{minipage}\end{center}\medskip%
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Computational Unit, Part 5 \textbullet\
+        Matrix Multiplication as an Algorithm}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{20}  % this part opens at Section 21; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} A short part. The matrix unit defined the
+matrix product and established its laws; none of that is repeated here. The
+question here is narrower and purely computational: taken as an
+\emph{algorithm}, what does that definition actually instruct a machine to do,
+and how much work is it?
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Part} & \textbf{Sections} & \textbf{Subject} \\
+\midrule
+1 & \S1--\S4    & operation counting, Big-O, floating point, error \\
+2 & \S5--\S10   & $k$-nearest neighbours \\
+3 & \S11--\S15  & $k$-means clustering \\
+4 & \S16--\S20  & the Gram--Schmidt process \\
+5 & \S21--\S23  & matrix multiplication as an algorithm \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent\textbf{Assumed.} From the matrix unit: what a matrix is and the
+index convention $a_{ij}$ (\S3.1); the definition of the matrix product and its
+dimension requirement (\S8.1--\S8.2). From this unit: operation counting and
+FLOPs (\S1, \S4.6) and Big-O (\S2.7).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} State the condition
+two matrices must satisfy before their product exists and give the shape of the
+result; write the pseudocode for the product and say what each of its three
+loops is responsible for; and count its operations and give its complexity.
+
+%==============================================================================
+\section{The operation, reviewed}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{What is being computed}
+%------------------------------------------------------------------------------
+\lookback For $\mt{A}\in\R^{m\times p}$ and $\mt{B}\in\R^{p\times n}$, the
+product $\mt{C}=\mt{A}\mt{B}$ is the $m\times n$ matrix with
+\begin{equation}\label{eq:mm}
+  c_{ij} \;=\; \sum_{k=1}^{p} a_{ik}\,b_{kj}
+\end{equation}
+(\S8.1 of the matrix unit). Entry $c_{ij}$ is the dot product of row $i$ of
+$\mt{A}$ with column $j$ of $\mt{B}$.
+
+Read \eqref{eq:mm} as an instruction rather than a description and it says: to
+fill in one entry of the answer, walk along a row of $\mt{A}$ and down a column
+of $\mt{B}$ in step, multiplying each pair and accumulating. Do that once for
+every position in the output grid.
+
+That is already the algorithm. Everything below is bookkeeping around it.
+
+%------------------------------------------------------------------------------
+\subsection{What must be true first}
+%------------------------------------------------------------------------------
+Before any arithmetic happens, the shapes must be checked.
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+\textbf{Precondition.} $\mt{A}\mt{B}$ exists only if the number of
+\textbf{columns of $\mt{A}$} equals the number of \textbf{rows of $\mt{B}$}.
+\[
+  (m\times \underbrace{p)\ (p}_{\text{must agree}}\times n)
+  \;\longrightarrow\; m\times n
+\]
+\end{minipage}}
+\end{center}
+
+\noindent The reason is visible in \eqref{eq:mm}: the sum pairs $a_{ik}$ with
+$b_{kj}$ for $k=1,\dots,p$, so the row of $\mt{A}$ and the column of $\mt{B}$
+must have the same number of entries or some term has no partner. The shared
+value $p$ is what the sum runs over.
+
+An implementation that skips this check does not get a wrong answer --- it reads
+memory that does not belong to it, and the failure is arbitrary. Verifying the
+shapes is the first line of the procedure for that reason, not out of
+tidiness.
+
+\begin{ex}
+\[
+  \begin{array}{lll}
+    (4\times3)(3\times5) & \to\ 4\times5   & \text{defined}\\
+    (3\times5)(4\times3) & \to\ \text{---} & \text{undefined: } 5\neq4\\
+    (2\times2)(2\times2) & \to\ 2\times2   & \text{defined}\\
+    (1\times n)(n\times1) & \to\ 1\times1  & \text{defined --- one dot product}
+  \end{array}
+\]
+The second line is the first with the operands swapped, and it does not exist.
+Order is part of the problem statement.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The size of the job}
+%------------------------------------------------------------------------------
+Three numbers describe the whole computation, and it is worth separating what
+each one controls:
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c l@{}}
+\toprule
+\textbf{Quantity} & \textbf{What it governs} \\
+\midrule
+$m$ & the number of rows in the answer \\
+$n$ & the number of columns in the answer \\
+$p$ & the length of each dot product --- the work \emph{inside} one entry \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent So $mn$ counts \emph{how many} entries must be produced, and $p$
+counts \emph{how expensive each one is}. Note that $p$ does not appear in the
+output at all: it is summed away, and two matrices with a huge shared dimension
+can produce a tiny answer. A $(2\times10^{6})(10^{6}\times2)$ product returns a
+$2\times2$ matrix after a great deal of work.
+
+%==============================================================================
+\section{The algorithm}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Pseudocode}
+%------------------------------------------------------------------------------
+\begin{algo}{Matrix multiplication}{%
+  \textbf{Input:} $\mt{A}\in\R^{m\times p}$, $\mt{B}\in\R^{p\times n}$.\quad
+  \textbf{Output:} $\mt{C}=\mt{A}\mt{B}\in\R^{m\times n}$.}
+\item \kw{if} $\operatorname{cols}(\mt{A}) \neq \operatorname{rows}(\mt{B})$:
+        \kw{stop} --- the product is undefined
+\item \kw{for} $i = 1,\dots,m$:
+        \hfill\textit{\small pick a row of the answer}
+\item \ind \kw{for} $j = 1,\dots,n$:
+        \hfill\textit{\small pick a column of the answer}
+\item \indd $s \;\gets\; 0$
+        \hfill\textit{\small start the accumulator}
+\item \indd \kw{for} $k = 1,\dots,p$:
+        \hfill\textit{\small walk the row and the column together}
+\item \inddd $s \;\gets\; s + a_{ik}\,b_{kj}$
+\item \indd $c_{ij} \;\gets\; s$
+        \hfill\textit{\small one entry finished}
+\item \kw{return} $\mt{C}$
+\end{algo}
+
+%------------------------------------------------------------------------------
+\subsection{Reading the three loops}
+%------------------------------------------------------------------------------
+The structure is three nested loops, and each has a distinct job:
+
+\begin{itemize}[leftmargin=1.5em,itemsep=4pt]
+  \item The \textbf{outer two} ($i$ and $j$) do no arithmetic whatsoever. They
+        exist only to name a position in the output --- together they visit each
+        of the $mn$ entries of $\mt{C}$ exactly once.
+  \item The \textbf{inner one} ($k$) does all the work. For the position
+        currently selected, it evaluates the dot product in \eqref{eq:mm}.
+\end{itemize}
+
+\noindent So the algorithm is not really three loops deep in any conceptual
+sense. It is a double loop over the answer's entries, with a dot product
+performed at each stop. Line 6 is the only line that multiplies anything, and
+counting how many times it runs is the entire cost analysis of \S23.
+
+\begin{rmk}[The accumulator]
+Lines 4--7 are the standard shape of a summation in code: set a running total to
+zero, add one term at a time, store the result when the loop ends. The variable
+$s$ holds a partial sum that is meaningless until the loop finishes --- only
+after $k$ has run its full range does $s$ equal $c_{ij}$.
+\end{rmk}
+
+\begin{warn}[Order of the loops]
+The three loops may be nested in any order without changing the answer, because
+addition is commutative and every $c_{ij}$ accumulates the same $p$ terms
+regardless of the sequence they arrive in. It does \emph{not} follow that the
+orderings perform equally well on a real machine: they differ in the pattern by
+which they walk through memory, and that pattern can change the running time by
+a large factor. The operation count in \S23 is identical for all of them, which
+is a reminder that an operation count is not a running time.
+\end{warn}
+
+%==============================================================================
+\section{What it costs}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{One entry}
+%------------------------------------------------------------------------------
+Fix a position $(i,j)$ and count what lines 4--7 do. The inner loop runs $p$
+times, and each pass performs one multiplication and one addition. The very
+first addition is to zero and could be skipped, so:
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Operation} & \textbf{Count} \\
+\midrule
+multiplications $a_{ik}b_{kj}$ & $p$ \\
+additions into $s$             & $p-1$ \\
+\midrule
+\textbf{per entry}             & $2p-1$ FLOPs \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This is the dot-product count from \S20.1, unchanged --- one entry of
+a matrix product is one dot product of length $p$.
+
+%------------------------------------------------------------------------------
+\subsection{The total}
+%------------------------------------------------------------------------------
+There are $mn$ entries and each costs $2p-1$, and no entry's work is shared with
+any other's. So
+\[
+  \text{total}
+  \;=\; mn\,(2p-1)
+  \;=\; 2mnp - mn
+  \;\approx\; 2mnp \text{ FLOPs} .
+\]
+
+\begin{thm}[Cost of matrix multiplication]
+Multiplying $\mt{A}\in\R^{m\times p}$ by $\mt{B}\in\R^{p\times n}$ by the
+algorithm of \S22.1 takes $\approx 2mnp$ FLOPs, so it runs in $O(mnp)$ time.
+\end{thm}
+
+\noindent Every one of the three dimensions appears exactly once, and each for a
+reason already identified in \S21.3: $m$ and $n$ because that many entries must
+be filled, $p$ because that is the length of each dot product.
+
+%------------------------------------------------------------------------------
+\subsection{The square case}
+%------------------------------------------------------------------------------
+When all three dimensions are equal --- two $n\times n$ matrices, the case that
+comes up most --- set $m=n=p$:
+\[
+  2mnp \;=\; 2n^{3},
+  \qquad\text{so the cost is } O(n^{3}) .
+\]
+The cubic is easy to see directly from the pseudocode: three nested loops, each
+running $n$ times, with constant work at the innermost level.
+
+\begin{rmk}
+Doubling $n$ multiplies the work by roughly eight. Two $1000\times1000$
+matrices --- a million entries each, which is not a large problem --- already
+require about $2\times10^{9}$ floating-point operations.
+\end{rmk}
+
+\begin{rmk}[The same $2n^{3}$ as Gram--Schmidt]
+Part 4 found that orthonormalising $n$ vectors in $\R^{n}$ also costs about
+$2n^{3}$ FLOPs. The agreement is not a coincidence in any deep sense, but it is
+not an accident either: both algorithms spend their time computing dot products
+of length $n$, and both perform on the order of $n^{2}$ of them. The structures
+differ --- matrix multiplication does exactly $n^{2}$ dot products, while
+Gram--Schmidt does about $n^{2}/2$ and pays for the rest in subtractions --- yet
+they land on the same leading term. Where an algorithm's cost comes from is
+often more informative than the count itself.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Is cubic the best possible?}
+%------------------------------------------------------------------------------
+A natural assumption is that $n^{3}$ is forced --- the answer has $n^{2}$
+entries and each looks like it needs $n$ operations, so what could be saved?
+
+It is not forced.
+
+\lookahead There are algorithms that multiply $n\times n$ matrices in
+asymptotically fewer than $n^{3}$ operations. The first, due to Strassen, does
+it in about $n^{2.81}$ by computing a $2\times2$ product with seven
+multiplications instead of the obvious eight and applying that trick
+recursively. Later methods have pushed the exponent lower still, though the
+practical ones remain close to Strassen. The exponent that is actually optimal
+is not known --- it cannot be below $2$, since the output alone has $n^{2}$
+entries that must each be written, and closing the gap between $2$ and the best
+known value is a genuine open problem.
+
+For this course, $O(n^{3})$ is the operative figure: it is what the
+straightforward algorithm costs, it is what the standard library routines
+effectively deliver at the sizes we will meet, and it is the number to reach for
+when estimating whether a computation is affordable.
+
+\end{document}
