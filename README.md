@@ -23,8 +23,14 @@ practice. **Python** is the only programming language used in this course.
 | **Location** | Kiely Hall, Room 326 |
 | **Credits / units** | 4 credits |
 | **Instruction mode** | In-person |
+| **Office hours** | Thursday, 3:00 – 4:00 PM |
+| **Office location** | Kiely Hall, Room 508 — the Math lounge, in Kiely Tower |
 | **Requirement designation** | Required Core — Mathematical & Quantitative Reasoning |
 | **Enrollment requirement** | PRE: MATH 141 or 151, minimum grade C− |
+
+The Math lounge is a good place to work — plenty of chalkboards and other people
+doing mathematics. **Please email ahead** if you plan to come to office hours, so
+I know to expect you.
 
 ## Grading
 
