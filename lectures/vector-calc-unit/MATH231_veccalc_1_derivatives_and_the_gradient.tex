@@ -1,0 +1,808 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  VECTOR CALCULUS UNIT, PART 1 -- Derivatives, Partial Derivatives,
+%                                  and the Gradient
+%
+%  A NEW UNIT.  Section numbering restarts at 1 here.  It does NOT continue from
+%  the vector unit (Sec. 1-24), the computational unit (Sec. 1-23), or the
+%  matrix unit (Sec. 1-9).  Every cross-reference OUT of this unit must name the
+%  unit, since a bare "Sec. 5" is now ambiguous four ways.  The front matter
+%  states that for students.
+%
+%  STATUS: complete.  Sections 1-7.  The unit continues; Sec. 7.4 is the hinge.
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%
+%  WHY THE CALCULUS REVIEW IS HERE AT ALL.  Everything through Sec. 4 is
+%  MATH 141 material.  It is restated rather than assumed because Sec. 6 defines
+%  the partial derivative as a one-variable derivative taken along a coordinate
+%  direction -- so the one-variable definition has to be fresh and in the same
+%  notation, not merely "seen last year".  Sec. 1.1 and Sec. 6.1 are deliberately
+%  the same limit with one substitution between them.
+%
+%  RULES ADDED BEYOND THE DRAFTED LIST (easy to cut if unwanted; all live in
+%  their own table rows in Sec. 2, none is used later in the document):
+%      - general exponential  d/dx a^x = a^x ln a
+%      - general logarithm    d/dx log_a x = 1/(x ln a)
+%      - inverse trig         arcsin, arccos, arctan
+%  Everything else in Sec. 2 was on the list.
+%
+%  ON THE SECOND EXPONENTIAL DERIVATION (Sec. 4.3).  The limit identity
+%  lim_{h->0} (e^h - 1)/h = 1 IS the statement that exp'(0) = 1, so that
+%  derivation does not prove the result from nothing -- it shows the derivative
+%  everywhere follows from its value at a single point.  Sec. 4.3 says so
+%  outright rather than presenting it as an independent proof; the implicit
+%  differentiation of Sec. 4.2 is the one that genuinely stands on Sec. 4.1.
+%
+%  TIE-INS TO THE VECTOR UNIT that should survive editing: the norm and the dot
+%  product reappear in Sec. 5.2 as examples of R^n -> R, and e_j in Sec. 6.1 is
+%  the standard basis vector of vector unit Sec. 16.  Sec. 7.1 makes the gradient
+%  arrive by the vector unit's own move -- package n related numbers as one
+%  object -- rather than by decree.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses tikz).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From the vector unit.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,\, #2\rangle}
+\newcommand{\grad}{\nabla}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\dd}[2]{\frac{d #1}{d #2}}
+
+%------------------------------------------------------------- tikz helpers --
+\tikzset{
+  axisline/.style = {->, gray!75, thin},
+  curveln/.style  = {RoyalBlue, very thick},
+  vecarr/.style   = {-{Stealth[length=2.6mm,width=2.0mm]}, very thick}
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Vector Calculus Unit, Part 1 \textbullet\
+        Derivatives, Partial Derivatives, and the Gradient}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This opens a unit on calculus in several
+variables. It begins with a review of one-variable differentiation --- material
+from MATH~141 --- not as a courtesy, but because the central definition of
+\S6 turns out to be the one-variable definition with a single substitution made
+inside it. Having that definition fresh, and in the same notation, is what makes
+the new one read as a small change rather than a new idea.
+
+\begin{warn}[Section numbers restart]
+This unit numbers its sections from $1$ again. They do \emph{not} continue from
+the vector unit ($\S1$--$\S24$), the computational unit, or the matrix unit, all
+of which also start at $1$. A bare ``\S5'' below means \S5 \emph{of this unit};
+whenever we point at another we will name it.
+\end{warn}
+
+\medskip
+\noindent\textbf{Assumed.} From MATH~141: limits, and differentiation of
+one-variable functions. From the vector unit: $\R^{n}$ and its vectors (\S24.1);
+function notation $f:A\to B$ (\S6); the standard basis vectors
+$\vc{e}_1,\dots,\vc{e}_n$ (\S16, \S24.1); the dot product (\S11.3); and the
+Euclidean norm (\S11.9).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} State the definition
+of the derivative and use the standard rules; state the algebraic properties of
+$e^{x}$ and $\ln x$ and explain why the two lists mirror each other; derive
+$\tfrac{d}{dx}\ln x$ from the definition and $\tfrac{d}{dx}e^{x}$ two ways; read
+the signature $f:\R^{n}\to\R$ and give examples; define the partial derivative
+as a limit and compute one; say what kind of object a partial derivative is; and
+assemble the partials of a function into its gradient.
+
+%==============================================================================
+\section{The derivative, in one variable}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Derivative]
+Let $f:\R\to\R$. The \textbf{derivative} of $f$ at $x$ is
+\begin{equation}\label{eq:deriv}
+  f'(x) \;=\; \lim_{h\to0}\frac{f(x+h)-f(x)}{h},
+\end{equation}
+provided the limit exists. When it does, $f$ is called \textbf{differentiable}
+at $x$.
+\end{defn}
+
+\noindent The quotient inside the limit is the slope of the line through the two
+points $(x,f(x))$ and $(x+h,f(x+h))$ --- a \emph{secant} line. As $h$ shrinks,
+the second point slides toward the first and the secant pivots. The derivative
+is the slope it settles on: the slope of the tangent line at $x$, and the
+instantaneous rate at which $f$ changes there.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.25]
+  \draw[axisline] (-0.2,0) -- (4.1,0) node[right,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,-0.2) -- (0,3.1) node[above,font=\scriptsize,black]{$y$};
+  \draw[curveln,domain=0.25:3.5,smooth,samples=80]
+        plot (\x,{0.28*\x*\x + 0.4});
+  % points
+  \coordinate (P) at (1.2,0.8032);
+  \coordinate (Q) at (2.8,2.5952);
+  % secant, extended
+  \draw[BrickRed,thick] ($(P)!-0.35!(Q)$) -- ($(P)!1.25!(Q)$);
+  % tangent at P, slope 0.672
+  \draw[ForestGreen!70!black,thick,densely dashed]
+        (0.35,{0.8032-0.672*0.85}) -- (2.35,{0.8032+0.672*1.15});
+  \fill[black] (P) circle (1.5pt);
+  \fill[black] (Q) circle (1.5pt);
+  % guides
+  \draw[gray!55,densely dotted] (1.2,0) -- (P);
+  \draw[gray!55,densely dotted] (2.8,0) -- (Q);
+  \draw[gray!55,densely dotted] (P) -- (2.8,0.8032);
+  \draw[gray!55,densely dotted] (2.8,0.8032) -- (Q);
+  \node[below,font=\scriptsize] at (1.2,-0.04) {$x$};
+  \node[below,font=\scriptsize] at (2.8,-0.04) {$x+h$};
+  \node[below,font=\scriptsize,gray] at (2.0,0.74) {$h$};
+  \node[right,font=\scriptsize,gray] at (2.82,1.70) {$f(x{+}h)-f(x)$};
+  \node[font=\scriptsize,BrickRed] at (3.75,2.72) {secant};
+  \node[font=\scriptsize,ForestGreen!60!black] at (0.62,1.55) {tangent};
+\end{tikzpicture}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{Notation}
+%------------------------------------------------------------------------------
+The same object is written several ways, and all of them appear in practice:
+\[
+  f'(x),
+  \qquad
+  \dd{f}{x},
+  \qquad
+  \dd{y}{x},
+  \qquad
+  \frac{d}{dx}f(x) .
+\]
+The last form is useful because $\tfrac{d}{dx}$ reads as an \emph{instruction}
+--- ``differentiate what follows with respect to $x$'' --- which is how it is
+used in \S4.2.
+
+%==============================================================================
+\section{The rules}
+%==============================================================================
+Computing every derivative from \eqref{eq:deriv} would be unbearable, so the
+limit is evaluated once for each basic function and once for each way of
+combining functions. What follows is the resulting catalogue. Throughout, $c$ is
+a constant and $f,g$ are differentiable.
+
+%------------------------------------------------------------------------------
+\subsection{Structural rules}
+%------------------------------------------------------------------------------
+These say how differentiation interacts with the ways functions are built out of
+other functions.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.75}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Rule} & \textbf{Statement} & \textbf{Notes} \\
+\midrule
+Constant & $\dfrac{d}{dx}\,c = 0$
+  & a flat graph has slope $0$ \\
+Constant multiple & $\dfrac{d}{dx}\,\bigl[c\,f(x)\bigr] = c\,f'(x)$
+  & scalars pass through \\
+Sum / difference & $\dfrac{d}{dx}\,\bigl[f(x)\pm g(x)\bigr]=f'(x)\pm g'(x)$
+  & term by term \\
+Power & $\dfrac{d}{dx}\,x^{n} = n\,x^{\,n-1}$
+  & any real $n$ \\
+Product & $\dfrac{d}{dx}\,\bigl[f(x)g(x)\bigr]=f'(x)g(x)+f(x)g'(x)$
+  & \emph{not} $f'g'$ \\
+Quotient & $\dfrac{d}{dx}\dfrac{f(x)}{g(x)}
+            =\dfrac{f'(x)g(x)-f(x)g'(x)}{\bigl[g(x)\bigr]^{2}}$
+  & order of the numerator matters \\
+Chain & $\dfrac{d}{dx}\,f\bigl(g(x)\bigr)=f'\bigl(g(x)\bigr)\,g'(x)$
+  & outer at inner, times inner \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The first three together say that differentiation is
+\emph{linear}: it distributes across sums and lets constants through. That word
+is worth registering --- it is the same property, in the same sense, that the
+vector unit attached to other operations, and it will return when the gradient
+appears.
+
+%------------------------------------------------------------------------------
+\subsection{Trigonometric functions}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}l l @{\qquad\qquad} l l@{}}
+\toprule
+\textbf{Function} & \textbf{Derivative} &
+\textbf{Function} & \textbf{Derivative} \\
+\midrule
+$\sin x$ & $\cos x$              & $\csc x$ & $-\csc x\cot x$ \\
+$\cos x$ & $-\sin x$             & $\sec x$ & $\sec x\tan x$ \\
+$\tan x$ & $\sec^{2}x$           & $\cot x$ & $-\csc^{2}x$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent A pattern worth using as a memory aid: every co-function ---
+$\cos$, $\csc$, $\cot$ --- picks up a minus sign.
+
+%------------------------------------------------------------------------------
+\subsection{Exponential and logarithmic functions}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Function} & \textbf{Derivative} & \textbf{Notes} \\
+\midrule
+$e^{x}$      & $e^{x}$                      & derived in \S4.2--\S4.3 \\
+$a^{x}$      & $a^{x}\ln a$                 & $a>0$; reduces to the above when $a=e$ \\
+$\ln x$      & $\dfrac{1}{x}$               & $x>0$; derived in \S4.1 \\
+$\log_a x$   & $\dfrac{1}{x\ln a}$          & $x>0$, $a>0$, $a\neq1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent $e^{x}$ is the only function that is its own derivative, which is the
+property that makes it the natural base to work in. \S4 derives both of these
+rather than quoting them.
+
+%------------------------------------------------------------------------------
+\subsection{Inverse trigonometric functions}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.9}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Function} & \textbf{Derivative} & \textbf{Valid for} \\
+\midrule
+$\arcsin x$ & $\dfrac{1}{\sqrt{1-x^{2}}}$   & $|x|<1$ \\
+$\arccos x$ & $-\dfrac{1}{\sqrt{1-x^{2}}}$  & $|x|<1$ \\
+$\arctan x$ & $\dfrac{1}{1+x^{2}}$          & all $x$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\section{The exponential and the logarithm}
+%==============================================================================
+Before differentiating these two, their algebra is worth setting out --- partly
+because \S4.1 uses it, and partly because the two lists are the same list read
+in a mirror.
+
+%------------------------------------------------------------------------------
+\subsection{The exponential function}
+%------------------------------------------------------------------------------
+The function $\exp(x)=e^{x}$ has domain $\R$ and range $(0,\infty)$: it is
+\emph{never} zero or negative, no matter what is fed to it. It is strictly
+increasing.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Property} & \textbf{In words} \\
+\midrule
+\textbf{E1} & $e^{0}=1$                       & the exponential of nothing is one \\
+\textbf{E2} & $e^{a+b}=e^{a}\,e^{b}$          & sums become products \\
+\textbf{E3} & $e^{a-b}=\dfrac{e^{a}}{e^{b}}$  & differences become quotients \\
+\textbf{E4} & $\bigl(e^{a}\bigr)^{b}=e^{ab}$  & powers multiply the exponents \\
+\textbf{E5} & $e^{-a}=\dfrac{1}{e^{a}}$       & negation inverts \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent E2 is the essential one; E3 and E5 are consequences of it.
+
+%------------------------------------------------------------------------------
+\subsection{The natural logarithm}
+%------------------------------------------------------------------------------
+The function $\ln x$ has domain $(0,\infty)$ and range $\R$ --- exactly the
+exponential's domain and range, exchanged. That is the first sign that the two
+are inverses.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Property} & \textbf{In words} \\
+\midrule
+\textbf{L1} & $\ln 1 = 0$                            & mirrors E1 \\
+\textbf{L2} & $\ln(ab)=\ln a+\ln b$                  & products become sums \\
+\textbf{L3} & $\ln\dfrac{a}{b}=\ln a-\ln b$          & quotients become differences \\
+\textbf{L4} & $\ln\bigl(a^{r}\bigr)=r\ln a$          & exponents come down in front \\
+\textbf{L5} & $\ln e = 1$                            & the base is its own unit \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{They are inverses}
+%------------------------------------------------------------------------------
+The two functions undo each other:
+\begin{equation}\label{eq:inverse}
+  \ln\bigl(e^{x}\bigr)=x \quad\text{for all } x\in\R,
+  \qquad
+  e^{\ln x}=x \quad\text{for all } x>0 .
+\end{equation}
+
+\noindent This is what explains the parallel between the two tables. Read E1
+through E4 backwards and they become L1 through L4: E2 says $e$ turns addition
+into multiplication, so its inverse must turn multiplication back into addition,
+which is L2. The logarithm laws are not a second set of facts to memorise --- they
+are the exponential laws seen from the other side.
+
+\begin{warn}[$\ln$ of a sum]
+L2 converts the log of a \emph{product} into a sum. There is no corresponding
+rule for the log of a sum: $\ln(a+b)$ does not simplify, and in particular it is
+not $\ln a+\ln b$. Check it once with $a=b=1$: $\ln 2\approx0.693$, while
+$\ln1+\ln1=0$.
+\end{warn}
+
+%==============================================================================
+\section{Deriving the two derivatives}
+%==============================================================================
+The rules in \S2.3 were stated without justification. Here they are earned. The
+order matters: the logarithm is done first, from the definition alone, and the
+exponential then follows from it.
+
+%------------------------------------------------------------------------------
+\subsection{The natural logarithm, from the definition}
+%------------------------------------------------------------------------------
+Let $f(x)=\ln x$ with $x>0$. Apply \eqref{eq:deriv} directly:
+\[
+  f'(x)
+  \;=\;\lim_{h\to0}\frac{f(x+h)-f(x)}{h}
+  \;=\;\lim_{h\to0}\frac{\ln(x+h)-\ln x}{h} .
+\]
+The numerator is a difference of logarithms, so L3 folds it into one:
+\[
+  \;=\;\lim_{h\to0}\frac{1}{h}\,\ln\!\left(\frac{x+h}{x}\right)
+  \;=\;\lim_{h\to0}\frac{1}{h}\,\ln\!\left(1+\frac{h}{x}\right) .
+\]
+Now use L4 in reverse --- a coefficient in front of a logarithm can be pushed up
+into the exponent --- moving the $1/h$ inside:
+\[
+  \;=\;\lim_{h\to0}\ln\!\left[\left(1+\frac{h}{x}\right)^{1/h}\right]
+  \;=\;\ln\!\left[\lim_{h\to0}\left(1+\frac{h}{x}\right)^{1/h}\right] .
+\]
+Moving the limit inside $\ln$ is legitimate because $\ln$ is continuous, and a
+continuous function may be evaluated at the limit of its input.
+
+The remaining limit is a standard one. Substituting $u=h/x$, so that $u\to0$ as
+$h\to0$ and $1/h=1/(ux)$,
+\[
+  \lim_{h\to0}\left(1+\frac{h}{x}\right)^{1/h}
+  =\lim_{u\to0}\Bigl[(1+u)^{1/u}\Bigr]^{1/x}
+  = e^{1/x},
+\]
+using $\lim_{u\to0}(1+u)^{1/u}=e$, which is one of the standard definitions of
+$e$. Therefore
+\[
+  f'(x)=\ln\bigl(e^{1/x}\bigr)=\frac{1}{x},
+\]
+the last step by \eqref{eq:inverse}. \qquad$\blacksquare$
+
+%------------------------------------------------------------------------------
+\subsection{The exponential, by implicit differentiation}
+%------------------------------------------------------------------------------
+With $\tfrac{d}{dx}\ln x=1/x$ in hand, the exponential costs three lines. Let
+\[
+  y=e^{x} .
+\]
+Take the logarithm of both sides, which by \eqref{eq:inverse} gives
+\[
+  \ln y = x .
+\]
+Differentiate both sides with respect to $x$. The right side gives $1$. The left
+side is a function of $y$, which is itself a function of $x$, so the chain rule
+applies:
+\[
+  \frac{d}{dx}\bigl[\ln y\bigr] = \frac{d}{dx}\bigl[x\bigr]
+  \qquad\Longrightarrow\qquad
+  \frac{1}{y}\,\dd{y}{x} = 1 .
+\]
+Solving for the derivative and substituting back,
+\[
+  \dd{y}{x} = y = e^{x} . \qquad\blacksquare
+\]
+
+\noindent This technique --- differentiating an equation in which $y$ is not
+isolated, then solving for $dy/dx$ --- is \textbf{implicit differentiation}. It
+works here because writing $\ln y=x$ converts a hard derivative into an easy
+one at the cost of an extra chain-rule factor.
+
+%------------------------------------------------------------------------------
+\subsection{The exponential, from the definition}
+%------------------------------------------------------------------------------
+The same result comes out of \eqref{eq:deriv}. Let $f(x)=e^{x}$:
+\[
+  f'(x)=\lim_{h\to0}\frac{e^{x+h}-e^{x}}{h} .
+\]
+By E2, $e^{x+h}=e^{x}e^{h}$, so $e^{x}$ is a common factor of the numerator:
+\[
+  =\lim_{h\to0}\frac{e^{x}e^{h}-e^{x}}{h}
+  =\lim_{h\to0}\frac{e^{x}\bigl(e^{h}-1\bigr)}{h}
+  = e^{x}\lim_{h\to0}\frac{e^{h}-1}{h} .
+\]
+The factor $e^{x}$ does not involve $h$, so it passes outside the limit. What
+remains is the standard identity
+\begin{equation}\label{eq:explimit}
+  \lim_{h\to0}\frac{e^{h}-1}{h} = 1,
+\end{equation}
+which gives $f'(x)=e^{x}$. \qquad$\blacksquare$
+
+\begin{rmk}
+It is worth being clear about what this second derivation does and does not
+establish. Setting $x=0$ in \eqref{eq:deriv} for $f(x)=e^{x}$ turns it into
+exactly \eqref{eq:explimit} --- so the identity \emph{is} the statement that
+$f'(0)=1$. The argument therefore does not conjure the derivative from nothing;
+it shows that the derivative everywhere follows from its value at the single
+point $x=0$. That is a real statement, and a strong one: the exponential is
+pinned down completely by its slope at the origin. The derivation in \S4.2 is
+the one that stands independently, resting on \S4.1.
+\end{rmk}
+
+%==============================================================================
+\section{Functions of several variables}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The signature}
+%------------------------------------------------------------------------------
+Everything so far has concerned $f:\R\to\R$ --- one number in, one number out.
+Almost nothing worth computing has that shape.
+
+\lookback The notation $f:A\to B$ was fixed in \S6 of the vector unit: the set
+before the arrow is what the function consumes, the set after it is what the
+function produces. That notation now does real work.
+
+\begin{defn}[Scalar function of several variables]
+A \textbf{scalar function of $n$ variables} is a function
+\[
+  f:\R^{n}\longrightarrow\R ,
+\]
+taking a vector $\vc{x}=[\,x_1,x_2,\dots,x_n\,]\in\R^{n}$ and returning a single
+real number $f(\vc{x})$.
+\end{defn}
+
+\noindent The input is a \emph{vector}; the output is a \emph{scalar}. That
+asymmetry is the whole subject of this section. Such functions are also called
+\textbf{scalar fields}: they assign one number to every point of a space.
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}
+Each of the following is a function $\R^{n}\to\R$.
+
+\smallskip
+\noindent\textbf{(a)} $f(x,y)=x^{2}+y^{2}$, with $n=2$. It returns the squared
+distance from the origin. $f(3,4)=25$.
+
+\smallskip
+\noindent\textbf{(b)} $f(x,y)=xy$, with $n=2$. The area of a rectangle with the
+given side lengths. $f(3,4)=12$.
+
+\smallskip
+\noindent\textbf{(c)} $f(x,y,z)=x^{2}+y^{2}+z^{2}$, with $n=3$. Three inputs,
+still one output.
+
+\smallskip
+\noindent\textbf{(d)} $f(\vc{x})=\norm{\vc{x}}=\sqrt{x_1^{2}+\cdots+x_n^{2}}$,
+for any $n$. \emph{The Euclidean norm is a function $\R^{n}\to\R$} --- it eats a
+vector and returns its length, a single number. You have been using an example
+of this kind of function since the vector unit's \S11.9.
+
+\smallskip
+\noindent\textbf{(e)} $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x_1+\cdots+a_nx_n$ for a
+fixed vector $\vc{a}$. The dot product against a fixed vector is likewise
+$\R^{n}\to\R$ (vector unit \S11.3).
+
+\smallskip
+\noindent\textbf{(f)} $f(x,y)=e^{-(x^{2}+y^{2})}$, a bump peaking at the origin
+and decaying in every direction.
+
+\smallskip
+\noindent\textbf{(g)} The temperature at each point of a room, or the elevation
+at each point on a map: both assign one number to each point of a
+two- or three-dimensional space.
+\end{ex}
+
+\begin{rmk}
+Examples (d) and (e) are worth a second look. Two of the most-used objects from
+the vector unit --- the norm and the dot product --- are exactly the kind of
+function this section is about. Nothing new was introduced; they were simply
+never described this way before.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{What ``the derivative'' should mean here}
+%------------------------------------------------------------------------------
+Now try to differentiate one of these, and the definition \eqref{eq:deriv}
+immediately fails to typecheck. It reads
+\[
+  \lim_{h\to0}\frac{f(x+h)-f(x)}{h} ,
+\]
+and if the input is a vector then ``$x+h$'' is a vector plus a number, which is
+undefined. Even if it were repaired, a deeper problem remains: for a
+one-variable function there are only two ways to leave the point $x$ --- left or
+right --- and the two are related by a sign. In $\R^{n}$ there are infinitely
+many directions to leave $\vc{x}$ in, and $f$ may change at a different rate
+along each one.
+
+Walking east from a point on a hillside might take you uphill; walking north from
+the same point might take you down. ``The rate of change of the elevation'' is
+not yet a well-posed question. It becomes one only after a direction is named.
+
+The next section names the simplest possible ones.
+
+%==============================================================================
+\section{Partial derivatives}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+The simplest directions to move in are the coordinate directions, and the vector
+unit already has names for them.
+
+\lookback $\vc{e}_j$ is the $j$-th standard basis vector of $\R^{n}$: a $1$ in
+slot $j$ and $0$ everywhere else (vector unit \S16, \S24.1). Adding $h\vc{e}_j$
+to $\vc{x}$ therefore changes the $j$-th coordinate by $h$ and leaves every
+other coordinate exactly where it was.
+
+\begin{defn}[Partial derivative]
+Let $f:\R^{n}\to\R$. The \textbf{partial derivative of $f$ with respect to
+$x_j$} at the point $\vc{x}$ is
+\begin{equation}\label{eq:partial}
+  \pd{f}{x_j}(\vc{x})
+  \;=\;\lim_{h\to0}\frac{f(\vc{x}+h\,\vc{e}_j)-f(\vc{x})}{h},
+\end{equation}
+provided the limit exists.
+\end{defn}
+
+\noindent Compare \eqref{eq:partial} with \eqref{eq:deriv}. They are the same
+limit. The only change is that the step $h$ has become the step $h\vc{e}_j$ ---
+a step of size $h$ taken \emph{in the $j$-th coordinate direction}. The curly
+$\partial$ replaces $d$ to record that there were other directions available and
+this one was chosen.
+
+Written out in coordinates for $n=2$, with $\vc{x}=(x,y)$:
+\[
+  \pd{f}{x}(x,y)=\lim_{h\to0}\frac{f(x+h,\;y)-f(x,y)}{h},
+  \qquad
+  \pd{f}{y}(x,y)=\lim_{h\to0}\frac{f(x,\;y+h)-f(x,y)}{h} .
+\]
+In the first, $y$ never changes; in the second, $x$ never changes.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-0.3,0) -- (4.7,0) node[right,font=\scriptsize,black]{$x_1$};
+  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$x_2$};
+  % level curves of a bump centred at x
+  \foreach \r in {0.45,0.78,1.10,1.40}
+    { \draw[gray!45] (2.1,1.6) circle (\r); }
+  \fill[black] (2.1,1.6) circle (1.6pt);
+  \node[below left,font=\scriptsize,inner sep=2pt] at (2.1,1.6) {$\vc{x}$};
+  % the two coordinate steps, drawn out past the outermost curve
+  \draw[vecarr,RoyalBlue] (2.1,1.6) -- (3.75,1.6)
+        node[right,font=\scriptsize,inner sep=2pt]{$h\vc{e}_1$};
+  \draw[vecarr,BrickRed]  (2.1,1.6) -- (2.1,3.25)
+        node[above,font=\scriptsize,inner sep=2pt]{$h\vc{e}_2$};
+  \node[font=\scriptsize,gray!70] at (2.1,-0.72) {level curves of $f$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Each arrow is one partial derivative: step off the point in a single
+coordinate direction, and measure the rate at which $f$ responds.
+
+%------------------------------------------------------------------------------
+\subsection{Computing them}
+%------------------------------------------------------------------------------
+In practice the limit is never evaluated. Since every variable except $x_j$ is
+held fixed, they behave as constants, and the expression becomes a function of
+the one live variable --- so the rules of \S2 apply unchanged.
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+To compute $\partial f/\partial x_j$: treat every variable other than $x_j$ as a
+constant, and differentiate as in one-variable calculus.
+\end{minipage}}
+\end{center}
+
+\begin{ex}
+Let $f(x,y)=x^{2}y+3y^{2}$.
+
+For $\partial f/\partial x$, treat $y$ as a constant. Then $x^{2}y$ is a
+constant times $x^{2}$, and $3y^{2}$ is a constant, whose derivative is zero:
+\[
+  \pd{f}{x}=2xy .
+\]
+For $\partial f/\partial y$, treat $x$ as a constant. Now $x^{2}y$ is a constant
+times $y$, and $3y^{2}$ is live:
+\[
+  \pd{f}{y}=x^{2}+6y .
+\]
+\end{ex}
+
+\begin{ex}
+Let $f(x,y)=e^{-(x^{2}+y^{2})}$, example (f) above. By the chain rule, holding
+$y$ fixed,
+\[
+  \pd{f}{x}=e^{-(x^{2}+y^{2})}\cdot(-2x)=-2x\,e^{-(x^{2}+y^{2})},
+  \qquad
+  \pd{f}{y}=-2y\,e^{-(x^{2}+y^{2})} .
+\]
+\end{ex}
+
+\begin{ex}
+Let $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x_1+\cdots+a_nx_n$, example (e) above.
+Only the $j$-th term involves $x_j$, and in it $x_j$ appears to the first power
+with coefficient $a_j$; every other term is a constant. So
+\[
+  \pd{f}{x_j}=a_j .
+\]
+The partial derivatives of a dot product against $\vc{a}$ are the components of
+$\vc{a}$ itself.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{What kind of object is a partial derivative?}
+%------------------------------------------------------------------------------
+This is worth stating carefully, because it is what the next section is built
+on.
+
+Fix $j$. At each point $\vc{x}\in\R^{n}$, the limit \eqref{eq:partial} produces
+a single number. So $\partial f/\partial x_j$ assigns one real number to each
+point of $\R^{n}$ --- which is to say it is itself a function
+\[
+  \pd{f}{x_j}:\R^{n}\longrightarrow\R ,
+\]
+of exactly the same type as $f$. Differentiating with respect to one variable
+does not reduce the number of variables; the results above are visibly still
+functions of both $x$ and $y$.
+
+And there are $n$ of them, one for each $j$ from $1$ to $n$.
+
+%==============================================================================
+\section{The gradient}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Collecting the partials}
+%------------------------------------------------------------------------------
+So a single function $f:\R^{n}\to\R$ does not have \emph{a} derivative. It has
+$n$ of them --- one per coordinate direction --- and each is a function
+$\R^{n}\to\R$ in its own right. Carrying $n$ separate functions around and
+naming them individually would be unmanageable for any interesting $n$, and it
+would obscure the fact that they belong together: they are $n$ answers to the
+same question, asked in $n$ directions.
+
+\lookback The vector unit's opening move was exactly this. Faced with $n$
+related numbers, do not track them separately --- package them into a single
+object of $\R^{n}$ and work with that. Position, velocity and force were treated
+that way; so were the coordinates of a vector against a basis.
+
+Apply that move here.
+
+\begin{defn}[Gradient]
+Let $f:\R^{n}\to\R$ have all $n$ partial derivatives at $\vc{x}$. The
+\textbf{gradient} of $f$ at $\vc{x}$ is the vector in $\R^{n}$ whose $j$-th
+component is the $j$-th partial derivative:
+\[
+  \grad f(\vc{x})
+  \;=\;
+  \left[\;
+    \pd{f}{x_1}(\vc{x}),\;
+    \pd{f}{x_2}(\vc{x}),\;
+    \dots,\;
+    \pd{f}{x_n}(\vc{x})
+  \;\right] .
+\]
+\end{defn}
+
+\noindent The symbol $\grad$ is read ``del'' or ``nabla''. Note the signature
+that results:
+\[
+  f:\R^{n}\to\R,
+  \qquad\text{but}\qquad
+  \grad f:\R^{n}\to\R^{n} .
+\]
+The gradient takes a point and returns a \emph{vector}. This is a genuine
+departure from the one-variable case, where $f'$ had the same signature as $f$.
+
+%------------------------------------------------------------------------------
+\subsection{Examples}
+%------------------------------------------------------------------------------
+\begin{ex}
+For $f(x,y)=x^{2}y+3y^{2}$, the partials were computed above, so
+\[
+  \grad f(x,y)=\bigl[\,2xy,\;\;x^{2}+6y\,\bigr] .
+\]
+At the point $(1,2)$ this evaluates to $\grad f(1,2)=[\,4,\,13\,]$ --- a vector
+in $\R^{2}$ attached to that particular point. At a different point it is a
+different vector.
+\end{ex}
+
+\begin{ex}
+For $f(x,y)=x^{2}+y^{2}$, $\ \grad f(x,y)=[\,2x,\,2y\,]=2[\,x,\,y\,]$. At every
+point the gradient points directly away from the origin.
+\end{ex}
+
+\begin{ex}
+For $f(\vc{x})=\ip{\vc{a}}{\vc{x}}$, the last example of \S6.2 gave
+$\partial f/\partial x_j=a_j$ for every $j$. Assembling them,
+\[
+  \grad f(\vc{x}) = [\,a_1,a_2,\dots,a_n\,] = \vc{a} .
+\]
+The gradient is $\vc{a}$ itself, the same at every point --- the multivariable
+counterpart of the fact that a line of slope $m$ has derivative $m$ everywhere.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Why this is the right package}
+%------------------------------------------------------------------------------
+Collecting the partials into a vector could look like mere bookkeeping --- a
+convenient way to write $n$ things at once. It is more than that, for a reason
+already visible in the last example.
+
+The gradient of $f(\vc{x})=\ip{\vc{a}}{\vc{x}}$ came out as $\vc{a}$, not as a
+list of unrelated numbers that happen to be stored together. The package has an
+identity of its own. And because $\grad f(\vc{x})$ is a vector in $\R^{n}$,
+everything the vector unit built applies to it: it has a length, it has a
+direction, it can be dotted with other vectors, it can be projected, and it can
+be compared for orthogonality.
+
+\lookahead Each of those operations turns out to answer a question about $f$.
+The direction of $\grad f$, its length, and its dot product against a chosen
+unit vector each have a meaning in terms of how $f$ changes --- which is how the
+question left open in \S5.3, the rate of change in an \emph{arbitrary}
+direction, gets answered from only the $n$ coordinate directions. That is where
+this unit goes next.
+
+\end{document}
