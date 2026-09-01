@@ -53,12 +53,55 @@ instructions will be announced by the instructor at the appropriate time.
 
 ## Repository layout
 
-- **`course_plan/`** — the full unit-by-unit progression (`.tex` + compiled PDF),
-  including the projects/demos appendix and a one-semester carving suggestion.
-- **`tentative_textbooks/`** — referenced texts with bibliographic details and
-  links (`.tex` + compiled PDF).
+Every document is kept as LaTeX source alongside its compiled PDF; the PDF is
+the artifact handed to students, and the `.tex` is what gets edited. Build
+artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
+
+### Official course documents
+
+- **`syllabus/`** — the Section 10 syllabus, `231_sec10_bedoya.tex` / `.pdf`.
+  The filename follows the department's required `number_section_lastname`
+  format; do not rename the exported PDF. This is the authoritative document.
+- **`welcome-letter/`** — the letter sent to students before the term starts:
+  logistics, platforms, and the textbook and programming stance.
 - **`schedule/`** — the Fall 2026 meeting-by-meeting schedule (Tue/Thu), with
-  college-closure and no-class days highlighted (`.tex` + compiled PDF).
+  college-closure and no-class days highlighted.
+
+### Course design
+
+- **`course_plan/`** — two companion progression documents: *A Natural
+  Progression Through the Course Material* (`MATH231_progression_2026-07-01`),
+  the unit-by-unit build order, and *A Historical Progression*
+  (`MATH231_history_2026-08-04`), the same material in the order it was actually
+  discovered.
+- **`tentative_textbooks/`** — the referenced texts with bibliographic details
+  and links.
+- **`plan/`** — **working material, not finalized.** The candidate project and
+  demo menu and the not-guaranteed topics list. Nothing here is assigned or
+  promised; see `plan/README.md`. Where this directory and an official document
+  disagree, the official document wins.
+
+### Teaching material
+
+- **`lectures/`** — lecture notes, grouped by unit:
+  - `primer/` — the pre-course foundations review
+  - `vector-unit/` — vectors, dot product and projection, norms and metrics,
+    basis and span, orthogonality and subspaces, complex numbers
+  - `matrix-unit/` — linear systems and matrix notation
+  - `computational-unit/` — operation counting, $k$-nearest neighbours,
+    $k$-means clustering, Gram–Schmidt, matrix multiplication
+- **`setup/`** — student setup guides: 1 · Git and GitHub, 2 · Python, pip, and
+  an IDE.
+
+### Assessments
+
+These are placeholders so far — the directories exist but the material is
+written and distributed as the semester progresses.
+
+- **`homework/`** — the 5 homework assignments
+- **`projects/`** — the 3 projects
+- **`exams/`** — the two midterms and the final
+- **`demos/`** — in-lecture computational demos
 
 ## Reference texts
 
