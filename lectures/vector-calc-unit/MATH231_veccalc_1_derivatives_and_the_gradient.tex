@@ -9,7 +9,8 @@
 %  unit, since a bare "Sec. 5" is now ambiguous four ways.  The front matter
 %  states that for students.
 %
-%  STATUS: complete.  Sections 1-7.  The unit continues; Sec. 7.4 is the hinge.
+%  STATUS: complete.  Sections 1-8.  The unit continues; the closing
+%  Looking-ahead of Sec. 8.2 is the hinge.
 %
 %  AUDIENCE: distributed to students.  No instructor-facing apparatus.
 %
@@ -20,12 +21,26 @@
 %  notation, not merely "seen last year".  Sec. 1.1 and Sec. 6.1 are deliberately
 %  the same limit with one substitution between them.
 %
-%  RULES ADDED BEYOND THE DRAFTED LIST (easy to cut if unwanted; all live in
-%  their own table rows in Sec. 2, none is used later in the document):
-%      - general exponential  d/dx a^x = a^x ln a
-%      - general logarithm    d/dx log_a x = 1/(x ln a)
-%      - inverse trig         arcsin, arccos, arctan
-%  Everything else in Sec. 2 was on the list.
+%  SEC. 2 NOW HOLDS ONLY the structural rules and the six trigonometric ones.
+%  The exponential/logarithm table and the inverse-trigonometric table were
+%  removed.  Dropping the exp/log table is not a loss: those two derivatives are
+%  DERIVED in Sec. 4, and Sec. 2 now says so explicitly rather than quoting the
+%  answers first and justifying them later.  Nothing downstream cites either
+%  removed table.
+%
+%  STEEPEST ASCENT (Sec. 7.3) is asserted, not proved, per the outline.  Three
+%  independent supports are given instead: the weighted-step picture, the
+%  cosine argument from vector unit Sec. 11.6 (largest when the direction aligns
+%  with the gradient), and the n=1 case where "the direction the derivative
+%  points" is just the sign of f'.  The directional-derivative formula
+%  <grad f, u> is USED there but not established -- Sec. 8.2's Looking-ahead is
+%  where it gets picked up.  Keep that ordering honest if this is edited.
+%
+%  SEC. 8 (LINEAR APPROXIMATION) exists to make the type change visible: the
+%  one-variable formula and the n-variable formula are set side by side and
+%  differ only in a product becoming a dot product.  The closing remark uses
+%  that to argue the gradient EARNS the name derivative, which retroactively
+%  justifies Sec. 7.1's packaging move.
 %
 %  ON THE SECOND EXPONENTIAL DERIVATION (Sec. 4.3).  The limit identity
 %  lim_{h->0} (e^h - 1)/h = 1 IS the statement that exp'(0) = 1, so that
@@ -131,8 +146,10 @@ of the derivative and use the standard rules; state the algebraic properties of
 $e^{x}$ and $\ln x$ and explain why the two lists mirror each other; derive
 $\tfrac{d}{dx}\ln x$ from the definition and $\tfrac{d}{dx}e^{x}$ two ways; read
 the signature $f:\R^{n}\to\R$ and give examples; define the partial derivative
-as a limit and compute one; say what kind of object a partial derivative is; and
-assemble the partials of a function into its gradient.
+as a limit and compute one; say what kind of object a partial derivative is;
+assemble the partials of a function into its gradient; say which direction the
+gradient points and why that matters; and write the linear approximation of a
+function of one variable and of $n$ variables.
 
 %==============================================================================
 \section{The derivative, in one variable}
@@ -268,42 +285,8 @@ $\tan x$ & $\sec^{2}x$           & $\cot x$ & $-\csc^{2}x$ \\
 \noindent A pattern worth using as a memory aid: every co-function ---
 $\cos$, $\csc$, $\cot$ --- picks up a minus sign.
 
-%------------------------------------------------------------------------------
-\subsection{Exponential and logarithmic functions}
-%------------------------------------------------------------------------------
-\begin{center}
-\renewcommand{\arraystretch}{1.7}
-\begin{tabular}{@{}l l l@{}}
-\toprule
-\textbf{Function} & \textbf{Derivative} & \textbf{Notes} \\
-\midrule
-$e^{x}$      & $e^{x}$                      & derived in \S4.2--\S4.3 \\
-$a^{x}$      & $a^{x}\ln a$                 & $a>0$; reduces to the above when $a=e$ \\
-$\ln x$      & $\dfrac{1}{x}$               & $x>0$; derived in \S4.1 \\
-$\log_a x$   & $\dfrac{1}{x\ln a}$          & $x>0$, $a>0$, $a\neq1$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent $e^{x}$ is the only function that is its own derivative, which is the
-property that makes it the natural base to work in. \S4 derives both of these
-rather than quoting them.
-
-%------------------------------------------------------------------------------
-\subsection{Inverse trigonometric functions}
-%------------------------------------------------------------------------------
-\begin{center}
-\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{@{}l l l@{}}
-\toprule
-\textbf{Function} & \textbf{Derivative} & \textbf{Valid for} \\
-\midrule
-$\arcsin x$ & $\dfrac{1}{\sqrt{1-x^{2}}}$   & $|x|<1$ \\
-$\arccos x$ & $-\dfrac{1}{\sqrt{1-x^{2}}}$  & $|x|<1$ \\
-$\arctan x$ & $\dfrac{1}{1+x^{2}}$          & all $x$ \\
-\bottomrule
-\end{tabular}
-\end{center}
+\noindent The exponential and the logarithm are missing from these tables on
+purpose. Their derivatives are not quoted here; they are derived in \S4.
 
 %==============================================================================
 \section{The exponential and the logarithm}
@@ -384,9 +367,9 @@ $\ln1+\ln1=0$.
 %==============================================================================
 \section{Deriving the two derivatives}
 %==============================================================================
-The rules in \S2.3 were stated without justification. Here they are earned. The
-order matters: the logarithm is done first, from the definition alone, and the
-exponential then follows from it.
+These two derivatives were deliberately left out of the tables in \S2. Here they
+are earned instead. The order matters: the logarithm is done first, from the
+definition alone, and the exponential then follows from it.
 
 %------------------------------------------------------------------------------
 \subsection{The natural logarithm, from the definition}
@@ -785,6 +768,98 @@ counterpart of the fact that a line of slope $m$ has derivative $m$ everywhere.
 \end{ex}
 
 %------------------------------------------------------------------------------
+\subsection{The direction it points}
+%------------------------------------------------------------------------------
+The gradient is a vector, so besides its components it has a \emph{direction},
+and that direction turns out to mean something. It is the single most useful
+fact about the gradient.
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+At a point $\vc{x}$, the gradient $\grad f(\vc{x})$ points in the direction of
+\textbf{steepest ascent} of $f$ --- the direction in which $f$ increases
+fastest. Its length $\norm{\grad f(\vc{x})}$ says how steep that climb is.
+\end{minipage}}
+\end{center}
+
+\noindent We will not prove this, but it should be made plausible, because it is
+the reason the gradient is worth computing at all.
+
+\medskip
+\noindent\textbf{Why it is believable.} Stand somewhere on a hillside. Each
+partial derivative answers one narrow question: \emph{if I walk due east, how
+fast does my elevation change?} And due north, and so on for each coordinate
+direction. A large positive $\partial f/\partial x_1$ means east is a good way
+to climb; a negative one means east goes downhill, so west climbs instead.
+
+Now ask the real question --- which way is uphill \emph{fastest}? Intuitively
+you should take a bit of each direction that helps, and take more of the
+directions that help more. A step built by weighting each coordinate direction
+in proportion to how much it raises $f$ is exactly a step of the form
+\[
+  \pd{f}{x_1}\vc{e}_1 + \pd{f}{x_2}\vc{e}_2 + \cdots + \pd{f}{x_n}\vc{e}_n,
+\]
+and that is the gradient. The directions that raise $f$ most get the largest
+weights; the ones that lower it get negative weights, which points the step away
+from them.
+
+\lookback There is a second way to see it, using the vector unit. The rate of
+change of $f$ in a chosen unit direction $\vc{u}$ turns out to be the dot
+product $\ip{\grad f}{\vc{u}}$, and by \S11.6,
+\[
+  \ip{\grad f}{\vc{u}}
+  = \norm{\grad f}\,\norm{\vc{u}}\cos\theta
+  = \norm{\grad f}\cos\theta ,
+\]
+since $\norm{\vc{u}}=1$. Among all unit directions this is largest when
+$\cos\theta=1$, that is, when $\vc{u}$ points the same way as $\grad f$. The
+steepest climb is in the gradient's own direction, and the best possible rate is
+$\norm{\grad f}$ --- which is why the length measures steepness.
+
+\medskip
+\noindent\textbf{The same thing happens in one variable.} With $n=1$ there are
+only two directions to move, and the gradient is the single number $f'(x)$. If
+$f'(x)>0$ then $f$ increases as $x$ increases, so ``uphill'' is the positive
+direction; if $f'(x)<0$, uphill is the negative direction. In both cases uphill
+is the direction the derivative points, and $|f'(x)|$ says how steep the slope
+is. The gradient is that statement with more than two directions available ---
+which is why it must be a vector rather than a sign.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-0.3,0) -- (5.0,0) node[right,font=\scriptsize,black]{$x_1$};
+  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$x_2$};
+  % f grows outward, so the centre is the low point
+  \foreach \r in {0.30,0.52,0.74,0.96}
+    { \draw[gray!45] (2.3,1.75) circle (\r); }
+  \node[font=\scriptsize,gray!70] at (2.3,3.15) {level curves of $f$};
+  \coordinate (P) at (3.0,2.23);
+  \fill[black] (P) circle (1.6pt);
+  \node[below right,font=\scriptsize,inner sep=2pt] at (P) {$\vc{x}$};
+  % uphill: outward, away from the centre
+  \draw[vecarr,ForestGreen!70!black] (P) -- (3.72,2.73)
+        node[above right,font=\scriptsize,inner sep=1pt]{$\grad f(\vc{x})$};
+  % downhill: inward, drawn out to clear space on the far side
+  \draw[vecarr,BrickRed] (P) -- (1.36,1.09)
+        node[below left,font=\scriptsize,inner sep=1pt]{$-\grad f(\vc{x})$};
+\end{tikzpicture}
+\end{center}
+
+\noindent The two arrows show \emph{directions}; their drawn lengths are not to
+scale. The gradient crosses the level curves at right angles, heading toward the
+ones where $f$ is larger. Reversing it, $-\grad f(\vc{x})$ gives the direction of
+steepest \emph{descent} --- here, straight toward the low point at the centre.
+
+\lookahead That last observation is the whole idea behind an algorithm you will
+meet later. To find a point where $f$ is as small as possible, start anywhere,
+compute $-\grad f$, take a step in that direction, and repeat --- walking
+downhill until the ground levels out. It is called \emph{gradient descent}, and
+it is the workhorse of modern optimisation and machine learning. It exists
+because of the property in the box above.
+
+%------------------------------------------------------------------------------
 \subsection{Why this is the right package}
 %------------------------------------------------------------------------------
 Collecting the partials into a vector could look like mere bookkeeping --- a
@@ -798,11 +873,130 @@ everything the vector unit built applies to it: it has a length, it has a
 direction, it can be dotted with other vectors, it can be projected, and it can
 be compared for orthogonality.
 
-\lookahead Each of those operations turns out to answer a question about $f$.
-The direction of $\grad f$, its length, and its dot product against a chosen
-unit vector each have a meaning in terms of how $f$ changes --- which is how the
-question left open in \S5.3, the rate of change in an \emph{arbitrary}
-direction, gets answered from only the $n$ coordinate directions. That is where
-this unit goes next.
+\S7.3 has already spent two of those operations: the direction of $\grad f$ and
+its length. The next section spends the dot product.
+
+%==============================================================================
+\section{Linear approximation}
+%==============================================================================
+One of the oldest uses of a derivative is to replace a complicated function, near
+a single point, by a simple one. The gradient does this in $n$ dimensions exactly
+as $f'$ does in one --- and comparing the two formulas shows what kind of object
+the gradient really is.
+
+%------------------------------------------------------------------------------
+\subsection{One variable}
+%------------------------------------------------------------------------------
+Return to the picture in \S1.1. The tangent line at $x=a$ touches the graph at
+that point and has slope $f'(a)$, so its equation is
+\begin{equation}\label{eq:lin1}
+  L(x) \;=\; f(a) + f'(a)\,(x-a) .
+\end{equation}
+Near $a$ the curve and its tangent line are hard to tell apart, so $L$ can stand
+in for $f$:
+\[
+  f(x) \;\approx\; f(a) + f'(a)\,(x-a)
+  \qquad\text{for } x \text{ near } a .
+\]
+This is the \textbf{linear approximation} (or \emph{linearisation}) of $f$ at
+$a$. Read \eqref{eq:lin1} in three pieces: start from the known value $f(a)$,
+measure how far you have moved with $x-a$, and convert that displacement into a
+change in $f$ by multiplying by the rate $f'(a)$.
+
+\begin{ex}
+Estimate $\sqrt{4.1}$ without a calculator. Take $f(x)=\sqrt{x}$ and $a=4$,
+where the value is known exactly. Then $f(4)=2$ and
+$f'(x)=\tfrac{1}{2\sqrt{x}}$, so $f'(4)=\tfrac14$. Hence
+\[
+  \sqrt{4.1}\;\approx\; 2 + \tfrac14(4.1-4) = 2 + \tfrac{0.1}{4} = 2.025 .
+\]
+The true value is $2.02484\ldots$, so the estimate is off by about $1.5\times
+10^{-4}$ --- from arithmetic done in one line.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{In \texorpdfstring{$n$}{n} dimensions}
+%------------------------------------------------------------------------------
+Now let $f:\R^{n}\to\R$ and let $\vc{a}\in\R^{n}$ be the point we are near.
+Every piece of \eqref{eq:lin1} survives, but two of them change type.
+
+The starting value $f(\vc{a})$ is still a scalar. The displacement is now
+$\vc{x}-\vc{a}$, a \emph{vector} in $\R^{n}$ --- it must record how far we moved
+in every coordinate, not just one. And the rate is now $\grad f(\vc{a})$, also a
+vector. To turn a vector of rates and a vector of displacements into a single
+number, there is exactly one natural operation available, and the vector unit
+built it: the dot product.
+
+\begin{defn}[Linear approximation in $n$ variables]
+Let $f:\R^{n}\to\R$ have a gradient at $\vc{a}$. The \textbf{linear
+approximation} of $f$ at $\vc{a}$ is
+\begin{equation}\label{eq:linn}
+  L(\vc{x}) \;=\; f(\vc{a}) + \ip{\grad f(\vc{a})}{\;\vc{x}-\vc{a}} ,
+\end{equation}
+and $f(\vc{x})\approx L(\vc{x})$ for $\vc{x}$ near $\vc{a}$.
+\end{defn}
+
+\noindent Set the two formulas side by side:
+\[
+  \underbrace{f(a) + f'(a)\,(x-a)}_{n=1}
+  \qquad\longleftrightarrow\qquad
+  \underbrace{f(\vc{a}) + \ip{\grad f(\vc{a})}{\vc{x}-\vc{a}}}_{\text{general } n} .
+\]
+They are the same formula. The only change is that a product of two numbers has
+become a dot product of two vectors --- and when $n=1$ the dot product of two
+one-component vectors \emph{is} ordinary multiplication, so \eqref{eq:linn}
+contains \eqref{eq:lin1} as its smallest case.
+
+Written out in coordinates, \eqref{eq:linn} reads
+\[
+  L(\vc{x}) = f(\vc{a})
+    + \pd{f}{x_1}(\vc{a})\,(x_1-a_1)
+    + \cdots
+    + \pd{f}{x_n}(\vc{a})\,(x_n-a_n) ,
+\]
+one term per direction: each partial derivative converts the displacement in its
+own coordinate into a contribution to the change in $f$, and the contributions
+are added up.
+
+\begin{ex}
+Let $f(x,y)=x^{2}+y^{2}$ and approximate near $\vc{a}=(1,2)$. There
+$f(\vc{a})=1+4=5$, and from \S7.2, $\grad f(x,y)=[\,2x,\,2y\,]$, so
+$\grad f(\vc{a})=[\,2,\,4\,]$. Then
+\[
+  L(x,y) = 5 + \bigl\langle[\,2,4\,],\,[\,x-1,\;y-2\,]\bigr\rangle
+         = 5 + 2(x-1) + 4(y-2) .
+\]
+At $(1.1,\,1.9)$ this predicts
+\[
+  L(1.1,1.9) = 5 + 2(0.1) + 4(-0.1) = 5 + 0.2 - 0.4 = 4.8 ,
+\]
+against the true value $1.21+3.61=4.82$. Note the two terms pulling opposite
+ways: moving right raises $f$, moving down lowers it, and the approximation adds
+both effects.
+\end{ex}
+
+\begin{rmk}[What the graph of $L$ is]
+For $n=1$ the linear approximation is a tangent \emph{line}. For $n=2$ it is a
+tangent \emph{plane}, resting on the surface at one point. For general $n$ it is
+a tangent hyperplane. In every case it is the flat object that best matches $f$
+at $\vc{a}$.
+\end{rmk}
+
+\begin{rmk}[Why the gradient deserves to be called the derivative]
+\eqref{eq:linn} is the strongest answer to the question of what replaces $f'$ in
+several variables. In one variable, $f'(a)$ is the number that makes the best
+linear approximation work. In $n$ variables, $\grad f(\vc{a})$ is the vector
+that plays that role --- the same job, the same position in the formula, a
+different type of object. Collecting the partials into a vector was not
+bookkeeping after all: it produced the thing that behaves like a derivative.
+\end{rmk}
+
+\lookahead \eqref{eq:linn} is also where the next ideas come from. Keeping
+$\vc{x}-\vc{a}$ a fixed unit vector and reading off the resulting change gives
+the rate of $f$ in that direction, completing the question left open in \S5.3.
+Asking where $L$ is flat --- where $\grad f(\vc{a})=\vc{0}$ --- locates the
+candidates for maxima and minima. And approximating with something better than a
+flat object requires a second derivative, which in $n$ dimensions will be a
+matrix rather than a vector.
 
 \end{document}
