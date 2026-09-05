@@ -14,7 +14,11 @@
 %
 %  Hence \setcounter{section}{23}: this part opens at Section 24.
 %
-%  STATUS: complete.  Sections 24-27.  The topic continues; Sec. 27.4 says so.
+%  STATUS: complete.  Sections 24-27.  The document closes on Sec. 27.4, the
+%  general n-dimensional algorithm -- deliberately the last thing on the page,
+%  so the reader leaves holding the procedure itself rather than a forward
+%  reference.  The Looking-ahead about one learning rate serving every direction
+%  stays in Sec. 27.3, ahead of it.
 %
 %  AUDIENCE: distributed to students.  No instructor-facing apparatus.
 %
@@ -508,7 +512,8 @@ derivative becomes the gradient, and the absolute value becomes the norm. The
 learning rate stays a single scalar --- one number scaling the whole vector step,
 not one per coordinate.
 
-The pseudocode of \S26.1 carries over verbatim under those substitutions.
+The pseudocode of \S26.1 carries over under those substitutions; \S27.4 writes
+it out in full.
 
 %------------------------------------------------------------------------------
 \subsection{An example}
@@ -560,6 +565,40 @@ own effective rate, or by using curvature information to rescale the step. The
 quantity that measures how badly a problem suffers from this also has a name,
 and it is one this unit has met before in a different guise.
 
-We will continue.
+%------------------------------------------------------------------------------
+\subsection{The general algorithm}
+%------------------------------------------------------------------------------
+Collecting everything, here is the method in its general form. It is the
+procedure of \S26.1 with the three substitutions of \S27.1 applied, and it is
+what ``gradient descent'' refers to without further qualification.
+
+\begin{algo}{Gradient descent}{%
+  \textbf{Input:} the gradient $\grad f$ of a function $f:\R^{n}\to\R$; a
+  starting point $\vc{x}_0\in\R^{n}$; a learning rate $\lr>0$; a tolerance
+  $\tau>0$; an iteration cap $k_{\max}$.\quad
+  \textbf{Output:} a point where $\norm{\grad f}<\tau$, or a report of failure.}
+\item $\vc{x} \;\gets\; \vc{x}_0$
+        \hfill\textit{\small start from the initial guess}
+\item \kw{for} $k = 0,1,2,\dots,k_{\max}$:
+\item \ind $\vc{g} \;\gets\; \grad f(\vc{x})$
+        \hfill\textit{\small steepest ascent at the current point}
+\item \ind \kw{if} $\norm{\vc{g}} < \tau$: \kw{return} $\vc{x}$
+        \hfill\textit{\small flat enough --- stop}
+\item \ind $\vc{x} \;\gets\; \vc{x} - \lr\,\vc{g}$
+        \hfill\textit{\small step against the gradient}
+\item \kw{return} failure --- $k_{\max}$ steps without reaching the tolerance
+\end{algo}
+
+\noindent Every line is the one-variable line with a vector in place of a
+number. Line 3 evaluates the gradient rather than the derivative; line 4
+measures it with the norm rather than the absolute value; line 5 subtracts a
+scaled vector rather than a scaled number. The learning rate $\lr$, the
+tolerance $\tau$, and the cap $k_{\max}$ are unchanged --- all three remain
+single scalars, whatever $n$ is.
+
+The three inputs the caller must supply are worth naming one final time, since
+none of them is computed by the algorithm and all three change what it does:
+$\lr$ decides whether it converges at all (\S25.4), $\tau$ decides when it is
+satisfied (\S26.1), and $\vc{x}_0$ decides which minimum it finds (\S26.2).
 
 \end{document}
