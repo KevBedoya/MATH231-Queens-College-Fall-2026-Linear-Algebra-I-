@@ -9,8 +9,25 @@
 %  unit, since a bare "Sec. 5" is now ambiguous four ways.  The front matter
 %  states that for students.
 %
-%  STATUS: complete.  Sections 1-8.  The unit continues; the closing
-%  Looking-ahead of Sec. 8.2 is the hinge.
+%  STATUS: complete.  Sections 1-9.  The unit continues; the closing
+%  Looking-ahead of Sec. 9.6 is the hinge.
+%
+%  SEC. 9 CLOSES A LOOP OPENED IN SEC. 7.1.  That section recorded the signature
+%  grad f : R^n -> R^n and left it as a curiosity.  Sec. 9.3 collects it: the
+%  gradient is itself a vector-valued function, so it has a Jacobian, and that
+%  Jacobian IS the second derivative.  The Hessian therefore arrives as a
+%  consequence of a signature already on the page rather than as a new
+%  definition.  Sec. 8.2's Looking-ahead was rewritten to point INTO Sec. 9
+%  rather than out of the document.
+%
+%  INDEX CONVENTION for the Hessian, stated once in Sec. 9.4 and used
+%  throughout: (H_f)_ij = d/dx_i ( df/dx_j ).  Under Clairaut the two orders
+%  agree, so the choice is immaterial to the answer -- but it must be FIXED
+%  before Clairaut is stated, or the symmetry claim in Sec. 9.6 has no content.
+%
+%  THE JACOBIAN EXAMPLE in Sec. 9.2 is deliberately non-symmetric (2x, -2y over
+%  2y, 2x) so that Sec. 9.6's symmetry claim reads as a real restriction rather
+%  than a property of matrices of partial derivatives in general.
 %
 %  AUDIENCE: distributed to students.  No instructor-facing apparatus.
 %
@@ -99,6 +116,9 @@
 \newcommand{\grad}{\nabla}
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\dd}[2]{\frac{d #1}{d #2}}
+\newcommand{\mt}[1]{\mathbf{#1}}          % matrices: bold upper case
+\newcommand{\T}{^{\mathsf{T}}}            % transpose
+\newcommand{\pdd}[3]{\frac{\partial^{2} #1}{\partial #2\,\partial #3}}
 
 %------------------------------------------------------------- tikz helpers --
 \tikzset{
@@ -148,8 +168,10 @@ $\tfrac{d}{dx}\ln x$ from the definition and $\tfrac{d}{dx}e^{x}$ two ways; read
 the signature $f:\R^{n}\to\R$ and give examples; define the partial derivative
 as a limit and compute one; say what kind of object a partial derivative is;
 assemble the partials of a function into its gradient; say which direction the
-gradient points and why that matters; and write the linear approximation of a
-function of one variable and of $n$ variables.
+gradient points and why that matters; write the linear approximation of a
+function of one variable and of $n$ variables; build the Jacobian of a
+vector-valued function and the Hessian of a scalar one; state Clairaut's theorem;
+and say why the Hessian is symmetric.
 
 %==============================================================================
 \section{The derivative, in one variable}
@@ -996,7 +1018,259 @@ $\vc{x}-\vc{a}$ a fixed unit vector and reading off the resulting change gives
 the rate of $f$ in that direction, completing the question left open in \S5.3.
 Asking where $L$ is flat --- where $\grad f(\vc{a})=\vc{0}$ --- locates the
 candidates for maxima and minima. And approximating with something better than a
-flat object requires a second derivative, which in $n$ dimensions will be a
-matrix rather than a vector.
+flat object requires a \emph{second} derivative --- which in $n$ dimensions turns
+out to be a matrix rather than a vector. That matrix is the subject of \S9.
+
+%==============================================================================
+\section{The Jacobian and the Hessian}
+%==============================================================================
+Differentiating $f:\R^{n}\to\R$ produced $\grad f$, which is not a function of
+the same type as $f$: it takes a point of $\R^{n}$ and returns a \emph{vector}
+in $\R^{n}$. To differentiate a second time we first need to know what the
+derivative of such a function even is.
+
+%------------------------------------------------------------------------------
+\subsection{Functions with vector output}
+%------------------------------------------------------------------------------
+So far the output has always been a single number. Allow it to be a vector.
+
+\begin{defn}[Vector-valued function]
+A function $\mt{F}:\R^{n}\to\R^{m}$ takes a vector $\vc{x}\in\R^{n}$ and returns
+a vector $\mt{F}(\vc{x})\in\R^{m}$. Writing out the $m$ components,
+\[
+  \mt{F}(\vc{x}) = \bigl[\,F_1(\vc{x}),\,F_2(\vc{x}),\,\dots,\,F_m(\vc{x})\,\bigr],
+\]
+where each \textbf{component function} $F_i:\R^{n}\to\R$ is a scalar function of
+the kind \S5 introduced.
+\end{defn}
+
+\noindent So a vector-valued function is nothing more than $m$ scalar functions
+travelling together --- the same packaging move as \S7.1, applied to outputs
+instead of derivatives.
+
+\begin{ex}
+$\mt{F}(x,y)=\bigl[\,x^{2}-y^{2},\;2xy\,\bigr]$ is a function $\R^{2}\to\R^{2}$,
+with $F_1(x,y)=x^{2}-y^{2}$ and $F_2(x,y)=2xy$. (If those two components look
+familiar, they are the real and imaginary parts of $z^{2}$ for $z=x+iy$.)
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The Jacobian}
+%------------------------------------------------------------------------------
+Each component $F_i$ has $n$ partial derivatives. With $m$ components that is
+$mn$ numbers --- too many for a vector, and naturally arranged in a grid.
+
+\begin{defn}[Jacobian]
+Let $\mt{F}:\R^{n}\to\R^{m}$ have all partial derivatives at $\vc{x}$. Its
+\textbf{Jacobian} is the $m\times n$ matrix
+\[
+  \mt{J}_{\mt{F}}(\vc{x})
+  =
+  \begin{bmatrix}
+    \pd{F_1}{x_1} & \pd{F_1}{x_2} & \cdots & \pd{F_1}{x_n}\\[6pt]
+    \pd{F_2}{x_1} & \pd{F_2}{x_2} & \cdots & \pd{F_2}{x_n}\\[4pt]
+    \vdots        & \vdots        & \ddots & \vdots\\[2pt]
+    \pd{F_m}{x_1} & \pd{F_m}{x_2} & \cdots & \pd{F_m}{x_n}
+  \end{bmatrix},
+  \qquad
+  \bigl(\mt{J}_{\mt{F}}\bigr)_{ij} = \pd{F_i}{x_j} .
+\]
+It is also written $D\mt{F}$, and it is what ``the derivative of $\mt{F}$''
+means.
+\end{defn}
+
+\noindent Read the shape carefully: \textbf{one row per output, one column per
+input}. Row $i$ collects all the partials of the single component $F_i$ --- so
+row $i$ is the gradient of $F_i$. The Jacobian is a stack of gradients, one for
+each component function.
+
+When $m=1$ there is a single row, and the Jacobian is the gradient written
+across. The gradient was the Jacobian all along, in the case where the output
+was one number.
+
+\begin{ex}
+For $\mt{F}(x,y)=\bigl[\,x^{2}-y^{2},\;2xy\,\bigr]$, differentiating each
+component with respect to each variable gives the $2\times2$ matrix
+\[
+  \mt{J}_{\mt{F}}(x,y)=
+  \begin{bmatrix}
+    2x & -2y\\
+    2y & \phantom{-}2x
+  \end{bmatrix} .
+\]
+Note that this matrix is \emph{not} symmetric --- $-2y$ against $2y$. Jacobians
+in general have no symmetry to them.
+\end{ex}
+
+\begin{ex}
+For $\mt{F}(x,y,z)=[\,xyz,\;x+y+z\,]$, a function $\R^{3}\to\R^{2}$, the
+Jacobian is $2\times3$:
+\[
+  \mt{J}_{\mt{F}}(x,y,z)=
+  \begin{bmatrix}
+    yz & xz & xy\\
+    1  & 1  & 1
+  \end{bmatrix} .
+\]
+Two outputs, three inputs, so two rows and three columns.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The gradient is such a function}
+%------------------------------------------------------------------------------
+Now return to $f:\R^{n}\to\R$. Section \S7.1 recorded its gradient's signature:
+\[
+  \grad f : \R^{n}\longrightarrow\R^{n} .
+\]
+That is exactly a vector-valued function of the kind just defined, with $m=n$.
+So it has a Jacobian --- and that Jacobian is the second derivative we have been
+looking for.
+
+%------------------------------------------------------------------------------
+\subsection{The Hessian}
+%------------------------------------------------------------------------------
+\begin{defn}[Hessian]
+Let $f:\R^{n}\to\R$ have all second partial derivatives at $\vc{x}$. Its
+\textbf{Hessian} is the $n\times n$ matrix of those second partials,
+\[
+  \mt{H}_{f}(\vc{x}) = \mt{J}_{\grad f}(\vc{x}),
+  \qquad
+  \bigl(\mt{H}_{f}\bigr)_{ij}
+  \;=\; \pd{}{x_i}\!\left(\pd{f}{x_j}\right)
+  \;=\; \pdd{f}{x_i}{x_j} .
+\]
+\end{defn}
+
+\noindent Written out for $n=2$, with the variables called $x$ and $y$:
+\[
+  \mt{H}_{f}
+  =
+  \begin{bmatrix}
+    \pdd{f}{x}{x} & \pdd{f}{x}{y}\\[8pt]
+    \pdd{f}{y}{x} & \pdd{f}{y}{y}
+  \end{bmatrix} .
+\]
+The two entries on the diagonal are obtained by differentiating twice in the
+same variable. The two off the diagonal are the \textbf{mixed partials}:
+differentiate once in each variable, in the two possible orders.
+
+\begin{ex}
+Take $f(x,y)=x^{2}y+3y^{2}$, whose gradient was computed in \S7.2:
+\[
+  \grad f(x,y) = \bigl[\,2xy,\;\;x^{2}+6y\,\bigr] .
+\]
+Differentiate each component with respect to each variable:
+\[
+  \pd{}{x}(2xy)=2y,\quad
+  \pd{}{x}(x^{2}+6y)=2x,\quad
+  \pd{}{y}(2xy)=2x,\quad
+  \pd{}{y}(x^{2}+6y)=6,
+\]
+so
+\[
+  \mt{H}_{f}(x,y)=
+  \begin{bmatrix}
+    2y & 2x\\
+    2x & 6
+  \end{bmatrix} .
+\]
+The two mixed partials both came out $2x$, even though they were computed by
+differentiating in opposite orders.
+\end{ex}
+
+\begin{ex}
+Take $f(x,y,z)=x^{2}y+y^{2}z+z^{2}x$, so that
+\[
+  \grad f = \bigl[\,2xy+z^{2},\;\;x^{2}+2yz,\;\;y^{2}+2zx\,\bigr] .
+\]
+Differentiating each component in each of the three variables gives
+\[
+  \mt{H}_{f}(x,y,z)=
+  \begin{bmatrix}
+    2y & 2x & 2z\\
+    2x & 2z & 2y\\
+    2z & 2y & 2x
+  \end{bmatrix} .
+\]
+Again every mixed pair agrees: the $(1,2)$ and $(2,1)$ entries are both $2x$,
+the $(1,3)$ and $(3,1)$ entries are both $2z$, and the $(2,3)$ and $(3,2)$
+entries are both $2y$.
+\end{ex}
+
+\noindent Twice is a coincidence. It is not.
+
+%------------------------------------------------------------------------------
+\subsection{Clairaut's theorem}
+%------------------------------------------------------------------------------
+\begin{thm}[Clairaut]
+Let $f:\R^{n}\to\R$. If the mixed second partial derivatives
+$\pdd{f}{x_i}{x_j}$ and $\pdd{f}{x_j}{x_i}$ exist and are \emph{continuous} near
+a point, then at that point they are equal:
+\[
+  \pdd{f}{x_i}{x_j} \;=\; \pdd{f}{x_j}{x_i} .
+\]
+\end{thm}
+
+\noindent In words: \emph{the order of differentiation does not matter}.
+Differentiating first with respect to $x$ and then with respect to $y$ gives the
+same result as doing it the other way round. This is not obvious --- the two
+computations pass through entirely different intermediate expressions, as both
+examples above show --- and it is why the mixed entries kept agreeing.
+
+\begin{warn}[The continuity hypothesis is doing work]
+Clairaut's theorem is a theorem, not a definition, and it can fail. There exist
+functions whose two mixed partials both exist at a point and are \emph{not}
+equal there; what such functions lack is the continuity of those mixed partials
+near the point. Every function you will meet in this course --- polynomials,
+exponentials, logarithms, sines and cosines, and anything built from them by the
+rules of \S2 --- satisfies the hypothesis comfortably, so the conclusion is
+always available. It is worth knowing that it rests on something.
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{The Hessian is symmetric}
+%------------------------------------------------------------------------------
+Clairaut's theorem is a statement about two numbers. Read as a statement about
+the matrix holding them, it says something clean.
+
+The $(i,j)$ entry of the Hessian is $\pdd{f}{x_i}{x_j}$ and the $(j,i)$ entry is
+$\pdd{f}{x_j}{x_i}$. Clairaut says these are equal, for every pair $i$ and $j$.
+So every entry of $\mt{H}_f$ equals its mirror image across the diagonal --- which
+is precisely the definition of a symmetric matrix from the matrix unit, \S6.5.
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+If the mixed second partial derivatives of $f$ are continuous, then its Hessian
+is \textbf{symmetric}:
+\[
+  \mt{H}_{f} = \mt{H}_{f}\T .
+\]
+\end{minipage}}
+\end{center}
+
+\noindent Both worked examples above are symmetric, as they had to be. Contrast
+this with the Jacobian of \S9.2, which had no such property: a general Jacobian
+need not even be square, let alone symmetric. Symmetry is not a feature of
+second derivatives in general --- it is a consequence of the Hessian being the
+second derivative of a \emph{scalar} function, so that its two indices play
+interchangeable roles.
+
+\begin{rmk}
+This is worth registering as more than a curiosity. Symmetric matrices are
+easier to work with than general ones in almost every respect, and a great deal
+of what can be said about maxima, minima and the shape of a surface near a point
+depends on the Hessian being symmetric. An $n\times n$ symmetric matrix also
+carries only $n(n+1)/2$ independent numbers rather than $n^{2}$, so storing one
+costs roughly half as much.
+\end{rmk}
+
+\lookahead The gradient told us which way $f$ is going; the Hessian tells us how
+that direction is itself changing --- the curvature of $f$. Where the gradient
+vanishes, it is the Hessian that decides whether the flat point is a minimum, a
+maximum, or neither. And an optimisation method that uses curvature rather than
+slope alone can take much better-informed steps than the one built on the
+gradient by itself.
 
 \end{document}
