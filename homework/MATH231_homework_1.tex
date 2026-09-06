@@ -1,0 +1,1219 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  HOMEWORK 1 -- Vectors and Complex Numbers
+%
+%  SCOPE.  This file currently covers exactly two lectures:
+%     lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic  (S1-S9)
+%     lectures/vector-unit/MATH231_complex_numbers                     (S1-S7)
+%  The complex-numbers lecture is deliberately cut BEFORE S8 (de Moivre, the
+%  roots of unity, the fundamental theorem of algebra) and before the quaternion
+%  material -- none of that has been covered in class yet.
+%
+%  MORE PROBLEMS TO COME.  Parts are lettered (A, B, C, D, E) rather than
+%  numbered, and problems are numbered by part (Problem A.1, B.2, ...), so
+%  further parts from later lectures can be appended without renumbering
+%  anything already written.  Add them as new \section blocks before Part E, or
+%  extend Part E's Section E.x list, whichever fits.
+%
+%  DELIBERATE OMISSIONS, so that nothing here outruns the lectures:
+%   - No dot product.  It arrives in vectors Part 2.  The complex lecture's S7
+%     proof that multiplication by i is a rotation *does* use it, so Problem C.7
+%     and D.5 are routed through the modulus instead, and the forward reference
+%     is flagged honestly in the text.
+%   - No unit vectors / normalisation (\hat{u}), no S^1 notation, no metrics.
+%   - No argument/polar form beyond cos(theta) + i sin(theta) and Euler.
+%
+%  NO ANSWER KEY, by design.  Part E is the answer key: every arithmetic problem
+%  in Parts A and C can be checked by the student in NumPy.  That is the whole
+%  pedagogical point of the programming section, and it is stated as such.
+%
+%  TWO THINGS TO SET BEFORE HANDING THIS OUT:
+%     \duedate  -- currently a placeholder.
+%     The submission paths in the "What to submit" callout, if you want a
+%     different directory layout than homework/hw1/ in the student repo.
+%
+%  Compile with pdflatex (standard TeX Live packages only; uses listings).
+%==============================================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{listings}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}
+                      {Part \thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{16pt}{7pt}
+
+\renewcommand{\thesection}{\Alph{section}}
+
+\theoremstyle{definition}
+% Extra air above and below every problem, so consecutive questions read as
+% separate blocks rather than one continuous column of text.
+\makeatletter
+\def\thm@space@setup{%
+  \thm@preskip=20pt plus 6pt minus 4pt
+  \thm@postskip=\thm@preskip}
+\makeatother
+\newtheorem{prob}{Problem}[section]
+
+% code blocks -- same style as Setup Guide 2, so the two documents look alike
+\lstdefinestyle{term}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single, rulecolor=\color{gray!45},
+  framesep=5pt, xleftmargin=8pt, xrightmargin=8pt,
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, aboveskip=8pt, belowskip=8pt
+}
+\lstdefinestyle{py}{
+  style=term, language=Python,
+  keywordstyle=\color{RoyalBlue}\bfseries,
+  commentstyle=\color{gray!80}\itshape,
+  stringstyle=\color{ForestGreen},
+  emph={np,numpy}, emphstyle=\color{BrickRed}
+}
+\lstset{style=py}
+
+\newcommand{\heads}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{BrickRed}{\textbf{Watch out.}}\ #1}\par\smallskip}
+\newcommand{\hint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{RoyalBlue}{\textbf{Hint.}}\ #1}\par\smallskip}
+\newcommand{\checkpoint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{ForestGreen}{\textbf{Checkpoint.}}\ #1}\par\smallskip}
+
+% shaded call-out box.  The body is collected into a savebox first, because
+% \colorbox needs its whole argument at once.
+\definecolor{softbg}{HTML}{F2F6FA}
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\sffamily\color{RoyalBlue}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\Rez}{\operatorname{Re}}
+\newcommand{\Imz}{\operatorname{Im}}
+
+%--------------------------------------------------------- fill this in ------
+\newcommand{\duedate}{to be announced on the class Discord}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Homework 1 \textbullet\ Vectors and Complex Numbers}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{Due:} \duedate.
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{7.4cm}@{}}
+\toprule
+\textbf{Lecture} & \textbf{Sections} & \textbf{Topics} \\
+\midrule
+Vector Unit, Part 1 & \S1--\S9 &
+  magnitude and direction; the Euclidean norm; vector vs.\ scalar quantities;
+  notation, $\R^{2}$, and signatures; addition and subtraction; the
+  parallelogram rule and the triangle inequality; scalar multiplication;
+  the eight algebraic laws; equality of vectors \\[3pt]
+Complex Numbers & \S1--\S7 &
+  the imaginary unit; $a+bi$, real and imaginary parts; the complex plane;
+  addition, multiplication, the conjugate, division; the modulus, distance,
+  and discs; the unit circle, trigonometric form, Euler's formula;
+  multiplication by $i$ as a rotation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{callout}{What to submit}
+Push to your own MATH 231 GitHub repository, in a folder named
+\texttt{homework/hw1/}:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=7pt,topsep=3pt]
+  \item \textbf{Parts A--D} --- your written work, as a single PDF named
+        \texttt{hw1.pdf}. Handwritten and scanned or photographed is completely
+        fine, as long as it is legible and the pages are in order.
+
+        \textbf{PDF is the only accepted format for the written part.} A
+        \texttt{.docx}, a \texttt{.jpg}, a \texttt{.png}, a \texttt{.heic}, or a
+        link to a file hosted somewhere else will not be graded. Phone scanning
+        apps export PDF directly, and every word processor can ``Save as PDF''.
+
+        \textbf{Type Parts A--D up instead and you earn $+5$ points of extra
+        credit on this assignment.} Any typesetting system counts --- \LaTeX,
+        Word's equation editor, or anything else that produces readable
+        mathematics --- and the extra credit is for the whole of Parts A--D, not
+        for typing up some of it. The file you submit must still be a PDF.
+
+  \item \textbf{Part E} --- two Python files, \texttt{hw1.py} (your work, one
+        function per question part) and \texttt{runhw1.py} (which imports those
+        functions and runs them all, labelling each answer). Do not submit a copy
+        of your output: \texttt{runhw1.py} is \textbf{run as submitted}, and Part
+        E is graded from what it prints. \emph{How to structure your submission},
+        in Part E, specifies both files in full.
+
+        \textbf{Python is the only language accepted for the programming.} Any
+        other language earns no credit for Part E, however correct it is.
+\end{itemize}
+
+If you have not set up the repository yet, Setup Guide 1 (\S\,``Create your
+folders'' and \S\,``Save your work and send it to GitHub'') is the walkthrough.
+Only pushed work can be graded.
+\end{callout}
+
+\begin{callout}{Label every answer}
+\textbf{Parts A--D.} Label each answer with the number of the problem it answers
+--- \texttt{A.2(f)}, \texttt{C.5(d)}, \texttt{D.1(b)} --- and put your answers
+\textbf{in the same order as they appear in this assignment}. A grader who
+cannot tell which question a piece of work belongs to cannot award it credit,
+and that is the most common way a correct answer loses points.
+
+\textbf{You do not have to copy the question out.} This applies to handwritten
+and typed submissions alike: the label alone is enough. Write \texttt{A.2(f)},
+then your work. Do not reproduce the wording of the problem.
+
+\textbf{Part E.} The labelling is built into the file structure specified under
+\emph{How to structure your submission}: one function per question part in
+\texttt{hw1.py}, named after that part, with a comment naming it directly above;
+and one labelled line per part in \texttt{runhw1.py}. Code that runs correctly
+but cannot be matched to a question is graded the same way an unlabelled answer
+sheet is.
+\end{callout}
+
+\noindent\textbf{Grading.} Every problem is worth the same number of points.
+Part E is graded by running \texttt{runhw1.py} and reading what it prints --- on
+whether it produces correct answers, not on programming style.
+
+\medskip
+\noindent\textbf{Use Part E to check Parts A and C.} Every numerical answer in
+those two parts can be verified in two lines of NumPy, and you are encouraged to
+check all of them before submitting --- that is what the tool is for. Two limits.
+The hand work must still be shown: a correct number with no derivation earns
+partial credit at best. And no proof in Part B or Part D can be checked this way,
+since code confirms a statement only for the numbers you tried, not for all of
+them.
+
+\medskip
+\noindent\textbf{On the proof problems (Parts B and D).} These are short, and
+none of them requires a clever idea. What they require is that you write down
+what you are assuming, work in components or from the stated laws, justify each
+equality by naming the fact that licenses it, and end with a sentence saying
+what you have shown. A chain of equalities with no words is not a proof; neither
+is a paragraph of words with no computation. Two or three sentences and three or
+four lines of algebra is the expected length.
+
+\medskip
+\noindent\textbf{Collaboration} is encouraged --- work at a board together, argue
+about the problems. What you submit must be written by you, in your own words
+and your own code.
+
+%==============================================================================
+\section{Vectors --- computation}
+%==============================================================================
+\emph{Vector Unit, Part 1.} Graph paper helps for the drawing parts; neat
+freehand axes are acceptable. Leave norms in exact form ($\sqrt{13}$,
+$3\sqrt{5}$) unless a decimal is asked for --- a norm is generically irrational,
+and $\sqrt{13}$ is a finished answer.
+
+\begin{prob}[Reading a vector off an arrow]
+Each row below describes an arrow in the plane by its tail and its head.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}c c c@{}}
+\toprule
+ & \textbf{Tail} & \textbf{Head} \\
+\midrule
+(a) & $(0,0)$   & $(5,12)$  \\
+(b) & $(2,-1)$  & $(6,2)$   \\
+(c) & $(-3,4)$  & $(1,7)$   \\
+(d) & $(1,1)$   & $(-2,5)$  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=\textbf{(\roman*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write each arrow as a vector in bracket notation, using
+        \emph{head minus tail}.
+  \item Compute the norm of each.
+  \item Exactly one pair among (a)--(d) consists of two arrows that are the
+        \emph{same vector}. Which pair, and why? Draw both arrows on one set of
+        axes to show it.
+  \item Three of the four have the same norm. Explain in one sentence why that
+        does \emph{not} make them the same vector, citing the definition of
+        equality of vectors.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Componentwise arithmetic]
+Let
+\[
+  \vc{u}=[\,3,\,-4\,],\qquad
+  \vc{v}=[\,-1,\,2\,],\qquad
+  \vc{w}=[\,5,\,0\,],\qquad
+  \alpha=-3,\qquad \beta=\tfrac12 .
+\]
+Compute each of the following. Show the componentwise step, not just the answer.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\vc{u}+\vc{v}$
+  \item $\vc{u}-\vc{v}$
+  \item $\vc{v}-\vc{u}$
+  \item $\alpha\vc{u}$
+  \item $\beta\vc{v}+\vc{u}$
+  \item $2\vc{u}-3\vc{v}+\vc{w}$
+  \item $\norm{\vc{u}}$, $\norm{\vc{v}}$, $\norm{\vc{w}}$
+  \item $\norm{\vc{u}+\vc{v}}$
+  \item $\norm{\alpha\vc{u}}$, and the value of
+        $\lvert\alpha\rvert\,\norm{\vc{u}}$ --- do they agree?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[The triangle inequality by hand]
+For each pair, compute $\norm{\vc{u}+\vc{v}}$ and $\norm{\vc{u}}+\norm{\vc{v}}$,
+and say whether the triangle inequality holds \emph{strictly} ($<$) or with
+\emph{equality} ($=$).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}c c c@{}}
+\toprule
+ & $\vc{u}$ & $\vc{v}$ \\
+\midrule
+(a) & $[\,3,\,0\,]$   & $[\,0,\,4\,]$   \\
+(b) & $[\,2,\,3\,]$   & $[\,4,\,6\,]$   \\
+(c) & $[\,1,\,-2\,]$  & $[\,-2,\,4\,]$  \\
+(d) & $[\,2,\,1\,]$   & $[\,0,\,0\,]$   \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{prob}
+
+\begin{prob}[Reading the scalar]
+Let $\vc{v}=[\,2,\,-3\,]$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write the vector on the same line through the origin as $\vc{v}$ that
+        points the \emph{same} way and is \emph{four times} as long.
+  \item Write the vector that points the \emph{opposite} way and is \emph{half}
+        as long.
+  \item Write the mirror image of $\vc{v}$ through the origin. What is its norm,
+        and why could you have said so without computing?
+  \item Is $[\,3,\,-4.5\,]$ a scalar multiple of $\vc{v}$? Is
+        $[\,4,\,-6.1\,]$? Justify each answer.
+  \item What does $0\vc{v}$ equal, and what happens to the direction?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Using the eight laws]
+Let $\vc{u},\vc{v}\in\R^{2}$. Simplify each expression to the form
+$\alpha\vc{u}+\beta\vc{v}$ for real numbers $\alpha,\beta$. At every step, name
+the law (\textbf{A1}--\textbf{A4}, \textbf{S1}--\textbf{S4}) that licenses it.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $3(\vc{u}+2\vc{v}) - 2(\vc{u}-\vc{v})$
+  \item $-(\vc{u}-\vc{v}) + 4\bigl(\vc{v}+\tfrac12\vc{u}\bigr)$
+  \item $5(\vc{u}+\vc{v}) - 5\vc{u} - 5\vc{v}$
+\end{enumerate}
+
+\noindent Then substitute $\vc{u}=[\,1,\,-2\,]$ and $\vc{v}=[\,3,\,1\,]$ into
+both the original expression and your simplified form for each of (a), (b), (c),
+and confirm they agree.
+
+\heads{None of the eight laws is a statement about \emph{subtraction}, so you
+cannot cite one to justify a step taken on a subtraction sign directly. Rewrite
+every subtraction as $\vc{u}+(-\vc{v})$ first.}
+\end{prob}
+
+\begin{prob}[Signatures]
+Give the signature $f:A\to B$ of each operation below, using the placeholder-dot
+convention, and say whether it is \emph{unary} or \emph{binary}.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item the Euclidean norm on $\R^{2}$;
+  \item addition of two vectors in $\R^{2}$;
+  \item scalar multiplication;
+  \item the operation sending a vector to its mirror image through the origin;
+  \item the operation sending a pair of vectors $\vc{u},\vc{v}$ to the distance
+        between their heads, that is, to $\norm{\vc{u}-\vc{v}}$.
+\end{enumerate}
+
+\noindent Then: two of the five above have the \emph{same} signature but are
+different operations. Which two, and what does that tell you about how much
+information a signature carries?
+\end{prob}
+
+\begin{prob}[Vector or scalar?]
+Classify each quantity as a \textbf{vector quantity} or a \textbf{scalar
+quantity}, and for each vector quantity say in a few words what its direction
+means physically.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
+  \item[] mass \quad$\cdot$\quad velocity \quad$\cdot$\quad speed \quad$\cdot$\quad
+          force \quad$\cdot$\quad temperature \quad$\cdot$\quad temperature
+          gradient \quad$\cdot$\quad work \quad$\cdot$\quad momentum
+          \quad$\cdot$\quad electric charge \quad$\cdot$\quad displacement
+          \quad$\cdot$\quad distance travelled \quad$\cdot$\quad acceleration
+\end{itemize}
+\end{minipage}
+\end{center}
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item A car drives once around a circular track at a constant $40$ mph. Is its
+        speed constant? Is its velocity? Is it accelerating?
+  \item The same car finishes where it started. What was its total
+        \emph{displacement}, and what was its total \emph{distance travelled}?
+        Explain why the two answers differ.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Vectors --- proof}
+%==============================================================================
+\emph{Vector Unit, Part 1.} Every one of these is proved the same way the
+lecture proves \textbf{A1}, \textbf{S1} and \textbf{A4}: write the vectors in
+components, use the corresponding fact about \emph{real} numbers one coordinate
+at a time, and reassemble --- except for Problem B.4, which deliberately forbids
+components.
+
+\begin{prob}[Reversing a difference]
+Let $\vc{u},\vc{v}\in\R^{2}$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that $\vc{u}-\vc{v} = -(\vc{v}-\vc{u})$.
+  \item Prove that subtraction is not associative by showing that
+        \[
+          (\vc{u}-\vc{v})-\vc{w}
+          \;=\;
+          \bigl[\vc{u}-(\vc{v}-\vc{w})\bigr] - 2\vc{w}
+        \]
+        for all $\vc{u},\vc{v},\vc{w}\in\R^{2}$, and give explicit
+        $\vc{u},\vc{v},\vc{w}$ for which the two bracketings genuinely differ.
+        Then state the one condition on $\vc{w}$ under which they agree, and
+        prove it.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Two of the eight laws]
+Let $\vc{u}\in\R^{2}$ and $\alpha,\beta\in\R$. Prove, in components:
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item \textbf{S2}: $(\alpha+\beta)\vc{u} = \alpha\vc{u}+\beta\vc{u}$.
+  \item \textbf{S3}: $\alpha(\beta\vc{u}) = (\alpha\beta)\vc{u}$.
+\end{enumerate}
+
+\noindent For each, name the property of the \emph{real numbers} that your proof
+ultimately rests on. Then explain, in one sentence, why \textbf{S1} and
+\textbf{S2} are genuinely different statements rather than the same
+distributive law written twice.
+\end{prob}
+
+\begin{prob}[Scaling multiplies the length by $\lvert\alpha\rvert$]
+Prove that for every $\alpha\in\R$ and every $\vc{v}\in\R^{2}$,
+\[
+  \norm{\alpha\vc{v}} = \lvert\alpha\rvert\,\norm{\vc{v}} .
+\]
+
+\heads{At one point you will meet $\sqrt{\alpha^{2}}$. It equals
+$\lvert\alpha\rvert$, \emph{not} $\alpha$. Say why in your write-up, and check
+your claim against the case $\alpha=-3$, $\vc{v}=[\,1,\,0\,]$ --- if you had
+written $\alpha$ there, what would the norm of $[-3,0]$ have come out to be, and
+why is that impossible?}
+\end{prob}
+
+\begin{prob}[Working from the laws alone, without components]
+This problem is about what the eight laws can do \emph{by themselves}. For this
+problem only, you may not write a vector in components: you may use only
+\textbf{A1}--\textbf{A4}, \textbf{S1}--\textbf{S4}, the uniqueness of the
+additive inverse, and ordinary arithmetic on the real scalars.
+
+Let $\vc{v}\in\R^{2}$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that $0\vc{v}=\vc{0}$. That is: the \emph{scalar} zero times any
+        vector is the \emph{zero vector}.
+        \hint{Start from $0\vc{v} = (0+0)\vc{v}$ and apply \textbf{S2}. You now
+        have $\vc{x}=\vc{x}+\vc{x}$ for $\vc{x}=0\vc{v}$; finish by adding
+        $-\vc{x}$ to both sides and using \textbf{A4}, \textbf{A2}, \textbf{A3}.}
+  \item Using (a), \textbf{S2} and \textbf{S4}, prove that
+        $\vc{v} + (-1)\vc{v} = \vc{0}$.
+  \item Conclude that $(-1)\vc{v}=-\vc{v}$, where $-\vc{v}$ denotes the additive
+        inverse guaranteed by \textbf{A4}. Say explicitly where you are using the
+        fact that the additive inverse is \emph{unique} --- without it, (b) would
+        only show that $(-1)\vc{v}$ is \emph{an} inverse, not \emph{the} inverse.
+\end{enumerate}
+
+\noindent Finally, in one or two sentences: why is it worth proving
+$(-1)\vc{v}=-\vc{v}$ this way, when a single line in components would also do it?
+\end{prob}
+
+\begin{prob}[When the triangle inequality is an equality]
+Prove: if $\vc{v}=\alpha\vc{u}$ for some scalar $\alpha\ge 0$, then
+\[
+  \norm{\vc{u}+\vc{v}} = \norm{\vc{u}}+\norm{\vc{v}} .
+\]
+
+\hint{Write $\vc{u}+\vc{v}=\vc{u}+\alpha\vc{u}$ and use \textbf{S2} and
+\textbf{S4} to collect it into a single scalar multiple of $\vc{u}$. Then apply
+Problem B.3. You will need $\lvert 1+\alpha\rvert = 1+\alpha$ --- say why the
+hypothesis $\alpha\ge0$ is what makes that true.}
+
+\medskip
+\noindent Then: where exactly does your proof break down if $\alpha<0$? Give a
+concrete $\vc{u}$ and $\alpha<0$ for which the two sides are unequal, and
+identify which step fails.
+\end{prob}
+
+%==============================================================================
+\section{Complex numbers --- computation}
+%==============================================================================
+\emph{Complex Numbers.} Leave answers in the form $a+bi$ with $a$ and $b$ real,
+in lowest terms. A quotient is not finished until it is written that way ---
+that is the whole point of the division rule.
+
+\begin{prob}[Parts, and the plane]
+For each of
+\[
+  z_1 = 4-3i,\qquad
+  z_2 = -2+5i,\qquad
+  z_3 = 6,\qquad
+  z_4 = -i,\qquad
+  z_5 = \tfrac12 + \tfrac32 i ,
+\]
+write down $\Rez(z)$ and $\Imz(z)$, and plot all five on one copy of the complex
+plane, labelled.
+
+\medskip
+\noindent Then: which of the five lie on the real axis? Which on the imaginary
+axis? And which of them are ordinary real numbers?
+
+\heads{$\Imz(4-3i)$ is the real number $-3$, not $-3i$ and not $3$. Go back over
+the definition of the imaginary part if that surprised you.}
+\end{prob}
+
+\begin{prob}[The four operations]
+Let $z = 3-2i$ and $w=-1+4i$. Compute, showing your work:
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $z+w$ \qquad and \qquad $z-w$ \qquad and \qquad $w-z$
+  \item $zw$, twice: once by expanding the binomials and using $i^{2}=-1$, and
+        once by substituting into the formula
+        $(a+bi)(c+di)=(ac-bd)+(ad+bc)i$. The two must agree.
+  \item $z^{2}$
+  \item $\conj{z}$, and $z\conj{z}$
+  \item $\dfrac{z}{w}$, by multiplying through by $\conj{w}/\conj{w}$
+  \item $\dfrac{1}{w}$
+  \item $\lvert z\rvert$, $\lvert w\rvert$, and $\lvert zw\rvert$.
+        Compare $\lvert zw\rvert$ with $\lvert z\rvert\cdot\lvert w\rvert$ and
+        state what you notice. (You will prove it in Problem D.3.)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Powers of $i$]
+Compute, in the form $a+bi$ with $a$ and $b$ real:
+\[
+  i^{3},\qquad i^{4},\qquad i^{5},\qquad i^{10},\qquad i^{27},\qquad i^{100},
+  \qquad (-i)^{3},\qquad (2i)^{4}.
+\]
+The first seven each come out to one of $1$, $-1$, $i$, $-i$. The last one does
+not --- say why not, and what the extra factor is.
+
+\noindent Then: explain in one or two sentences why the powers of $i$ repeat with
+period $4$, and describe what that repetition looks like on the complex plane.
+Finally, give a rule that computes $i^{n}$ for any positive integer $n$ from the
+remainder of $n$ on division by $4$.
+\end{prob}
+
+\begin{prob}[The conjugate]
+Let $z=5-12i$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\conj{z}$, $z\conj{z}$, and $\lvert z\rvert$. Verify that
+        $\lvert z\rvert^{2}=z\conj{z}$.
+  \item Compute $z+\conj{z}$ and $z-\conj{z}$. Express each in terms of
+        $\Rez(z)$ and $\Imz(z)$, and guess the general identity. (You will prove
+        it in Problem D.1.)
+  \item Plot $z$ and $\conj{z}$ and describe the geometric relationship between
+        them.
+  \item Compute $\conj{\conj{z}}$. What does conjugating twice do, and why is
+        that obvious from the picture?
+  \item Find every complex number $z$ satisfying $z=\conj{z}$. Describe the
+        answer as a subset of the complex plane.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Modulus, distance, and discs]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\lvert -3+4i\rvert$, $\lvert 1+i\rvert$, $\lvert -7\rvert$,
+        $\lvert 2i\rvert$, and $\lvert 0\rvert$.
+  \item Compute the distance from $3+2i$ to $-1-i$, and the distance from
+        $5-i$ to $5+3i$. For the second, explain why you could have read the
+        answer off the picture without computing.
+  \item Describe in words, and sketch, the set of complex numbers satisfying
+        each condition:
+        \[
+          \lvert z\rvert < 2,
+          \qquad
+          \lvert z - (2-i)\rvert = 3,
+          \qquad
+          \lvert z - 4i\rvert \le 1 .
+        \]
+        Say for each whether the boundary circle is included.
+  \item Write down an inequality describing the closed disc of radius $5$
+        centred at $-3+2i$.
+  \item Does $1+i$ lie in the disc $\lvert z-(2-i)\rvert\le 3$? Decide by
+        computing, and say how far inside or outside it is.
+  \item Describe the set $\lvert z\rvert = 0$. How many complex numbers are in
+        it?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[The unit circle, trigonometric form, and Euler]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item By computing the modulus of each, verify that all four of the complex
+        numbers
+        \[
+          i,
+          \qquad
+          \frac{\sqrt2}{2}+\frac{\sqrt2}{2}\,i,
+          \qquad
+          \frac12+\frac{\sqrt3}{2}\,i,
+          \qquad
+          -\frac35+\frac45\,i
+        \]
+        lie on the unit circle.
+  \item Write each of the four in trigonometric form $\cos\theta+i\sin\theta$,
+        with $\theta\in[0,2\pi)$. The first three have exact angles; for the
+        fourth, give $\theta$ to four decimal places (a calculator is fine, or
+        use \texttt{np.angle} from Part E) and say which quadrant it is in.
+  \item Use Euler's formula to evaluate, in the form $a+bi$:
+        \[
+          e^{i\pi/2},\qquad
+          e^{i\pi},\qquad
+          e^{2\pi i},\qquad
+          e^{i\pi/4},\qquad
+          e^{-i\pi/2}.
+        \]
+  \item State Euler's identity, and say which of your answers in (c) it is a
+        rearrangement of.
+  \item A point of the unit circle needs only \emph{one} real number to pin it
+        down, where a general complex number needs two. Explain that in one or
+        two sentences, and say what the missing second number is being fixed to.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Multiplication by $i$ as a rotation]
+Let $z = 3+2i$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $iz$, $i^{2}z$, $i^{3}z$ and $i^{4}z$, and plot all five points
+        $z, iz, i^{2}z, i^{3}z, i^{4}z$ on one complex plane. Join them in order.
+        What shape do the four distinct points form?
+  \item Compute $\lvert iz\rvert$ and compare it with $\lvert z\rvert$. Why is
+        this worth checking, rather than stopping once the angle is known to be
+        $90^{\circ}$?
+  \item Compute $(-i)z$. Which way did the point turn this time?
+  \item A point sits at $(4,1)$ in the plane. Encode it as a complex number and
+        rotate it $90^{\circ}$ counter-clockwise about the origin by a single
+        multiplication. Give the coordinates of the rotated point.
+  \item Rotate the same point by $180^{\circ}$, again by a single multiplication.
+        Which complex number do you multiply by, and why?
+  \item Take an arbitrary $z=a+bi$ and compute $iz$ symbolically. Write both $z$
+        and $iz$ as vectors in $\R^{2}$. The full argument finishes with a dot
+        product --- an operation we meet in Part 2 of the vector unit.
+        \emph{Without} using it, describe in words the relationship between
+        $[\,a,\,b\,]$ and $[\,-b,\,a\,]$: what happened to the two coordinates,
+        and what does that do to the arrow?
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Complex numbers --- proof}
+%==============================================================================
+\emph{Complex Numbers.} In every problem, write $z=a+bi$ and $w=c+di$ with
+$a,b,c,d\in\R$ and compute. As in Part B, name the fact about real numbers that
+each step relies on when it is not obvious.
+
+\begin{prob}[Recovering the parts from the conjugate]
+Let $z\in\C$. Prove:
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $z+\conj{z} = 2\Rez(z)$;
+  \item $z-\conj{z} = 2i\,\Imz(z)$;
+  \item $z$ is real if and only if $z=\conj{z}$;
+  \item $\Rez(z)=0$ if and only if $z=-\conj{z}$.
+\end{enumerate}
+
+\noindent Parts (c) and (d) are ``if and only if'' statements, so each needs
+\emph{both} directions argued. Say explicitly which direction you are proving as
+you prove it.
+\end{prob}
+
+\begin{prob}[Conjugation respects the arithmetic]
+Let $z,w\in\C$. Prove:
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\conj{z+w} = \conj{z}+\conj{w}$;
+  \item $\conj{zw} = \conj{z}\,\conj{w}$.
+\end{enumerate}
+
+\noindent For (b), expand both sides using the product formula and compare real
+and imaginary parts. Then state, in one sentence, what (b) says
+geometrically: if reflecting in the real axis is what conjugation \emph{does},
+what have you just shown about reflecting a product versus multiplying two
+reflections?
+\end{prob}
+
+\begin{prob}[The modulus is multiplicative]
+Prove that $\lvert zw\rvert = \lvert z\rvert\,\lvert w\rvert$ for all
+$z,w\in\C$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Show $\lvert zw\rvert^{2} = (ac-bd)^{2}+(ad+bc)^{2}$ and expand it fully.
+  \item Show that the expansion factors as $(a^{2}+b^{2})(c^{2}+d^{2})$. Note
+        which two terms cancel --- that cancellation is the entire content of the
+        identity.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[The unit circle really is the unit circle]
+Let $\theta$ be any real number. Prove:
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\lvert\cos\theta + i\sin\theta\rvert = 1$. Name the trigonometric
+        identity you use.
+  \item $\lvert e^{i\theta}\rvert = 1$, deduced from (a) and Euler's formula.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Multiplying by a point of the unit circle preserves distance]
+Let $z\in\C$ and let $\theta\in\R$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that $\lvert z\,e^{i\theta}\rvert = \lvert z\rvert$.
+        \hint{Problem D.3 plus Problem D.4(b). This is a two-line proof.}
+  \item Deduce as a special case that $\lvert iz\rvert = \lvert z\rvert$ for all
+        $z$, by identifying the value of $\theta$ for which $e^{i\theta}=i$.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{NumPy}
+%==============================================================================
+\emph{Required.}
+
+\medskip
+\noindent This part is a tutorial, then a specification of the two files you hand
+in, then the problems. Read the tutorial sections typing the code in as you go,
+read \emph{How to structure your submission} before you write anything you intend
+to submit, then do Problems E.1--E.8. If you have never programmed before, that
+is expected and fine: everything you need is below, and nothing here is harder
+than the arithmetic you did by hand in Parts A and C.
+
+\medskip
+\noindent Two references live alongside this assignment in the course
+repository: \textbf{Setup Guide 2} (installing Python, pip, and an IDE) and the
+\textbf{Python Recipe Book} (\texttt{lectures/python-recipe/}), which is a
+lookup table of the calls covered here and in later lectures. Use the recipe
+book as a dictionary, not a textbook.
+
+\subsection{Getting set up}
+
+Install once:
+
+\begin{lstlisting}
+python -m pip install numpy
+\end{lstlisting}
+
+\noindent Every block below assumes this line at the top of your file:
+
+\begin{lstlisting}
+import numpy as np
+\end{lstlisting}
+
+\checkpoint{Create \texttt{hw1.py}, put the import line in it, add
+\texttt{print(np.array([1.0, 2.0]))}, and run it. You should see
+\texttt{[1. 2.]}. If you get \texttt{ModuleNotFoundError: No module named
+'numpy'}, the install went to a different Python than the one running your file
+--- Setup Guide 2 \S8 covers this exact failure.}
+
+\subsection{Vectors: making them, and reading them}
+
+A vector in $\R^{2}$ is a NumPy array of two numbers.
+
+\begin{lstlisting}
+import numpy as np
+
+u = np.array([3.0, -4.0])       # the vector [3, -4]
+v = np.array([-1.0, 2.0])       # the vector [-1, 2]
+
+print(u[0])                     # 3.0   -- the first component
+print(u[1])                     # -4.0  -- the second
+print(len(u))                   # 2     -- the n in R^n
+print(u.shape)                  # (2,)
+\end{lstlisting}
+
+\heads{\textbf{Indices start at zero.} The first component of $\vc{u}$ is
+\texttt{u[0]}, not \texttt{u[1]}. Lecture counts from $1$; Python counts from
+$0$. Subtract one.}
+
+\heads{\textbf{Write \texttt{3.0}, not \texttt{3}, when the answers will not be
+whole numbers.} An array built from integers stays an integer array, and some
+operations will surprise you. Using floats throughout this assignment costs
+nothing and avoids the issue entirely.}
+
+\subsection{Addition, subtraction, and scaling}
+
+NumPy spells these exactly as the lecture does.
+
+\begin{lstlisting}
+u + v           # array([ 2., -2.])   -- componentwise addition
+u - v           # array([ 4., -6.])   -- componentwise subtraction
+-3 * u          # array([-9., 12.])   -- scalar multiplication
+-u              # array([-3.,  4.])   -- the mirror image, (-1)u
+2*u - 3*v       # array([ 9., -14.])  -- combinations, as in Problem A.5
+\end{lstlisting}
+
+\heads{\textbf{A Python list is not a vector.} Ordinary square brackets with no
+\texttt{np.array} around them make a \emph{list}, and \texttt{+} on two lists
+means \emph{glue them end to end}:}
+
+\begin{lstlisting}
+[1, 2] + [3, 4]                     # [1, 2, 3, 4]   -- concatenation!
+np.array([1, 2]) + np.array([3, 4]) # array([4, 6])  -- what you wanted
+\end{lstlisting}
+
+\noindent{\small\sffamily Every vector in this assignment must be wrapped in
+\texttt{np.array}.}
+
+\heads{\textbf{\texttt{u * v} is not a vector operation we have defined.} NumPy
+will happily compute it --- it multiplies entry by entry --- but that is not
+addition, not scaling, and not any operation from the lectures. Do not use it in
+this assignment.}
+
+\subsection{The norm}
+
+\begin{lstlisting}
+np.linalg.norm(u)                   # 5.0  -- the Euclidean norm ||u||
+np.sqrt(u[0]**2 + u[1]**2)          # 5.0  -- the same thing, by Pythagoras
+np.linalg.norm(u - v)               # the distance between the two heads
+\end{lstlisting}
+
+\noindent The name is worth parsing: \texttt{np} is NumPy, \texttt{linalg} is
+its linear-algebra module, \texttt{norm} is the function. Read it as ``NumPy's
+linear algebra norm''.
+
+\subsection{Comparing floating-point numbers}
+
+This is the one piece of programming discipline this assignment insists on.
+
+\begin{lstlisting}
+0.1 + 0.2 == 0.3                    # False   (!)
+0.1 + 0.2                           # 0.30000000000000004
+np.isclose(0.1 + 0.2, 0.3)          # True    -- the right way to compare
+\end{lstlisting}
+
+\noindent Computers store real numbers to about sixteen significant digits, so
+two quantities that are mathematically equal can differ in the last few. Testing
+them with \texttt{==} then reports \texttt{False} and tells you nothing.
+
+\begin{callout}{The rule for this course}
+Never compare computed floating-point values with \texttt{==}. Use
+\texttt{np.isclose(x, y)} for two numbers, and \texttt{np.allclose(a, b)} for two
+arrays. Both work on complex numbers too.
+\end{callout}
+
+\subsection{Complex numbers in Python}
+
+\begin{lstlisting}
+z = 3 + 4j              # NOT 3 + 4i -- Python writes the imaginary unit as j
+w = complex(1, -2)      # the same as 1 - 2j
+
+z.real                  # 3.0            -- Re(z), a real number
+z.imag                  # 4.0            -- Im(z), a real number
+z.conjugate()           # (3-4j)         -- the conjugate, z-bar
+abs(z)                  # 5.0            -- the modulus |z|
+
+z + w                   # (4+2j)
+z * w                   # (11-2j)
+z / w                   # (-1+2j)
+z ** 2                  # (-7+24j)
+
+np.angle(z)             # 0.9272952...   -- the angle theta, in radians
+np.exp(1j * np.pi / 2)  # ~ (6.1e-17+1j) -- Euler's formula: e^{i pi/2} = i
+\end{lstlisting}
+
+\heads{\textbf{The imaginary unit is \texttt{j}, and it must carry a
+coefficient.} Writing \texttt{j} alone is a variable name and will raise
+\texttt{NameError}; the imaginary unit is \texttt{1j}. (Python borrowed
+\texttt{j} from electrical engineering, where $i$ already means current.) Also
+note \texttt{1j**2} prints as \texttt{(-1+0j)}, not \texttt{-1} --- the value is
+$-1$, but the type stays complex.}
+
+\heads{\textbf{\texttt{z.imag} is a real number.} For \texttt{z = 3 + 4j} it is
+\texttt{4.0}, not \texttt{4j} --- which is exactly the convention used in
+lecture. \texttt{.real} and \texttt{.imag} are attributes, so they take no
+parentheses; \texttt{.conjugate()} is a method, so it does.}
+
+\heads{\textbf{The last line of the block above prints
+\texttt{(6.123233995736766e-17+1j)}, not a clean \texttt{1j}.} That
+$6.1\times10^{-17}$ is floating-point error, not mathematics: $\cos(\pi/2)$ is
+zero but the stored value of $\pi$ is not exactly $\pi$. This is why
+\texttt{np.isclose} exists, and Problem E.6 asks you to think about it.}
+
+\subsection{How to structure your submission}
+
+Part E is submitted as \textbf{two} Python files with different jobs.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=6pt,topsep=4pt]
+  \item \texttt{hw1.py} --- \textbf{your work}. One function per lettered part,
+        named \texttt{q}\,\emph{number}\,\emph{letter}: Problem E.2(a) becomes
+        \texttt{q2a}, Problem E.6(c) becomes \texttt{q6c}. A question with no
+        lettered parts gets one function named for the question alone, so E.8
+        becomes \texttt{q8}. Each function \textbf{returns} its answer; when an
+        answer has several pieces, return them together as a tuple or a list.
+  \item \texttt{runhw1.py} --- \textbf{the driver}. It imports those functions
+        from \texttt{hw1.py} and calls them in order, one line per part, printing
+        a label before each answer. It contains no mathematics of its own.
+        \textbf{This is the file that is run to grade Part E.}
+\end{itemize}
+
+\medskip
+\noindent\textbf{\texttt{hw1.py} --- definitions only.} Nothing may run when the
+file is imported: define your functions and stop. A \texttt{print} sitting at the
+left margin fires the moment \texttt{runhw1.py} imports the file, and its output
+lands above the labels, where it cannot be matched to a question.
+
+\begin{lstlisting}
+# hw1.py -- the work.  Definitions only; nothing runs on import.
+
+import numpy as np
+
+u = np.array([3.0, -4.0])
+v = np.array([-1.0, 2.0])
+
+def norm2(vec):                 # helpers are fine, and may be shared
+    return np.sqrt(vec[0]**2 + vec[1]**2)
+
+# --- E.2(a) -------------------------------------------------------
+def q2a():
+    return norm2(u)
+
+# --- E.2(b) -------------------------------------------------------
+def q2b():
+    return [bool(np.isclose(norm2(w), np.linalg.norm(w))) for w in (u, v)]
+\end{lstlisting}
+
+\noindent\textbf{\texttt{runhw1.py} --- one line per part.} Import the functions
+from their source file, then call them in the order the questions appear. Each
+line prints a label followed by the answer that call produced:
+
+\begin{lstlisting}
+# runhw1.py -- runs every question in order.  No mathematics in this file.
+
+import hw1
+
+print("Output of question 2 part a : ", hw1.q2a())
+print("Output of question 2 part b : ", hw1.q2b())
+print("Output of question 2 part c : ", hw1.q2c())
+\end{lstlisting}
+
+\noindent (\texttt{from hw1 import q2a, q2b, q2c} and then \texttt{q2a()} is
+equally acceptable if you prefer it.)
+
+\medskip
+\noindent\textbf{The label is required, and its wording is fixed:}
+
+\begin{center}
+\texttt{"Output of question <number> part <letter> : "}
+\end{center}
+
+\noindent So Problem E.6(c) is labelled \texttt{Output of question 6 part c :}\ .
+For a question with no lettered parts, drop that half ---
+\texttt{"Output of question 8 : "}.
+
+\heads{Several problems below say ``print'' something. Return it instead ---
+\texttt{runhw1.py} does all the printing, and that is where the value shows up
+under its label. Nothing in \texttt{hw1.py} should print.}
+
+\checkpoint{Run \texttt{runhw1.py} once before you push and read the output top
+to bottom. Every part of every question should appear, in order, under its own
+label, with no error and nothing unlabelled.}
+
+\subsection{The problems}
+
+\begin{prob}[Checking Part A]
+Enter $\vc{u}=[3,-4]$, $\vc{v}=[-1,2]$, $\vc{w}=[5,0]$ as NumPy arrays and print
+the value of every one of the nine sub-parts (a)--(i) of Problem A.2. Compare
+each against what you computed by hand and state, in a comment, whether they
+agree. If any disagree, find the error --- it is far more often in the hand
+computation than in the code, and finding it is the point of the exercise.
+\end{prob}
+
+\begin{prob}[Writing the norm yourself]
+\texttt{np.linalg.norm} is a black box. Open it.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write a function \texttt{norm2(v)} that takes a two-component array and
+        returns $\sqrt{x^{2}+y^{2}}$, using only \texttt{np.sqrt}, indexing, and
+        arithmetic --- not \texttt{np.linalg.norm}.
+  \item Test it against \texttt{np.linalg.norm} on all four vectors of
+        Problem A.1, using \texttt{np.isclose}, and return the four verdicts.
+  \item Use \texttt{norm2} to give the norms of the four vectors from
+        Problem A.1 as decimals, and check them against the exact values you
+        wrote by hand.
+\end{enumerate}
+
+\begin{lstlisting}
+def norm2(v):
+    # your two lines here
+    ...
+
+# --- E.2(b) -------------------------------------------------------
+def q2b():
+    return [bool(np.isclose(norm2(w), np.linalg.norm(w))) for w in vectors]
+\end{lstlisting}
+\end{prob}
+
+\begin{prob}[Head minus tail]
+Write a function \texttt{vector\_from(tail, head)} that takes two points, given
+as NumPy arrays, and returns the vector they represent --- head minus tail.
+
+Use it on all four rows of the table in Problem A.1, return the four results, and
+then use \texttt{np.allclose} to confirm in code which pair are the same vector.
+Return that answer as a sentence, for example \texttt{"rows (x) and (y) are the
+same vector: True"}.
+\end{prob}
+
+\begin{prob}[Testing the triangle inequality at scale]
+By hand you checked four pairs. Check ten thousand.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Using the generator below, draw $10{,}000$ random pairs
+        $\vc{u},\vc{v}\in\R^{2}$ and count how many satisfy
+        $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$. Print the count.
+  \item In the same loop, count how many satisfy it with \emph{equality}, in the
+        \texttt{np.isclose} sense. Print that count too, and explain the number
+        you get in one sentence.
+  \item Now construct, by hand in code, one pair for which equality \emph{does}
+        hold, and verify it with \texttt{np.isclose}. Say what it is about your
+        pair that forces equality.
+  \item Answer in a comment: your run in (a) found no counterexample. Does that
+        \emph{prove} the triangle inequality? Say why or why not, in one or two
+        sentences.
+\end{enumerate}
+
+\begin{lstlisting}
+rng = np.random.default_rng(231)    # a fixed seed, so your run is reproducible
+
+for _ in range(10000):
+    u = rng.normal(size=2)          # a random vector in R^2
+    v = rng.normal(size=2)
+    # your test here
+\end{lstlisting}
+\end{prob}
+
+\begin{prob}[Implementing complex arithmetic from the formulas]
+Python already multiplies and divides complex numbers. Ignore that, and
+implement the multiplication and division rules yourself.
+
+Write three functions that take the four \emph{real} numbers $a,b,c,d$ and
+return the answer as a Python complex number, using only real arithmetic
+internally and the formulas from the lecture:
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item \texttt{cmul(a, b, c, d)}, computing $(a+bi)(c+di)$ by the boxed formula
+        $(ac-bd)+(ad+bc)i$;
+  \item \texttt{cdiv(a, b, c, d)}, computing $(a+bi)/(c+di)$ by the conjugate
+        trick, and raising an error if $c$ and $d$ are both zero;
+  \item \texttt{cmod(a, b)}, computing $\lvert a+bi\rvert$ from Pythagoras.
+\end{enumerate}
+
+\noindent Then test all three against Python's built-in \texttt{*}, \texttt{/}
+and \texttt{abs} on the pair $z=3-2i$, $w=-1+4i$ from Problem C.2, using
+\texttt{np.isclose}, and return the verdicts. Finally, call \texttt{cdiv} with
+$c=d=0$ inside a \texttt{try} block, catch the error, and return its message, to
+show the guard works.
+
+\begin{lstlisting}
+def cmul(a, b, c, d):
+    return complex(..., ...)        # (ac - bd) + (ad + bc)i
+\end{lstlisting}
+
+\heads{Build the answer with \texttt{complex(real\_part, imag\_part)}. If you
+find yourself writing \texttt{(a + b*1j) * (c + d*1j)} you have used Python's
+multiplication instead of implementing the lecture's formula, which is the one
+thing this problem is asking you not to do.}
+\end{prob}
+
+\begin{prob}[Euler's formula, numerically]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item For each of the ten values $\theta = 0$, $\pi/10$, $2\pi/10$, \dots,
+        $9\pi/10$, compute \texttt{np.exp(1j*theta)} and
+        \texttt{np.cos(theta) + 1j*np.sin(theta)}, and confirm with
+        \texttt{np.isclose} that they agree. Return the ten $\theta$ values
+        paired with their ten verdicts. The block at the end of this problem
+        builds all ten values of $\theta$ for you in one line.
+  \item Print \texttt{np.exp(1j*np.pi) + 1}. It is not exactly zero. Print
+        \texttt{np.isclose(np.exp(1j*np.pi) + 1, 0)} as well. In a comment,
+        explain in two sentences why the exact answer is $0$ (Euler's identity)
+        but the computed answer is not, and what the size of the discrepancy
+        tells you.
+  \item Confirm that $\lvert e^{i\theta}\rvert = 1$ for all ten values of
+        $\theta$ from (a), using \texttt{np.abs} and \texttt{np.allclose}. This
+        is Problem D.4(b), checked numerically --- note again that checking it on
+        ten values is not what proving it means.
+  \item Verify your answers to Problem C.6(b): for each of the four numbers
+        there, print \texttt{np.angle} of it and check it against the $\theta$
+        you found by hand.
+\end{enumerate}
+
+\begin{lstlisting}
+thetas = np.pi * np.arange(10) / 10     # 0, pi/10, 2pi/10, ..., 9pi/10
+\end{lstlisting}
+\end{prob}
+
+\begin{prob}[Rotation by $i$]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item For \texttt{z = 3 + 2j}, print $i^{k}z$ for $k=0,1,2,3,4$ and check that
+        the fifth value equals the first, using \texttt{np.isclose}. Compare with
+        your hand answers to Problem C.7(a).
+  \item Draw $1000$ random complex numbers and verify with \texttt{np.allclose}
+        that $\lvert iz\rvert = \lvert z\rvert$ for every one of them.
+        \hint{\texttt{zs = rng.normal(size=1000) + 1j*rng.normal(size=1000)}
+        makes all thousand at once, and \texttt{np.abs(zs)} takes all thousand
+        moduli at once --- no loop needed.}
+  \item Take the four corners of the unit square, $0$, $1$, $1+i$, $i$, as an
+        array. Multiply the whole array by $i$ and print the result. Which corner
+        went where? Multiply by $i$ three more times and confirm you are back
+        where you started.
+  \item Rotate the point $(4,1)$ by $90^{\circ}$ counter-clockwise, by
+        $180^{\circ}$, and by $\theta = \pi/6$, each with a single complex
+        multiplication. Print the resulting coordinates as ordinary pairs of real
+        numbers, using \texttt{.real} and \texttt{.imag}. Check the first two
+        against your hand answers to Problem C.7(d) and (e).
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Checking Part C]
+Print the value of every sub-part of Problem C.2, of Problem C.4(a)--(b), and of
+Problem C.5(a)--(b), and state in a comment whether each agrees with your hand
+computation.
+
+\medskip
+\noindent Then answer, in a comment at the end of your file, in three or four
+sentences: which problems on this assignment could NumPy check for you, and
+which could it not? Name at least one problem from Part B or Part D and say
+precisely what a computer run would and would not establish about it.
+\end{prob}
+
+\begin{callout}{What NumPy can and cannot do for you}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Part} & \textbf{Can NumPy check it?} \\
+\midrule
+A --- vectors, computation      & Yes, entirely. Do it before you submit. \\
+B --- vectors, proof            & No. It can test instances, which is not a proof. \\
+C --- complex, computation      & Yes, entirely. Do it before you submit. \\
+D --- complex, proof            & No, for the same reason. \\
+E --- NumPy                     & It \emph{is} the check. \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+For the drawing sub-parts of Problems A.1, C.1, C.4 and C.7, nothing is
+being checked by machine --- but sketching the picture is often the fastest way
+to notice that a sign is wrong.
+\end{callout}
+
+%==============================================================================
+\section*{Optional and ungraded: drawing the pictures}
+%==============================================================================
+\noindent Not required, not graded, and not needed for any later assignment ---
+but if you would like the computer to draw the figures you have been sketching
+by hand, this is all it takes. It needs one more package:
+
+\begin{lstlisting}
+python -m pip install matplotlib
+\end{lstlisting}
+
+\heads{Keep this out of \texttt{hw1.py} and \texttt{runhw1.py}, in a scratch file
+of its own. \texttt{plt.show()} halts a program until you close the window, so a
+plot left in your submission stalls the run it is graded from.}
+
+\noindent Two vectors and their sum, drawn as arrows from the origin:
+
+\begin{lstlisting}
+import numpy as np
+import matplotlib.pyplot as plt
+
+u = np.array([2.0, 1.0])
+v = np.array([1.0, 3.0])
+
+for vec, colour, name in [(u, "C0", "u"), (v, "C2", "v"), (u+v, "C3", "u+v")]:
+    plt.arrow(0, 0, vec[0], vec[1], head_width=0.12,
+              length_includes_head=True, color=colour)
+    plt.text(vec[0], vec[1], f" {name}", color=colour)
+
+plt.axhline(0, color="gray", lw=0.5)
+plt.axvline(0, color="gray", lw=0.5)
+plt.gca().set_aspect("equal")
+plt.grid(alpha=0.3)
+plt.show()
+\end{lstlisting}
+
+\noindent The four powers of $i$ times $z$, on the complex plane:
+
+\begin{lstlisting}
+z = 3 + 2j
+points = np.array([z * 1j**k for k in range(4)])
+
+plt.scatter(points.real, points.imag)
+for p in points:
+    plt.text(p.real, p.imag, f"  {p:.0f}")
+
+plt.gca().set_aspect("equal")
+plt.axhline(0, color="gray", lw=0.5)
+plt.axvline(0, color="gray", lw=0.5)
+plt.grid(alpha=0.3)
+plt.show()
+\end{lstlisting}
+
+\noindent \texttt{points.real} and \texttt{points.imag} take the real and
+imaginary parts of the whole array at once --- the same attributes as for a
+single complex number, applied elementwise.
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\smallskip
+\noindent{\small Questions about any problem here belong in the class Discord,
+where everyone can see the answer. Questions that are specific to your own work
+--- ``is my proof of B.4 valid?'' --- are better brought to office hours,
+Thursdays 3:00--4:00 PM in Kiely Hall 508. Please email ahead.}
+
+\end{document}
