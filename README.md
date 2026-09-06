@@ -95,13 +95,22 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
 
 ### Assessments
 
-These are placeholders so far — the directories exist but the material is
-written and distributed as the semester progresses.
-
 - **`homework/`** — the 5 homework assignments
 - **`projects/`** — the 3 projects
 - **`exams/`** — the two midterms and the final
 - **`demos/`** — in-lecture computational demos
+
+Projects, exams and demos are placeholders so far — those directories exist but
+the material is written and distributed as the semester progresses.
+
+#### Homework out now
+
+- [**Homework 1 — Vectors and Complex Numbers**](homework/MATH231_homework_1.pdf)
+  — due **Sunday, September 20, 2026, 11:59 PM**
+
+> **Homework 1 is not final yet.** It will be updated again later this week with
+> the final set of questions. Pull the latest version before you start working,
+> and check once more before you submit.
 
 ## Reference texts
 
