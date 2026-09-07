@@ -1,5 +1,16 @@
 # MATH 231 — Linear Algebra I (Queens College, Fall 2026)
 
+## Homework out now
+
+- [**Homework 1 — Vectors and Complex Numbers**](homework/MATH231_homework_1.pdf)
+  — due **Sunday, September 20, 2026, 11:59 PM**
+
+> **Homework 1 is not final yet.** It will be updated again later this week with
+> the final set of questions. Pull the latest version before you start working,
+> and check once more before you submit.
+
+## About this course
+
 A first-semester linear algebra course covering a broad range of foundational
 topics with a strong emphasis on **computational applications and methods**. The
 course pairs the theory of vector spaces, matrices, and eigenstructure with the
@@ -101,16 +112,8 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
 - **`demos/`** — in-lecture computational demos
 
 Projects, exams and demos are placeholders so far — those directories exist but
-the material is written and distributed as the semester progresses.
-
-#### Homework out now
-
-- [**Homework 1 — Vectors and Complex Numbers**](homework/MATH231_homework_1.pdf)
-  — due **Sunday, September 20, 2026, 11:59 PM**
-
-> **Homework 1 is not final yet.** It will be updated again later this week with
-> the final set of questions. Pull the latest version before you start working,
-> and check once more before you submit.
+the material is written and distributed as the semester progresses. Assignments
+that have been distributed are linked at the top of this README.
 
 ## Reference texts
 
