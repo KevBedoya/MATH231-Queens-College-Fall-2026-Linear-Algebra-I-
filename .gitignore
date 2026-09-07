@@ -9,3 +9,6 @@
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Instructor-side authoring aids. Not course material, not distributed.
+skills/
