@@ -9,6 +9,17 @@
 > the final set of questions. Pull the latest version before you start working,
 > and check once more before you submit.
 
+## Covered in class so far
+
+Section ranges are **inclusive** at both ends. A section appearing on two
+consecutive dates was started in the first meeting and finished in the second.
+
+| Date | Lecture | Sections | What that was |
+|---|---|---|---|
+| Tue, Sep 1 | [Vector Unit, Part 1](lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic.pdf) | §1–§7 | magnitude and direction; the Euclidean norm; the derivative as a vector quantity; vector vs. scalar quantities; one-dimensional vectors; notation, $\mathbb{R}^2$, and signatures; addition and subtraction |
+| Thu, Sep 3 | [Vector Unit, Part 1](lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic.pdf) | §7–§9 | addition and subtraction, the parallelogram rule and the triangle inequality; scalar multiplication, mirroring, and the eight algebraic laws; equality of vectors |
+| Thu, Sep 3 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §1–§3 | where the real numbers run out; the imaginary unit and $a+bi$; the complex plane |
+
 ## About this course
 
 A first-semester linear algebra course covering a broad range of foundational
