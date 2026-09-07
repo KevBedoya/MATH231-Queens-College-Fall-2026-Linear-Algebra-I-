@@ -20,6 +20,16 @@ consecutive dates was started in the first meeting and finished in the second.
 | Thu, Sep 3 | [Vector Unit, Part 1](lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic.pdf) | §7–§9 | addition and subtraction, the parallelogram rule and the triangle inequality; scalar multiplication, mirroring, and the eight algebraic laws; equality of vectors |
 | Thu, Sep 3 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §1–§3 | where the real numbers run out; the imaginary unit and $a+bi$; the complex plane |
 
+## Looking ahead
+
+| Date | Lecture | Sections | What that will be |
+|---|---|---|---|
+| Tue, Sep 8 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §4–§7 | arithmetic — addition, multiplication, the conjugate, and division; the modulus, distance, and discs; the unit circle, trigonometric form, and Euler's formula; multiplication by $i$ as a rotation |
+| Tue, Sep 8 | [Vector Unit, Part 2](lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection.pdf) | from §10 | begins the part — relative orientation: parallel, orthogonal, and the angle between. The dot product and projection follow in §11–§12. |
+
+> **Planned, not promised.** Pacing shifts, and this table is a forecast. The
+> recap above it is the record of what actually happened.
+
 ## About this course
 
 A first-semester linear algebra course covering a broad range of foundational
