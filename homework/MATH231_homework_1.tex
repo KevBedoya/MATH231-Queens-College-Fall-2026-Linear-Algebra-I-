@@ -2,29 +2,40 @@
 %  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
 %  HOMEWORK 1 -- Vectors and Complex Numbers
 %
-%  SCOPE.  This file currently covers exactly two lectures:
+%  SCOPE.  This file currently covers exactly three lectures:
 %     lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic  (S1-S9)
+%     lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection (S10-S12)
 %     lectures/vector-unit/MATH231_complex_numbers                     (S1-S7)
 %  The complex-numbers lecture is deliberately cut BEFORE S8 (de Moivre, the
 %  roots of unity, the fundamental theorem of algebra) and before the quaternion
-%  material -- none of that has been covered in class yet.
+%  material -- none of that has been covered in class yet.  The vectors Part 2
+%  lecture stops after S12.6 (the orthogonal piece); Cauchy-Schwarz opens S13 in
+%  Part 3 and has NOT been lectured -- see the note on Problem E.2 below.
 %
-%  MORE PROBLEMS TO COME.  Parts are lettered (A, B, C, D, E) rather than
+%  MORE PROBLEMS TO COME.  Parts are lettered (A, B, C, D, E, F) rather than
 %  numbered, and problems are numbered by part (Problem A.1, B.2, ...), so
 %  further parts from later lectures can be appended without renumbering
-%  anything already written.  Add them as new \section blocks before Part E, or
-%  extend Part E's Section E.x list, whichever fits.
+%  anything already written.  Add them as new \section blocks before Part F, or
+%  extend Part F's Section F.x list, whichever fits.  Part E (dot product,
+%  cosine similarity, projection) was added this way; adding it renumbered the
+%  NumPy part from E to F and nothing else.
 %
 %  DELIBERATE OMISSIONS, so that nothing here outruns the lectures:
-%   - No dot product.  It arrives in vectors Part 2.  The complex lecture's S7
-%     proof that multiplication by i is a rotation *does* use it, so Problem C.7
-%     and D.5 are routed through the modulus instead, and the forward reference
-%     is flagged honestly in the text.
-%   - No unit vectors / normalisation (\hat{u}), no S^1 notation, no metrics.
+%   - Parts C and D still avoid the dot product, because they were written
+%     against the complex lecture alone: the complex lecture's S7 proof that
+%     multiplication by i is a rotation *does* use it, so Problem C.7 and D.5
+%     stay routed through the modulus, and the cross-reference is flagged
+%     honestly in the text.  Part E is where the dot product is exercised.
+%   - No metrics, no S^1 notation.  Part E uses normalisation (\hat{u}) only
+%     implicitly, through comp and proj; it never asks for a unit vector.
 %   - No argument/polar form beyond cos(theta) + i sin(theta) and Euler.
+%   - Part E.2 (Cauchy-Schwarz) and E.5 (the triangle inequality by Cauchy-
+%     Schwarz) are S13 material, from vectors Part 3, which has not been
+%     lectured.  Both are fully scaffolded so they are self-contained from S10-
+%     S12, and the section preamble says so out loud.
 %
-%  NO ANSWER KEY, by design.  Part E is the answer key: every arithmetic problem
-%  in Parts A and C can be checked by the student in NumPy.  That is the whole
+%  NO ANSWER KEY, by design.  Part F is the answer key: every arithmetic problem
+%  in Parts A, C and E can be checked by the student in NumPy.  That is the whole
 %  pedagogical point of the programming section, and it is stated as such.
 %
 %  TWO THINGS TO SET BEFORE HANDING THIS OUT:
@@ -108,6 +119,9 @@
 \newcommand{\C}{\mathbb{C}}
 \newcommand{\vc}[1]{\mathbf{#1}}
 \newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
 \newcommand{\conj}[1]{\overline{#1}}
 \newcommand{\Rez}{\operatorname{Re}}
 \newcommand{\Imz}{\operatorname{Im}}
@@ -140,6 +154,11 @@ Vector Unit, Part 1 & \S1--\S9 &
   notation, $\R^{2}$, and signatures; addition and subtraction; the
   parallelogram rule and the triangle inequality; scalar multiplication;
   the eight algebraic laws; equality of vectors \\[3pt]
+Vector Unit, Part 2 & \S10--\S12 &
+  relative orientation --- parallel, antiparallel, orthogonal; the angle
+  between two vectors; the dot product and its laws \textbf{D1}--\textbf{D4};
+  cosine similarity; the orthogonality test; projection, the signed component,
+  and the orthogonal piece \\[3pt]
 Complex Numbers & \S1--\S7 &
   the imaginary unit; $a+bi$, real and imaginary parts; the complex plane;
   addition, multiplication, the conjugate, division; the modulus, distance,
@@ -154,7 +173,7 @@ Push to your own MATH 231 GitHub repository, in a folder named
 \texttt{homework/hw1/}:
 
 \begin{itemize}[leftmargin=1.4em,itemsep=7pt,topsep=3pt]
-  \item \textbf{Parts A--D} --- your written work, as a single PDF named
+  \item \textbf{Parts A--E} --- your written work, as a single PDF named
         \texttt{hw1.pdf}. Handwritten and scanned or photographed is completely
         fine, as long as it is legible and the pages are in order.
 
@@ -163,21 +182,21 @@ Push to your own MATH 231 GitHub repository, in a folder named
         link to a file hosted somewhere else will not be graded. Phone scanning
         apps export PDF directly, and every word processor can ``Save as PDF''.
 
-        \textbf{Type Parts A--D up instead and you earn $+5$ points of extra
+        \textbf{Type Parts A--E up instead and you earn $+5$ points of extra
         credit on this assignment.} Any typesetting system counts --- \LaTeX,
         Word's equation editor, or anything else that produces readable
-        mathematics --- and the extra credit is for the whole of Parts A--D, not
+        mathematics --- and the extra credit is for the whole of Parts A--E, not
         for typing up some of it. The file you submit must still be a PDF.
 
-  \item \textbf{Part E} --- two Python files, \texttt{hw1.py} (your work, one
+  \item \textbf{Part F} --- two Python files, \texttt{hw1.py} (your work, one
         function per question part) and \texttt{runhw1.py} (which imports those
         functions and runs them all, labelling each answer). Do not submit a copy
         of your output: \texttt{runhw1.py} is \textbf{run as submitted}, and Part
-        E is graded from what it prints. \emph{How to structure your submission},
-        in Part E, specifies both files in full.
+        F is graded from what it prints. \emph{How to structure your submission},
+        in Part F, specifies both files in full.
 
         \textbf{Python is the only language accepted for the programming.} Any
-        other language earns no credit for Part E, however correct it is.
+        other language earns no credit for Part F, however correct it is.
 \end{itemize}
 
 If you have not set up the repository yet, Setup Guide 1 (\S\,``Create your
@@ -186,7 +205,7 @@ Only pushed work can be graded.
 \end{callout}
 
 \begin{callout}{Label every answer}
-\textbf{Parts A--D.} Label each answer with the number of the problem it answers
+\textbf{Parts A--E.} Label each answer with the number of the problem it answers
 --- \texttt{A.2(f)}, \texttt{C.5(d)}, \texttt{D.1(b)} --- and put your answers
 \textbf{in the same order as they appear in this assignment}. A grader who
 cannot tell which question a piece of work belongs to cannot award it credit,
@@ -196,7 +215,7 @@ and that is the most common way a correct answer loses points.
 and typed submissions alike: the label alone is enough. Write \texttt{A.2(f)},
 then your work. Do not reproduce the wording of the problem.
 
-\textbf{Part E.} The labelling is built into the file structure specified under
+\textbf{Part F.} The labelling is built into the file structure specified under
 \emph{How to structure your submission}: one function per question part in
 \texttt{hw1.py}, named after that part, with a comment naming it directly above;
 and one labelled line per part in \texttt{runhw1.py}. Code that runs correctly
@@ -205,21 +224,21 @@ sheet is.
 \end{callout}
 
 \noindent\textbf{Grading.} Every problem is worth the same number of points.
-Part E is graded by running \texttt{runhw1.py} and reading what it prints --- on
+Part F is graded by running \texttt{runhw1.py} and reading what it prints --- on
 whether it produces correct answers, not on programming style.
 
 \medskip
-\noindent\textbf{Use Part E to check Parts A and C.} Every numerical answer in
-those two parts can be verified in two lines of NumPy, and you are encouraged to
+\noindent\textbf{Use Part F to check Parts A, C and E.} Every numerical answer in
+those parts can be verified in two lines of NumPy, and you are encouraged to
 check all of them before submitting --- that is what the tool is for. Two limits.
 The hand work must still be shown: a correct number with no derivation earns
-partial credit at best. And no proof in Part B or Part D can be checked this way,
-since code confirms a statement only for the numbers you tried, not for all of
-them.
+partial credit at best. And no proof --- in Part B, Part D, or the proof problems
+at the end of Part E --- can be checked this way, since code confirms a statement
+only for the numbers you tried, not for all of them.
 
 \medskip
-\noindent\textbf{On the proof problems (Parts B and D).} These are short, and
-none of them requires a clever idea. What they require is that you write down
+\noindent\textbf{On the proof problems (Parts B and D, and E.2, E.5, E.6).}
+These are short, and none of them requires a clever idea. What they require is that you write down
 what you are assuming, work in components or from the stated laws, justify each
 equality by naming the fact that licenses it, and end with a sentence saying
 what you have shown. A chain of equalities with no words is not a proof; neither
@@ -611,7 +630,7 @@ Let $z=5-12i$.
   \item Write each of the four in trigonometric form $\cos\theta+i\sin\theta$,
         with $\theta\in[0,2\pi)$. The first three have exact angles; for the
         fourth, give $\theta$ to four decimal places (a calculator is fine, or
-        use \texttt{np.angle} from Part E) and say which quadrant it is in.
+        use \texttt{np.angle} from Part F) and say which quadrant it is in.
   \item Use Euler's formula to evaluate, in the form $a+bi$:
         \[
           e^{i\pi/2},\qquad
@@ -721,6 +740,211 @@ Let $z\in\C$ and let $\theta\in\R$.
 \end{prob}
 
 %==============================================================================
+\section{Dot product, cosine similarity, and projection}
+%==============================================================================
+\emph{Vector Unit, Part 2.} Throughout this part, $\vc{u}=[\,u_1,\,u_2\,]$ and
+$\vc{v}=[\,v_1,\,v_2\,]$ denote vectors in $\R^{2}$, and
+\[
+  \ip{\vc{u}}{\vc{v}} \;=\; \vc{u}\cdot\vc{v} \;=\; u_1v_1+u_2v_2
+\]
+is their dot product. Both notations mean the same number and you may use
+either. Recall the three objects the lecture built on top of it: the
+\textbf{cosine similarity} of two \emph{nonzero} vectors,
+\[
+  \cos(\vc{u},\vc{v}) \;=\; \frac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}\,\norm{\vc{v}}}
+  \;\in\;[-1,1] ,
+\]
+and, for $\vc{v}\neq\vc{0}$, the \textbf{component of $\vc{u}$ along $\vc{v}$}
+and the \textbf{projection of $\vc{u}$ onto $\vc{v}$},
+\[
+  \comp{\vc{v}}{\vc{u}} \;=\; \frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}} ,
+  \qquad
+  \proj{\vc{v}}{\vc{u}} \;=\; \frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}^{2}}\,\vc{v} .
+\]
+
+\heads{The subscript names the vector you are projecting \emph{onto}. So
+$\proj{\vc{v}}{\vc{u}}$ is $\vc{u}$'s shadow on $\vc{v}$, it is a \emph{vector},
+and it points along $\vc{v}$ --- while $\comp{\vc{v}}{\vc{u}}$ is a
+\emph{signed scalar}. Swapping the two arguments gives a different answer.}
+
+\medskip
+\noindent Leave dot products and components in exact form. A component such as
+$-11/\sqrt{10}$ is a finished answer; so is $2\sqrt5$.
+
+\medskip
+\noindent \textbf{Two of these run slightly ahead of the lectures.} Problems
+E.2 and E.5 are the Cauchy--Schwarz inequality and the triangle inequality
+proved from it, which belong to \S13 --- the opening of vectors Part 3, which we
+have not reached. They are here anyway because they are the natural payoff of
+\S11, and both are scaffolded step by step so that everything you need is
+\S10--\S12 plus the hints printed with the problem. Nothing in them requires a
+fact you have not been given.
+
+%------------------------------------------------------------------------------
+\begin{prob}[The algebra of the dot product, by hand]
+Let
+\[
+  \vc{u}=[\,3,\,-1\,],\qquad
+  \vc{v}=[\,2,\,5\,],\qquad
+  \vc{w}=[\,-4,\,2\,],\qquad
+  \alpha=-2,\qquad \beta=\tfrac12 ,
+\]
+and let $\vc{0}=[\,0,\,0\,]$. Compute each quantity below. Where two quantities
+are asked for on the same line, compute them \emph{separately} --- do not assume
+in advance that they agree --- then say in a few words which law of \S11.8
+(\textbf{D1} symmetry, \textbf{D2} additivity, \textbf{D3} homogeneity,
+\textbf{D4} positive definiteness) the agreement illustrates.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\ip{\vc{u}}{\vc{v}}$ \ and \ $\ip{\vc{v}}{\vc{u}}$.
+  \item $\ip{\vc{u}}{\vc{v}+\vc{w}}$ \ and \
+        $\ip{\vc{u}}{\vc{v}}+\ip{\vc{u}}{\vc{w}}$.
+  \item $\ip{\alpha\vc{u}}{\vc{v}}$, \ $\alpha\,\ip{\vc{u}}{\vc{v}}$, \ and \
+        $\ip{\vc{u}}{\alpha\vc{v}}$. All three are equal; which law, applied in
+        which slot, is doing that?
+  \item $\ip{\vc{u}}{\vc{u}}$ \ and \ $\norm{\vc{u}}^{2}$.
+  \item $\ip{\vc{u}+\vc{v}}{\vc{u}+\vc{v}}$ \ and \
+        $\norm{\vc{u}}^{2}+2\ip{\vc{u}}{\vc{v}}+\norm{\vc{v}}^{2}$.
+  \item $\ip{\vc{u}}{\vc{0}}$. Then say, in one sentence, why
+        $\ip{\vc{x}}{\vc{0}}=0$ for \emph{every} $\vc{x}\in\R^{2}$ --- and why
+        this does \emph{not} contradict \textbf{D4}.
+  \item $\ip{\alpha\vc{u}+\beta\vc{v}}{\vc{w}}$ \ and \
+        $\alpha\,\ip{\vc{u}}{\vc{w}}+\beta\,\ip{\vc{v}}{\vc{w}}$.
+  \item $\lvert\ip{\vc{u}}{\vc{v}}\rvert$ \ and \ $\norm{\vc{u}}\,\norm{\vc{v}}$,
+        the second to three decimal places. Which is larger, and by how much?
+\end{enumerate}
+
+\noindent Finally, in one sentence: part (g) was not on the list \textbf{D1}--\textbf{D4}.
+Which two of those laws, used together, give it?
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The Cauchy--Schwarz inequality]
+Prove that for \emph{all} $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \bigl\lvert\ip{\vc{u}}{\vc{v}}\bigr\rvert
+  \;\le\;
+  \norm{\vc{u}}\,\norm{\vc{v}} .
+\]
+Part (h) of Problem E.1 was one instance of this; here you must establish it for
+every pair at once.
+
+\hint{Let $t\in\R$ be arbitrary and expand $\norm{\vc{u}+t\vc{v}}^{2}$ using
+\textbf{D1}--\textbf{D4}. By \textbf{D4} the result is a quadratic in $t$ that is
+never negative, and one particular choice of $t$ turns that fact into the
+inequality you want. Handle $\vc{v}=\vc{0}$ on a line of its own.}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Cosine similarity, and reading the arrangement off it]
+For each pair below, compute $\ip{\vc{u}}{\vc{v}}$, $\norm{\vc{u}}$,
+$\norm{\vc{v}}$ and the cosine similarity $\cos(\vc{u},\vc{v})$ in exact form.
+Then give the angle $\theta$ between the two vectors in degrees, and state which
+of \emph{parallel}, \emph{antiparallel}, \emph{orthogonal} or \emph{none of the
+three} describes the pair.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}c c c@{}}
+\toprule
+ & $\vc{u}$ & $\vc{v}$ \\
+\midrule
+(a) & $[\,3,\,-1\,]$  & $[\,2,\,6\,]$   \\
+(b) & $[\,2,\,3\,]$   & $[\,6,\,9\,]$   \\
+(c) & $[\,-4,\,2\,]$  & $[\,6,\,-3\,]$  \\
+(d) & $[\,2,\,2\,]$   & $[\,0,\,5\,]$   \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Each of the four values $0$, $1$, $-1$ and $\tfrac{\sqrt2}{2}$ occurs
+exactly once among your four answers; if one of yours is not one of those, you
+have an arithmetic error to find.
+
+\begin{enumerate}[label=\textbf{(\roman*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item For the pair you classified as parallel and the pair you classified as
+        antiparallel, exhibit the scalar $\alpha$ with $\vc{v}=\alpha\vc{u}$,
+        and say what the sign of $\alpha$ has to do with which of the two labels
+        applies.
+  \item Replace $\vc{v}$ in part (b) by $100\,\vc{v}$ and recompute
+        $\cos(\vc{u},\vc{v})$. Explain in one sentence why the answer did not
+        move, and what that says about \emph{what} cosine similarity measures.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Projection and the signed component]
+In each row below, $\vc{u}$ is the vector being projected and $\vc{v}$ is the
+vector projected \emph{onto}. Note that $\vc{v}\neq\vc{0}$ in every case.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}c c c@{}}
+\toprule
+ & $\vc{u}$ (projected) & $\vc{v}$ (projected onto) \\
+\midrule
+(a) & $[\,4,\,3\,]$   & $[\,1,\,0\,]$   \\
+(b) & $[\,3,\,4\,]$   & $[\,2,\,1\,]$   \\
+(c) & $[\,-2,\,5\,]$  & $[\,3,\,-1\,]$  \\
+(d) & $[\,2,\,6\,]$   & $[\,3,\,-1\,]$  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent For \emph{each} of the four rows, carry out all four steps.
+
+\begin{enumerate}[label=\textbf{Step \arabic*.},leftmargin=4.8em,itemsep=6pt,topsep=6pt]
+  \item Compute $\ip{\vc{v}}{\vc{u}}$ and $\norm{\vc{v}}^{2}$.
+  \item State the \textbf{component} $\comp{\vc{v}}{\vc{u}}$ --- a scalar ---
+        in exact form.
+  \item State the \textbf{projection} $\proj{\vc{v}}{\vc{u}}$ --- a vector ---
+        in bracket notation.
+  \item Compute the orthogonal piece $\vc{u}-\proj{\vc{v}}{\vc{u}}$, and check
+        that $\ip{\vc{v}}{\,\vc{u}-\proj{\vc{v}}{\vc{u}}}=0$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The triangle inequality, proved]
+Part A.3 checked the triangle inequality on four numerical pairs and Problem B.5
+found the case where it is an equality, but neither proved it. Prove it now: for
+all $\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \norm{\vc{u}+\vc{v}} \;\le\; \norm{\vc{u}}+\norm{\vc{v}} .
+\]
+
+\hint{Start by squaring the left-hand side. Use \textbf{D1}--\textbf{D4} to
+expand
+\[
+  \norm{\vc{u}+\vc{v}}^{2}
+  \;=\; \ip{\vc{u}+\vc{v}}{\vc{u}+\vc{v}}
+  \;=\; \norm{\vc{u}}^{2}+2\ip{\vc{u}}{\vc{v}}+\norm{\vc{v}}^{2} .
+\]
+Now bound the middle term. You have $\ip{\vc{u}}{\vc{v}}\le\lvert\ip{\vc{u}}{\vc{v}}\rvert$
+for free, and Cauchy--Schwarz (Problem E.2) bounds
+$\lvert\ip{\vc{u}}{\vc{v}}\rvert$ by $\norm{\vc{u}}\,\norm{\vc{v}}$. Substitute,
+recognise the right-hand side as a perfect square, and take square roots.}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The orthogonal piece is orthogonal]
+Let $\vc{u},\vc{v}\in\R^{2}$ with $\vc{v}\neq\vc{0}$, and write
+\[
+  \vc{w} \;=\; \proj{\vc{v}}{\vc{u}} \;=\; \frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}^{2}}\,\vc{v} .
+\]
+Prove that $\vc{v}$ is orthogonal to $\vc{u}-\vc{w}$, that is, that
+\[
+  \ip{\vc{v}}{\,\vc{u}-\vc{w}} \;=\; 0 .
+\]
+
+\hint{Write $c=\ip{\vc{v}}{\vc{u}}/\norm{\vc{v}}^{2}$, so that $\vc{w}=c\,\vc{v}$,
+and expand $\ip{\vc{v}}{\vc{u}-c\vc{v}}$ using \textbf{D2}, \textbf{D3} and
+\textbf{D4}. The whole proof is three lines. Do \emph{not} write anything in
+components: use only the four laws, so that the argument would survive being
+moved to $\R^{n}$ unchanged.}
+\end{prob}
+
+%==============================================================================
 \section{NumPy}
 %==============================================================================
 \emph{Required.}
@@ -729,9 +953,9 @@ Let $z\in\C$ and let $\theta\in\R$.
 \noindent This part is a tutorial, then a specification of the two files you hand
 in, then the problems. Read the tutorial sections typing the code in as you go,
 read \emph{How to structure your submission} before you write anything you intend
-to submit, then do Problems E.1--E.8. If you have never programmed before, that
+to submit, then do Problems F.1--F.8. If you have never programmed before, that
 is expected and fine: everything you need is below, and nothing here is harder
-than the arithmetic you did by hand in Parts A and C.
+than the arithmetic you did by hand in Parts A, C and E.
 
 \medskip
 \noindent Two references live alongside this assignment in the course
@@ -882,23 +1106,23 @@ parentheses; \texttt{.conjugate()} is a method, so it does.}
 \texttt{(6.123233995736766e-17+1j)}, not a clean \texttt{1j}.} That
 $6.1\times10^{-17}$ is floating-point error, not mathematics: $\cos(\pi/2)$ is
 zero but the stored value of $\pi$ is not exactly $\pi$. This is why
-\texttt{np.isclose} exists, and Problem E.6 asks you to think about it.}
+\texttt{np.isclose} exists, and Problem F.6 asks you to think about it.}
 
 \subsection{How to structure your submission}
 
-Part E is submitted as \textbf{two} Python files with different jobs.
+Part F is submitted as \textbf{two} Python files with different jobs.
 
 \begin{itemize}[leftmargin=1.4em,itemsep=6pt,topsep=4pt]
   \item \texttt{hw1.py} --- \textbf{your work}. One function per lettered part,
-        named \texttt{q}\,\emph{number}\,\emph{letter}: Problem E.2(a) becomes
-        \texttt{q2a}, Problem E.6(c) becomes \texttt{q6c}. A question with no
-        lettered parts gets one function named for the question alone, so E.8
+        named \texttt{q}\,\emph{number}\,\emph{letter}: Problem F.2(a) becomes
+        \texttt{q2a}, Problem F.6(c) becomes \texttt{q6c}. A question with no
+        lettered parts gets one function named for the question alone, so F.8
         becomes \texttt{q8}. Each function \textbf{returns} its answer; when an
         answer has several pieces, return them together as a tuple or a list.
   \item \texttt{runhw1.py} --- \textbf{the driver}. It imports those functions
         from \texttt{hw1.py} and calls them in order, one line per part, printing
         a label before each answer. It contains no mathematics of its own.
-        \textbf{This is the file that is run to grade Part E.}
+        \textbf{This is the file that is run to grade Part F.}
 \end{itemize}
 
 \medskip
@@ -918,11 +1142,11 @@ v = np.array([-1.0, 2.0])
 def norm2(vec):                 # helpers are fine, and may be shared
     return np.sqrt(vec[0]**2 + vec[1]**2)
 
-# --- E.2(a) -------------------------------------------------------
+# --- F.2(a) -------------------------------------------------------
 def q2a():
     return norm2(u)
 
-# --- E.2(b) -------------------------------------------------------
+# --- F.2(b) -------------------------------------------------------
 def q2b():
     return [bool(np.isclose(norm2(w), np.linalg.norm(w))) for w in (u, v)]
 \end{lstlisting}
@@ -951,7 +1175,7 @@ equally acceptable if you prefer it.)
 \texttt{"Output of question <number> part <letter> : "}
 \end{center}
 
-\noindent So Problem E.6(c) is labelled \texttt{Output of question 6 part c :}\ .
+\noindent So Problem F.6(c) is labelled \texttt{Output of question 6 part c :}\ .
 For a question with no lettered parts, drop that half ---
 \texttt{"Output of question 8 : "}.
 
@@ -992,7 +1216,7 @@ def norm2(v):
     # your two lines here
     ...
 
-# --- E.2(b) -------------------------------------------------------
+# --- F.2(b) -------------------------------------------------------
 def q2b():
     return [bool(np.isclose(norm2(w), np.linalg.norm(w))) for w in vectors]
 \end{lstlisting}
@@ -1126,8 +1350,8 @@ computation.
 \medskip
 \noindent Then answer, in a comment at the end of your file, in three or four
 sentences: which problems on this assignment could NumPy check for you, and
-which could it not? Name at least one problem from Part B or Part D and say
-precisely what a computer run would and would not establish about it.
+which could it not? Name at least one problem from Part B, Part D or Part E and
+say precisely what a computer run would and would not establish about it.
 \end{prob}
 
 \begin{callout}{What NumPy can and cannot do for you}
@@ -1140,7 +1364,8 @@ A --- vectors, computation      & Yes, entirely. Do it before you submit. \\
 B --- vectors, proof            & No. It can test instances, which is not a proof. \\
 C --- complex, computation      & Yes, entirely. Do it before you submit. \\
 D --- complex, proof            & No, for the same reason. \\
-E --- NumPy                     & It \emph{is} the check. \\
+E --- dot product, both         & E.1, E.3, E.4 yes, entirely; E.2, E.5, E.6 no. \\
+F --- NumPy                     & It \emph{is} the check. \\
 \bottomrule
 \end{tabular}
 
