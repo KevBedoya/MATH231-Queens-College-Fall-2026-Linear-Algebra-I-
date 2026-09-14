@@ -1,7 +1,6 @@
 %==============================================================================
 %  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
-%  VECTOR CALCULUS UNIT, PART 1 -- Derivatives, Partial Derivatives,
-%                                  and the Gradient
+%  VECTOR CALCULUS UNIT, PART 1 -- Derivatives, and the Gradient in the Plane
 %
 %  A NEW UNIT.  Section numbering restarts at 1 here.  It does NOT continue from
 %  the vector unit (Sec. 1-24), the computational unit (Sec. 1-23), or the
@@ -9,27 +8,24 @@
 %  unit, since a bare "Sec. 5" is now ambiguous four ways.  The front matter
 %  states that for students.
 %
-%  STATUS: complete.  Sections 1-9.  The unit continues; the closing
-%  Looking-ahead of Sec. 9.6 is the hinge.
+%  THIS UNIT IS SPLIT ACROSS TWO DOCUMENTS, numbered continuously:
+%      Part 1  MATH231_veccalc_1_derivatives_and_the_gradient   Sections 1-9
+%      Part 2  MATH231_veccalc_2_n_dimensions_and_the_hessian   Sections 10-15
+%  Part 2 opens with \setcounter{section}{9}.
 %
-%  SEC. 9 CLOSES A LOOP OPENED IN SEC. 7.1.  That section recorded the signature
-%  grad f : R^n -> R^n and left it as a curiosity.  Sec. 9.3 collects it: the
-%  gradient is itself a vector-valued function, so it has a Jacobian, and that
-%  Jacobian IS the second derivative.  The Hessian therefore arrives as a
-%  consequence of a signature already on the page rather than as a new
-%  definition.  Sec. 8.2's Looking-ahead was rewritten to point INTO Sec. 9
-%  rather than out of the document.
+%  WHERE THE SPLIT FALLS, AND WHY.  Part 1 is deliberately confined to
+%  f : R^2 -> R and assumes ONLY the lectures actually delivered so far --
+%  vectors Parts 1, 2 and 3, plus complex numbers.  In particular:
 %
-%  INDEX CONVENTION for the Hessian, stated once in Sec. 9.4 and used
-%  throughout: (H_f)_ij = d/dx_i ( df/dx_j ).  Under Clairaut the two orders
-%  agree, so the choice is immaterial to the answer -- but it must be FIXED
-%  before Clairaut is stated, or the symmetry claim in Sec. 9.6 has no content.
+%    - NO STANDARD BASIS.  e_j lives in vector unit Sec. 16 (vectors Part 4),
+%      which has not been lectured.  So the partial derivative is defined here
+%      coordinate-wise -- f(x+h, y) and f(x, y+h) -- and NOT as a step h*e_j.
+%      Part 2 introduces e_j and re-states the definition with it, which is the
+%      form that generalises.  If this file is edited, keep e_j out of it.
+%    - NO R^n.  Every signature in Part 1 is R^2 -> R.  The lift to n
+%      dimensions is the opening move of Part 2.
 %
-%  THE JACOBIAN EXAMPLE in Sec. 9.2 is deliberately non-symmetric (2x, -2y over
-%  2y, 2x) so that Sec. 9.6's symmetry claim reads as a real restriction rather
-%  than a property of matrices of partial derivatives in general.
-%
-%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%  STATUS: complete.  Sections 1-9.
 %
 %  WHY THE CALCULUS REVIEW IS HERE AT ALL.  Everything through Sec. 4 is
 %  MATH 141 material.  It is restated rather than assumed because Sec. 6 defines
@@ -38,39 +34,49 @@
 %  notation, not merely "seen last year".  Sec. 1.1 and Sec. 6.1 are deliberately
 %  the same limit with one substitution between them.
 %
-%  SEC. 2 NOW HOLDS ONLY the structural rules and the six trigonometric ones.
-%  The exponential/logarithm table and the inverse-trigonometric table were
-%  removed.  Dropping the exp/log table is not a loss: those two derivatives are
-%  DERIVED in Sec. 4, and Sec. 2 now says so explicitly rather than quoting the
-%  answers first and justifying them later.  Nothing downstream cites either
-%  removed table.
+%  SEC. 2 HOLDS ONLY the structural rules and the six trigonometric ones.  The
+%  exponential/logarithm derivatives are deliberately absent: they are DERIVED
+%  in Sec. 4, and Sec. 2 says so explicitly rather than quoting the answers
+%  first and justifying them later.  Sec. 3 supplies the algebraic properties
+%  (E1-E5, L1-L5) that Sec. 4.1 and Sec. 4.3 actually consume.
 %
-%  STEEPEST ASCENT (Sec. 7.3) is asserted, not proved, per the outline.  Three
-%  independent supports are given instead: the weighted-step picture, the
-%  cosine argument from vector unit Sec. 11.6 (largest when the direction aligns
-%  with the gradient), and the n=1 case where "the direction the derivative
-%  points" is just the sign of f'.  The directional-derivative formula
-%  <grad f, u> is USED there but not established -- Sec. 8.2's Looking-ahead is
-%  where it gets picked up.  Keep that ordering honest if this is edited.
+%  SEC. 8 IS THE CENTREPIECE and is now PROVED, not asserted.  The chain is:
+%    8.1  directional derivative introduced as an idea, then as the limit
+%         (eq:dirderiv) with step h*u; both partials fall out as special cases.
+%    8.2  D_u f = <grad f, u>, motivated by adding the two coordinate effects.
+%         This is flagged as a motivation, NOT a proof -- Sec. 9.2's closing
+%         remark discharges it from the linear approximation.  Keep that
+%         ordering honest if this is edited.
+%    8.3  the maximisation: <grad f, u> = ||grad f|| ||u|| cos(theta)
+%         = ||grad f|| cos(theta); only cos(theta) varies; maximal at theta = 0;
+%         u = grad f / ||grad f|| realises it and returns ||grad f||.  Hence
+%         ascent direction, hence steepest ascent.  The rmk collects theta = pi
+%         (steepest descent) and theta = pi/2 (the level curves) from the SAME
+%         equation, at no extra cost.
+%    8.4  gradient descent, with the iterate x_{k+1} = x_k - alpha grad f(x_k).
 %
-%  SEC. 8 (LINEAR APPROXIMATION) exists to make the type change visible: the
-%  one-variable formula and the n-variable formula are set side by side and
-%  differ only in a product becoming a dot product.  The closing remark uses
-%  that to argue the gradient EARNS the name derivative, which retroactively
-%  justifies Sec. 7.1's packaging move.
+%  SEC. 6.2 (the slice picture) is the geometric support for the partial
+%  derivative: cut the surface with the plane y = b, get a one-variable curve,
+%  and df/dx is the slope of ITS tangent.  It is also what Sec. 9.2's
+%  tangent-plane remark points back to.
 %
-%  ON THE SECOND EXPONENTIAL DERIVATION (Sec. 4.3).  The limit identity
-%  lim_{h->0} (e^h - 1)/h = 1 IS the statement that exp'(0) = 1, so that
-%  derivation does not prove the result from nothing -- it shows the derivative
-%  everywhere follows from its value at a single point.  Sec. 4.3 says so
-%  outright rather than presenting it as an independent proof; the implicit
-%  differentiation of Sec. 4.2 is the one that genuinely stands on Sec. 4.1.
+%  LANGUAGE DELIBERATELY AVOIDED: "continuously differentiable", "smooth",
+%  "class C^1".  The worked functions all satisfy every hypothesis anyone could
+%  want; saying so would cost a definition the course has not paid for.  Keep
+%  the examples clean rather than hedged.
 %
-%  TIE-INS TO THE VECTOR UNIT that should survive editing: the norm and the dot
-%  product reappear in Sec. 5.2 as examples of R^n -> R, and e_j in Sec. 6.1 is
-%  the standard basis vector of vector unit Sec. 16.  Sec. 7.1 makes the gradient
-%  arrive by the vector unit's own move -- package n related numbers as one
-%  object -- rather than by decree.
+%  VECTOR-UNIT CITATIONS USED HERE, all from lectures already delivered:
+%      Sec. 2      the Euclidean norm
+%      Sec. 6      function notation f : A -> B
+%      Sec. 11.3   the dot product, and <u,v> = ||u|| ||v|| cos(theta)
+%      Sec. 11.6   <u,u> = ||u||^2
+%      Sec. 11.7   the orthogonality test
+%      Sec. 12.1   normalisation and unit vectors
+%  (Two citations in the pre-split draft were wrong and are corrected here: the
+%  norm is Sec. 2, not Sec. 11.9, and the cosine formula is Sec. 11.3, not
+%  Sec. 11.6.)
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
 %
 %  Compile with pdflatex (standard TeX Live packages only; uses tikz).
 %==============================================================================
@@ -129,7 +135,7 @@
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
        {\large\sffamily The Vector Calculus Unit, Part 1 \textbullet\
-        Derivatives, Partial Derivatives, and the Gradient}\\[2pt]
+        Derivatives, and the Gradient in the Plane}\\[2pt]
        {\normalsize\sffamily Kiely Hall 326 \textbullet\
         Instructor: Kevin Bedoya}}
 \author{}
@@ -146,33 +152,44 @@ from MATH~141 --- not as a courtesy, but because the central definition of
 inside it. Having that definition fresh, and in the same notation, is what makes
 the new one read as a small change rather than a new idea.
 
+Everything after \S4 concerns functions of \emph{two} variables,
+$f:\R^{2}\to\R$. That is not the general case, and it is not meant to be. Two
+variables is where every idea in the subject can be drawn on a page, and the
+plane is the space the vector unit has been building all semester. Part 2 of
+this unit lifts the whole of \S5--\S9 to $\R^{n}$, where the pictures stop and
+the formulas do not change.
+
 \begin{warn}[Section numbers restart]
 This unit numbers its sections from $1$ again. They do \emph{not} continue from
 the vector unit ($\S1$--$\S24$), the computational unit, or the matrix unit, all
 of which also start at $1$. A bare ``\S5'' below means \S5 \emph{of this unit};
-whenever we point at another we will name it.
+whenever we point at another we will name it. Part 2 of this unit continues the
+numbering from \S10, so a reference to \S12 there is not a reference to the
+vector unit's \S12.
 \end{warn}
 
 \medskip
 \noindent\textbf{Assumed.} From MATH~141: limits, and differentiation of
-one-variable functions. From the vector unit: $\R^{n}$ and its vectors (\S24.1);
-function notation $f:A\to B$ (\S6); the standard basis vectors
-$\vc{e}_1,\dots,\vc{e}_n$ (\S16, \S24.1); the dot product (\S11.3); and the
-Euclidean norm (\S11.9).
+one-variable functions. From the vector unit --- all of it from lectures already
+given --- $\R^{2}$ and its vectors (\S1, \S5); the Euclidean norm (\S2);
+function notation $f:A\to B$ (\S6); the dot product and the identity
+$\ip{\vc{u}}{\vc{v}}=\norm{\vc{u}}\norm{\vc{v}}\cos\theta$ (\S11.3); the
+orthogonality test (\S11.7); and normalisation into a unit vector (\S12.1).
+Nothing from vectors Part 4 or Part 5 is used, and neither is the matrix unit.
 
 \medskip
 \noindent\textbf{What you should be able to do afterwards.} State the definition
 of the derivative and use the standard rules; state the algebraic properties of
 $e^{x}$ and $\ln x$ and explain why the two lists mirror each other; derive
 $\tfrac{d}{dx}\ln x$ from the definition and $\tfrac{d}{dx}e^{x}$ two ways; read
-the signature $f:\R^{n}\to\R$ and give examples; define the partial derivative
-as a limit and compute one; say what kind of object a partial derivative is;
-assemble the partials of a function into its gradient; say which direction the
-gradient points and why that matters; write the linear approximation of a
-function of one variable and of $n$ variables; build the Jacobian of a
-vector-valued function and the Hessian of a scalar one; state Clairaut's theorem;
-and say why the Hessian is symmetric.
-
+the signature $f:\R^{2}\to\R$ and give examples; define the two partial
+derivatives as limits, compute them, and say what they are on the surface
+$z=f(x,y)$; say what kind of object a partial derivative is; assemble the
+partials into the gradient; define the directional derivative and compute it as
+$\ip{\grad f}{\vc{u}}$; show that the rate of change is greatest along the
+gradient and explain why that makes $\grad f$ the direction of steepest ascent;
+say what $-\grad f$ is and how gradient descent uses it; and write the linear
+approximation of a function of one variable and of two.
 %==============================================================================
 \section{The derivative, in one variable}
 %==============================================================================
@@ -491,7 +508,7 @@ the one that stands independently, resting on \S4.1.
 \end{rmk}
 
 %==============================================================================
-\section{Functions of several variables}
+\section{Functions of two variables}
 %==============================================================================
 
 %------------------------------------------------------------------------------
@@ -504,63 +521,77 @@ Almost nothing worth computing has that shape.
 before the arrow is what the function consumes, the set after it is what the
 function produces. That notation now does real work.
 
-\begin{defn}[Scalar function of several variables]
-A \textbf{scalar function of $n$ variables} is a function
+\begin{defn}[Scalar function of two variables]
+A \textbf{scalar function of two variables} is a function
 \[
-  f:\R^{n}\longrightarrow\R ,
+  f:\R^{2}\longrightarrow\R ,
 \]
-taking a vector $\vc{x}=[\,x_1,x_2,\dots,x_n\,]\in\R^{n}$ and returning a single
-real number $f(\vc{x})$.
+taking a vector $\vc{x}=[\,x,\,y\,]\in\R^{2}$ and returning a single real number
+$f(\vc{x})$, also written $f(x,y)$.
 \end{defn}
 
 \noindent The input is a \emph{vector}; the output is a \emph{scalar}. That
-asymmetry is the whole subject of this section. Such functions are also called
-\textbf{scalar fields}: they assign one number to every point of a space.
+asymmetry is the whole subject of the rest of this document. Such functions are
+also called \textbf{scalar fields}: they assign one number to every point of the
+plane.
+
+\begin{rmk}[Two notations, one function]
+$f(\vc{x})$ and $f(x,y)$ name the same thing. The first emphasises that the
+input is a single object --- a point of $\R^{2}$ --- and is the form to keep in
+mind when the vector operations of the vector unit are applied to it. The second
+is what you write when you actually differentiate. Both appear below, and
+switching between them is not a change of subject.
+\end{rmk}
 
 %------------------------------------------------------------------------------
 \subsection{Examples}
 %------------------------------------------------------------------------------
 \begin{ex}
-Each of the following is a function $\R^{n}\to\R$.
+Each of the following is a function $\R^{2}\to\R$.
 
 \smallskip
-\noindent\textbf{(a)} $f(x,y)=x^{2}+y^{2}$, with $n=2$. It returns the squared
-distance from the origin. $f(3,4)=25$.
+\noindent\textbf{(a)} $f(x,y)=x^{2}+y^{2}$. It returns the squared distance from
+the origin. $f(3,4)=25$.
 
 \smallskip
-\noindent\textbf{(b)} $f(x,y)=xy$, with $n=2$. The area of a rectangle with the
-given side lengths. $f(3,4)=12$.
+\noindent\textbf{(b)} $f(x,y)=xy$. The area of a rectangle with the given side
+lengths. $f(3,4)=12$.
 
 \smallskip
-\noindent\textbf{(c)} $f(x,y,z)=x^{2}+y^{2}+z^{2}$, with $n=3$. Three inputs,
-still one output.
+\noindent\textbf{(c)} $f(\vc{x})=\norm{\vc{x}}=\sqrt{x^{2}+y^{2}}$. \emph{The
+Euclidean norm is a function $\R^{2}\to\R$} --- it eats a vector and returns its
+length, a single number. You have been using an example of this kind of function
+since the vector unit's \S2.
 
 \smallskip
-\noindent\textbf{(d)} $f(\vc{x})=\norm{\vc{x}}=\sqrt{x_1^{2}+\cdots+x_n^{2}}$,
-for any $n$. \emph{The Euclidean norm is a function $\R^{n}\to\R$} --- it eats a
-vector and returns its length, a single number. You have been using an example
-of this kind of function since the vector unit's \S11.9.
+\noindent\textbf{(d)} $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x+a_2y$ for a fixed
+vector $\vc{a}=[\,a_1,\,a_2\,]$. The dot product against a fixed vector is
+likewise $\R^{2}\to\R$ (vector unit \S11.3).
 
 \smallskip
-\noindent\textbf{(e)} $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x_1+\cdots+a_nx_n$ for a
-fixed vector $\vc{a}$. The dot product against a fixed vector is likewise
-$\R^{n}\to\R$ (vector unit \S11.3).
-
-\smallskip
-\noindent\textbf{(f)} $f(x,y)=e^{-(x^{2}+y^{2})}$, a bump peaking at the origin
+\noindent\textbf{(e)} $f(x,y)=e^{-(x^{2}+y^{2})}$, a bump peaking at the origin
 and decaying in every direction.
 
 \smallskip
-\noindent\textbf{(g)} The temperature at each point of a room, or the elevation
-at each point on a map: both assign one number to each point of a
-two- or three-dimensional space.
+\noindent\textbf{(f)} The temperature at each point of a flat plate, or the
+elevation at each point on a map: both assign one number to each point of a
+two-dimensional region.
 \end{ex}
 
 \begin{rmk}
-Examples (d) and (e) are worth a second look. Two of the most-used objects from
+Examples (c) and (d) are worth a second look. Two of the most-used objects from
 the vector unit --- the norm and the dot product --- are exactly the kind of
 function this section is about. Nothing new was introduced; they were simply
 never described this way before.
+\end{rmk}
+
+\begin{rmk}[Picturing one]
+A function $\R^{2}\to\R$ has a graph in three dimensions: over each point
+$(x,y)$ of the plane, plot the height $z=f(x,y)$. The result is a
+\emph{surface}. Example (a) is a bowl, example (e) is a hill, and example (f) is
+the literal landscape the word ``elevation'' suggests. This picture is worth
+holding on to: almost every geometric statement below is a statement about
+walking around on that surface.
 \end{rmk}
 
 %------------------------------------------------------------------------------
@@ -574,7 +605,7 @@ immediately fails to typecheck. It reads
 and if the input is a vector then ``$x+h$'' is a vector plus a number, which is
 undefined. Even if it were repaired, a deeper problem remains: for a
 one-variable function there are only two ways to leave the point $x$ --- left or
-right --- and the two are related by a sign. In $\R^{n}$ there are infinitely
+right --- and the two are related by a sign. In the plane there are infinitely
 many directions to leave $\vc{x}$ in, and $f$ may change at a different rate
 along each one.
 
@@ -582,7 +613,7 @@ Walking east from a point on a hillside might take you uphill; walking north fro
 the same point might take you down. ``The rate of change of the elevation'' is
 not yet a well-posed question. It becomes one only after a direction is named.
 
-The next section names the simplest possible ones.
+The next section names the two simplest ones. \S8 names all the rest.
 
 %==============================================================================
 \section{Partial derivatives}
@@ -591,72 +622,122 @@ The next section names the simplest possible ones.
 %------------------------------------------------------------------------------
 \subsection{The definition}
 %------------------------------------------------------------------------------
-The simplest directions to move in are the coordinate directions, and the vector
-unit already has names for them.
+The simplest directions to move in are the two coordinate directions: change $x$
+and leave $y$ alone, or change $y$ and leave $x$ alone. Each choice turns the
+two-variable function into a one-variable one, and \eqref{eq:deriv} applies to
+that.
 
-\lookback $\vc{e}_j$ is the $j$-th standard basis vector of $\R^{n}$: a $1$ in
-slot $j$ and $0$ everywhere else (vector unit \S16, \S24.1). Adding $h\vc{e}_j$
-to $\vc{x}$ therefore changes the $j$-th coordinate by $h$ and leaves every
-other coordinate exactly where it was.
-
-\begin{defn}[Partial derivative]
-Let $f:\R^{n}\to\R$. The \textbf{partial derivative of $f$ with respect to
-$x_j$} at the point $\vc{x}$ is
-\begin{equation}\label{eq:partial}
-  \pd{f}{x_j}(\vc{x})
-  \;=\;\lim_{h\to0}\frac{f(\vc{x}+h\,\vc{e}_j)-f(\vc{x})}{h},
+\begin{defn}[Partial derivatives]
+Let $f:\R^{2}\to\R$. The \textbf{partial derivative of $f$ with respect to $x$}
+at the point $(x,y)$ is
+\begin{equation}\label{eq:partialx}
+  \pd{f}{x}(x,y) \;=\; \lim_{h\to0}\frac{f(x+h,\;y)-f(x,y)}{h},
 \end{equation}
-provided the limit exists.
+and the \textbf{partial derivative of $f$ with respect to $y$} is
+\begin{equation}\label{eq:partialy}
+  \pd{f}{y}(x,y) \;=\; \lim_{h\to0}\frac{f(x,\;y+h)-f(x,y)}{h},
+\end{equation}
+each provided the limit exists.
 \end{defn}
 
-\noindent Compare \eqref{eq:partial} with \eqref{eq:deriv}. They are the same
-limit. The only change is that the step $h$ has become the step $h\vc{e}_j$ ---
-a step of size $h$ taken \emph{in the $j$-th coordinate direction}. The curly
-$\partial$ replaces $d$ to record that there were other directions available and
-this one was chosen.
-
-Written out in coordinates for $n=2$, with $\vc{x}=(x,y)$:
-\[
-  \pd{f}{x}(x,y)=\lim_{h\to0}\frac{f(x+h,\;y)-f(x,y)}{h},
-  \qquad
-  \pd{f}{y}(x,y)=\lim_{h\to0}\frac{f(x,\;y+h)-f(x,y)}{h} .
-\]
-In the first, $y$ never changes; in the second, $x$ never changes.
+\noindent Compare \eqref{eq:partialx} with \eqref{eq:deriv}. They are the same
+limit. In the first, the step $h$ is added to $x$ while $y$ never moves; in the
+second, $h$ is added to $y$ while $x$ never moves. The curly $\partial$ replaces
+$d$ to record that there were other directions available and this one was
+chosen.
 
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
-  \draw[axisline] (-0.3,0) -- (4.7,0) node[right,font=\scriptsize,black]{$x_1$};
-  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$x_2$};
-  % level curves of a bump centred at x
+  \draw[axisline] (-0.3,0) -- (4.7,0) node[right,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$y$};
   \foreach \r in {0.45,0.78,1.10,1.40}
     { \draw[gray!45] (2.1,1.6) circle (\r); }
   \fill[black] (2.1,1.6) circle (1.6pt);
-  \node[below left,font=\scriptsize,inner sep=2pt] at (2.1,1.6) {$\vc{x}$};
-  % the two coordinate steps, drawn out past the outermost curve
+  \node[below left,font=\scriptsize,inner sep=2pt] at (2.1,1.6) {$(x,y)$};
   \draw[vecarr,RoyalBlue] (2.1,1.6) -- (3.75,1.6)
-        node[right,font=\scriptsize,inner sep=2pt]{$h\vc{e}_1$};
+        node[right,font=\scriptsize,inner sep=2pt]{$x$ increases};
   \draw[vecarr,BrickRed]  (2.1,1.6) -- (2.1,3.25)
-        node[above,font=\scriptsize,inner sep=2pt]{$h\vc{e}_2$};
+        node[above,font=\scriptsize,inner sep=2pt]{$y$ increases};
   \node[font=\scriptsize,gray!70] at (2.1,-0.72) {level curves of $f$};
 \end{tikzpicture}
 \end{center}
 
-\noindent Each arrow is one partial derivative: step off the point in a single
-coordinate direction, and measure the rate at which $f$ responds.
+\noindent Each arrow is one partial derivative: step off the point along one
+coordinate axis, and measure the rate at which $f$ responds.
+
+%------------------------------------------------------------------------------
+\subsection{What they look like on the surface}
+%------------------------------------------------------------------------------
+The picture above is drawn in the plane, where the function lives as a set of
+level curves. The more telling picture is drawn on the graph.
+
+Fix the point $(a,b)$ and hold $y$ at the value $b$. The set of points with
+$y=b$ is a line in the plane; sitting above it on the surface $z=f(x,y)$ is a
+single curve --- the \textbf{slice} of the surface cut by the vertical plane
+$y=b$. Along that curve only $x$ varies, so it is the graph of the one-variable
+function
+\[
+  g(x) \;=\; f(x,b) .
+\]
+And $\partial f/\partial x(a,b)$ is exactly $g'(a)$: the ordinary slope of the
+tangent line to that slice, at that point.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  % --- the surface, suggested by a patch and two slice curves -------------
+  % base plane, drawn in a shallow oblique projection
+  \draw[gray!35] (0,0) -- (4.6,0) -- (6.0,1.15) -- (1.4,1.15) -- cycle;
+  \node[font=\scriptsize,gray!75] at (0.45,-0.40) {the $xy$-plane};
+  % the point (a,b) in the base plane
+  \coordinate (B) at (2.9,0.55);
+  \fill[black] (B) circle (1.4pt);
+  \node[below,font=\scriptsize,inner sep=1.5pt] at (2.86,0.50) {$(a,b)$};
+  % the line y = b in the base plane
+  \draw[BrickRed!70,densely dashed] (1.05,0.55) -- (5.2,0.55);
+  \node[right,font=\scriptsize,BrickRed!80] at (5.15,0.50) {$y=b$};
+  % the slice curve, lifted above that line
+  \draw[curveln,domain=1.05:5.2,smooth,samples=70]
+        plot (\x,{0.55 + 2.55 - 0.30*(\x-3.55)*(\x-3.55)});
+  \node[font=\scriptsize,RoyalBlue] at (1.15,2.85) {$z=f(x,b)$};
+  % the point on the curve above (a,b), and its tangent
+  \coordinate (P) at (2.9,{0.55+2.55-0.30*(2.9-3.55)*(2.9-3.55)});
+  \fill[black] (P) circle (1.5pt);
+  \draw[gray!60,densely dotted] (B) -- (P);
+  % slope of the slice at x=2.9 is -0.60*(2.9-3.55) = 0.39
+  \draw[ForestGreen!70!black,thick]
+        (1.95,{0.55+2.55-0.30*0.4225-0.39*0.95}) --
+        (3.85,{0.55+2.55-0.30*0.4225+0.39*0.95});
+  \node[right,font=\scriptsize,ForestGreen!60!black] at (3.92,3.46)
+        {slope $=\pd{f}{x}(a,b)$};
+\end{tikzpicture}
+\end{center}
+
+\noindent Holding $x$ at $a$ instead cuts the surface with the plane $x=a$,
+producing a different curve, and $\partial f/\partial y(a,b)$ is the slope of
+\emph{its} tangent at the same point. Two planes through one point of the
+surface, two curves, two slopes.
+
+\begin{rmk}
+This is why a single number cannot be ``the slope'' of a surface. The surface
+has a different slope in every direction you slice it, and the two partial
+derivatives report only the two slices lined up with the axes. \S8 asks what
+happens along all the other slices.
+\end{rmk}
 
 %------------------------------------------------------------------------------
 \subsection{Computing them}
 %------------------------------------------------------------------------------
-In practice the limit is never evaluated. Since every variable except $x_j$ is
-held fixed, they behave as constants, and the expression becomes a function of
-the one live variable --- so the rules of \S2 apply unchanged.
+In practice the limit is never evaluated. Since the other variable is held
+fixed, it behaves as a constant, and the expression becomes a function of the
+one live variable --- so the rules of \S2 apply unchanged.
 
 \begin{center}
 \fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
 \begin{minipage}{0.9\textwidth}
 \centering
-To compute $\partial f/\partial x_j$: treat every variable other than $x_j$ as a
-constant, and differentiate as in one-variable calculus.
+To compute $\partial f/\partial x$: treat $y$ as a constant, and differentiate
+as in one-variable calculus. To compute $\partial f/\partial y$: treat $x$ as a
+constant and do the same.
 \end{minipage}}
 \end{center}
 
@@ -676,21 +757,51 @@ times $y$, and $3y^{2}$ is live:
 \end{ex}
 
 \begin{ex}
-Let $f(x,y)=e^{-(x^{2}+y^{2})}$, example (f) above. By the chain rule, holding
-$y$ fixed,
+Let $f(x,y)=e^{-(x^{2}+y^{2})}$, example (e) of \S5.2. By the chain rule,
+holding $y$ fixed,
 \[
   \pd{f}{x}=e^{-(x^{2}+y^{2})}\cdot(-2x)=-2x\,e^{-(x^{2}+y^{2})},
   \qquad
   \pd{f}{y}=-2y\,e^{-(x^{2}+y^{2})} .
 \]
+The two are the same computation with the roles of $x$ and $y$ exchanged, which
+they must be: the formula for $f$ is unchanged by that exchange.
 \end{ex}
 
 \begin{ex}
-Let $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x_1+\cdots+a_nx_n$, example (e) above.
-Only the $j$-th term involves $x_j$, and in it $x_j$ appears to the first power
-with coefficient $a_j$; every other term is a constant. So
+Let $f(x,y)=x^{3}\ln y + \dfrac{y}{x}$, for $x\neq0$ and $y>0$. Holding $y$
+fixed, $\ln y$ is a constant multiplier and $y/x=y\cdot x^{-1}$:
 \[
-  \pd{f}{x_j}=a_j .
+  \pd{f}{x} = 3x^{2}\ln y - \frac{y}{x^{2}} .
+\]
+Holding $x$ fixed, $x^{3}$ is a constant multiplier, $\tfrac{d}{dy}\ln y=1/y$ by
+\S4.1, and $y/x$ is a constant times $y$:
+\[
+  \pd{f}{y} = \frac{x^{3}}{y} + \frac{1}{x} .
+\]
+\end{ex}
+
+\begin{ex}
+Let $f(x,y)=\sin(xy)$. Holding $y$ fixed, the inside function is $xy$, whose
+derivative with respect to $x$ is $y$; the chain rule gives
+\[
+  \pd{f}{x}=y\cos(xy),
+  \qquad\text{and symmetrically}\qquad
+  \pd{f}{y}=x\cos(xy) .
+\]
+Note that the held variable does not disappear --- it survives as a factor,
+because it was a coefficient of the live variable inside the sine.
+\end{ex}
+
+\begin{ex}
+Let $f(\vc{x})=\ip{\vc{a}}{\vc{x}}=a_1x+a_2y$, example (d) of \S5.2, with
+$\vc{a}=[\,a_1,\,a_2\,]$ fixed. Only the first term involves $x$, and in it $x$
+appears to the first power with coefficient $a_1$; the second term is a
+constant. So
+\[
+  \pd{f}{x}=a_1,
+  \qquad
+  \pd{f}{y}=a_2 .
 \]
 The partial derivatives of a dot product against $\vc{a}$ are the components of
 $\vc{a}$ itself.
@@ -702,17 +813,17 @@ $\vc{a}$ itself.
 This is worth stating carefully, because it is what the next section is built
 on.
 
-Fix $j$. At each point $\vc{x}\in\R^{n}$, the limit \eqref{eq:partial} produces
-a single number. So $\partial f/\partial x_j$ assigns one real number to each
-point of $\R^{n}$ --- which is to say it is itself a function
+At each point $(x,y)\in\R^{2}$, the limit \eqref{eq:partialx} produces a single
+number. So $\partial f/\partial x$ assigns one real number to each point of the
+plane --- which is to say it is itself a function
 \[
-  \pd{f}{x_j}:\R^{n}\longrightarrow\R ,
+  \pd{f}{x}:\R^{2}\longrightarrow\R ,
 \]
 of exactly the same type as $f$. Differentiating with respect to one variable
 does not reduce the number of variables; the results above are visibly still
 functions of both $x$ and $y$.
 
-And there are $n$ of them, one for each $j$ from $1$ to $n$.
+And there are two of them.
 
 %==============================================================================
 \section{The gradient}
@@ -721,42 +832,36 @@ And there are $n$ of them, one for each $j$ from $1$ to $n$.
 %------------------------------------------------------------------------------
 \subsection{Collecting the partials}
 %------------------------------------------------------------------------------
-So a single function $f:\R^{n}\to\R$ does not have \emph{a} derivative. It has
-$n$ of them --- one per coordinate direction --- and each is a function
-$\R^{n}\to\R$ in its own right. Carrying $n$ separate functions around and
-naming them individually would be unmanageable for any interesting $n$, and it
-would obscure the fact that they belong together: they are $n$ answers to the
-same question, asked in $n$ directions.
+So a single function $f:\R^{2}\to\R$ does not have \emph{a} derivative. It has
+two --- one per coordinate direction --- and each is a function $\R^{2}\to\R$ in
+its own right. Naming and carrying them separately would obscure the fact that
+they belong together: they are two answers to the same question, asked in two
+directions.
 
-\lookback The vector unit's opening move was exactly this. Faced with $n$
+\lookback The vector unit's opening move was exactly this. Faced with several
 related numbers, do not track them separately --- package them into a single
-object of $\R^{n}$ and work with that. Position, velocity and force were treated
-that way; so were the coordinates of a vector against a basis.
+object of $\R^{2}$ and work with that. Position, velocity and force were treated
+that way.
 
 Apply that move here.
 
 \begin{defn}[Gradient]
-Let $f:\R^{n}\to\R$ have all $n$ partial derivatives at $\vc{x}$. The
-\textbf{gradient} of $f$ at $\vc{x}$ is the vector in $\R^{n}$ whose $j$-th
-component is the $j$-th partial derivative:
+Let $f:\R^{2}\to\R$ have both partial derivatives at $\vc{x}=(x,y)$. The
+\textbf{gradient} of $f$ at $\vc{x}$ is the vector in $\R^{2}$ whose components
+are the two partial derivatives:
 \[
   \grad f(\vc{x})
   \;=\;
-  \left[\;
-    \pd{f}{x_1}(\vc{x}),\;
-    \pd{f}{x_2}(\vc{x}),\;
-    \dots,\;
-    \pd{f}{x_n}(\vc{x})
-  \;\right] .
+  \left[\;\pd{f}{x}(x,y),\;\;\pd{f}{y}(x,y)\;\right] .
 \]
 \end{defn}
 
 \noindent The symbol $\grad$ is read ``del'' or ``nabla''. Note the signature
 that results:
 \[
-  f:\R^{n}\to\R,
+  f:\R^{2}\to\R,
   \qquad\text{but}\qquad
-  \grad f:\R^{n}\to\R^{n} .
+  \grad f:\R^{2}\to\R^{2} .
 \]
 The gradient takes a point and returns a \emph{vector}. This is a genuine
 departure from the one-variable case, where $f'$ had the same signature as $f$.
@@ -765,146 +870,315 @@ departure from the one-variable case, where $f'$ had the same signature as $f$.
 \subsection{Examples}
 %------------------------------------------------------------------------------
 \begin{ex}
-For $f(x,y)=x^{2}y+3y^{2}$, the partials were computed above, so
+For $f(x,y)=x^{2}y+3y^{2}$, the partials were computed in \S6.3, so
 \[
   \grad f(x,y)=\bigl[\,2xy,\;\;x^{2}+6y\,\bigr] .
 \]
 At the point $(1,2)$ this evaluates to $\grad f(1,2)=[\,4,\,13\,]$ --- a vector
 in $\R^{2}$ attached to that particular point. At a different point it is a
-different vector.
+different vector: $\grad f(0,1)=[\,0,\,6\,]$, and $\grad f(-1,0)=[\,0,\,1\,]$.
 \end{ex}
 
 \begin{ex}
-For $f(x,y)=x^{2}+y^{2}$, $\ \grad f(x,y)=[\,2x,\,2y\,]=2[\,x,\,y\,]$. At every
-point the gradient points directly away from the origin.
-\end{ex}
-
-\begin{ex}
-For $f(\vc{x})=\ip{\vc{a}}{\vc{x}}$, the last example of \S6.2 gave
-$\partial f/\partial x_j=a_j$ for every $j$. Assembling them,
+For $f(x,y)=x^{2}+y^{2}$,
 \[
-  \grad f(\vc{x}) = [\,a_1,a_2,\dots,a_n\,] = \vc{a} .
+  \grad f(x,y)=[\,2x,\,2y\,]=2\,[\,x,\,y\,] .
 \]
-The gradient is $\vc{a}$ itself, the same at every point --- the multivariable
+At every point the gradient is twice the position vector, so it points directly
+away from the origin --- which is where $f$ is smallest. That is the first hint
+of \S8.
+\end{ex}
+
+\begin{ex}
+For $f(x,y)=\sin(xy)$, the partials were $y\cos(xy)$ and $x\cos(xy)$, so
+\[
+  \grad f(x,y) = \cos(xy)\,[\,y,\,x\,] .
+\]
+Here the gradient happens to factor: a scalar depending on the point, times a
+vector. At $(\pi,\tfrac12)$, $\cos(\pi/2)=0$, so $\grad f=[\,0,\,0\,]$ --- the
+gradient is the zero vector there, and $f$ is momentarily flat in \emph{both}
+coordinate directions.
+\end{ex}
+
+\begin{ex}
+For $f(\vc{x})=\ip{\vc{a}}{\vc{x}}$, the last example of \S6.3 gave
+$\partial f/\partial x=a_1$ and $\partial f/\partial y=a_2$. Assembling them,
+\[
+  \grad f(\vc{x}) = [\,a_1,\,a_2\,] = \vc{a} .
+\]
+The gradient is $\vc{a}$ itself, the same at every point --- the two-variable
 counterpart of the fact that a line of slope $m$ has derivative $m$ everywhere.
 \end{ex}
 
+\begin{rmk}[Why this is the right package]
+Collecting the two partials into a vector could look like mere bookkeeping. It
+is more than that, for a reason visible in the last example: the gradient of
+$\ip{\vc{a}}{\vc{x}}$ came out as $\vc{a}$, not as two unrelated numbers that
+happen to be stored together. The package has an identity of its own. And
+because $\grad f(\vc{x})$ is a vector in $\R^{2}$, everything the vector unit
+built applies to it: it has a length, it has a direction, it can be dotted with
+other vectors, it can be normalised, and it can be tested for orthogonality. The
+next section spends every one of those.
+\end{rmk}
+
+%==============================================================================
+\section{The directional derivative, and steepest ascent}
+%==============================================================================
+\S5.3 left a question open: the rate of change of $f$ at a point is not
+well-posed until a direction is named, and \S6 named only two of them. This
+section names all of them at once, and then asks which one is best.
+
 %------------------------------------------------------------------------------
-\subsection{The direction it points}
+\subsection{The idea}
 %------------------------------------------------------------------------------
-The gradient is a vector, so besides its components it has a \emph{direction},
-and that direction turns out to mean something. It is the single most useful
-fact about the gradient.
+Stand at a point $\vc{x}$ of the plane and pick a direction to walk in. A
+direction is a vector $\vc{u}$, and the natural question is: \emph{as I set off
+that way, how fast does $f$ change?}
+
+That number depends on two things, and on nothing else: the point you are
+standing at, and the direction you chose. Give it a name.
 
 \begin{center}
 \fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
 \begin{minipage}{0.9\textwidth}
 \centering
-At a point $\vc{x}$, the gradient $\grad f(\vc{x})$ points in the direction of
-\textbf{steepest ascent} of $f$ --- the direction in which $f$ increases
-fastest. Its length $\norm{\grad f(\vc{x})}$ says how steep that climb is.
+The \textbf{directional derivative} $D_{\vc{u}}f(\vc{x})$ is the rate of change
+of $f$ at the point $\vc{x}$, in the direction of the vector $\vc{u}$.
 \end{minipage}}
 \end{center}
 
-\noindent We will not prove this, but it should be made plausible, because it is
-the reason the gradient is worth computing at all.
+\noindent Said as a limit, it is \eqref{eq:deriv} once more, with the step
+$h\vc{u}$ --- a step of size $h$ taken \emph{in the direction $\vc{u}$}:
+\begin{equation}\label{eq:dirderiv}
+  D_{\vc{u}}f(\vc{x})
+  \;=\;
+  \lim_{h\to0}\frac{f(\vc{x}+h\vc{u})-f(\vc{x})}{h} .
+\end{equation}
+Every definition so far is a special case. Taking $\vc{u}=[\,1,\,0\,]$ makes
+$\vc{x}+h\vc{u}=(x+h,\,y)$, and \eqref{eq:dirderiv} becomes
+\eqref{eq:partialx}. Taking $\vc{u}=[\,0,\,1\,]$ gives \eqref{eq:partialy}.
+The two partial derivatives are the directional derivative in the two
+directions we happened to name first.
 
-\medskip
-\noindent\textbf{Why it is believable.} Stand somewhere on a hillside. Each
-partial derivative answers one narrow question: \emph{if I walk due east, how
-fast does my elevation change?} And due north, and so on for each coordinate
-direction. A large positive $\partial f/\partial x_1$ means east is a good way
-to climb; a negative one means east goes downhill, so west climbs instead.
+\begin{warn}[Take $\vc{u}$ to have length one]
+$D_{\vc{u}}f$ is meant to measure a rate \emph{per unit of distance travelled},
+so the direction vector must be a unit vector --- otherwise doubling the length
+of $\vc{u}$ doubles the answer without any change of direction, and the number
+measures the arrow rather than the hillside. Whenever a direction is given as a
+vector that is not already of length one, normalise it first:
+$\vc{u}=\vc{v}/\norm{\vc{v}}$, as in \S12.1 of the vector unit. Both
+$[\,1,\,0\,]$ and $[\,0,\,1\,]$ above are unit vectors, as they had to be.
+\end{warn}
 
-Now ask the real question --- which way is uphill \emph{fastest}? Intuitively
-you should take a bit of each direction that helps, and take more of the
-directions that help more. A step built by weighting each coordinate direction
-in proportion to how much it raises $f$ is exactly a step of the form
+%------------------------------------------------------------------------------
+\subsection{Computing it from the gradient}
+%------------------------------------------------------------------------------
+The limit \eqref{eq:dirderiv} is no more pleasant to evaluate than any other, and
+it does not have to be. The gradient already holds the answer.
+
+Walking in the direction $\vc{u}=[\,u_1,\,u_2\,]$ means changing $x$ at rate
+$u_1$ and changing $y$ at rate $u_2$, at the same time. Each partial derivative
+is the exchange rate for its own coordinate --- $\partial f/\partial x$ says how
+much $f$ moves per unit of $x$ --- so the contribution from the $x$-motion is
+$\pd{f}{x}u_1$, the contribution from the $y$-motion is $\pd{f}{y}u_2$, and the
+total rate is their sum:
 \[
-  \pd{f}{x_1}\vc{e}_1 + \pd{f}{x_2}\vc{e}_2 + \cdots + \pd{f}{x_n}\vc{e}_n,
+  D_{\vc{u}}f(\vc{x})
+  \;=\; \pd{f}{x}(\vc{x})\,u_1 + \pd{f}{y}(\vc{x})\,u_2 .
 \]
-and that is the gradient. The directions that raise $f$ most get the largest
-weights; the ones that lower it get negative weights, which points the step away
-from them.
+That sum of products of matching components is a dot product, and the vector it
+is taken against is the gradient.
 
-\lookback There is a second way to see it, using the vector unit. The rate of
-change of $f$ in a chosen unit direction $\vc{u}$ turns out to be the dot
-product $\ip{\grad f}{\vc{u}}$, and by \S11.6,
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+For a unit vector $\vc{u}$,
 \[
-  \ip{\grad f}{\vc{u}}
-  = \norm{\grad f}\,\norm{\vc{u}}\cos\theta
-  = \norm{\grad f}\cos\theta ,
+  D_{\vc{u}}f(\vc{x}) \;=\; \ip{\grad f(\vc{x})}{\vc{u}} .
 \]
-since $\norm{\vc{u}}=1$. Among all unit directions this is largest when
-$\cos\theta=1$, that is, when $\vc{u}$ points the same way as $\grad f$. The
-steepest climb is in the gradient's own direction, and the best possible rate is
-$\norm{\grad f}$ --- which is why the length measures steepness.
+\end{minipage}}
+\end{center}
 
-\medskip
-\noindent\textbf{The same thing happens in one variable.} With $n=1$ there are
-only two directions to move, and the gradient is the single number $f'(x)$. If
-$f'(x)>0$ then $f$ increases as $x$ increases, so ``uphill'' is the positive
-direction; if $f'(x)<0$, uphill is the negative direction. In both cases uphill
-is the direction the derivative points, and $|f'(x)|$ says how steep the slope
-is. The gradient is that statement with more than two directions available ---
-which is why it must be a vector rather than a sign.
+\noindent This is the first place the gradient pays for itself. The two
+partials answered two questions; packaged as a vector and dotted against
+$\vc{u}$, they answer all of them.
+
+\begin{rmk}
+The argument just given is a motivation, not a proof --- it assumes that the
+separate coordinate effects simply add, which is the content of the linear
+approximation of \S9.2. Taking that formula as the definition of how $f$ behaves
+near $\vc{x}$, the identity above is immediate; \S9.2 closes the loop.
+\end{rmk}
+
+\begin{ex}
+Let $f(x,y)=x^{2}y+3y^{2}$ and take the point $(1,2)$, where $\S7.2$ gave
+$\grad f(1,2)=[\,4,\,13\,]$. Find the rate of change of $f$ there in the
+direction of $\vc{v}=[\,3,\,4\,]$.
+
+First normalise: $\norm{\vc{v}}=\sqrt{9+16}=5$, so
+$\vc{u}=\tfrac15[\,3,\,4\,]=[\,\tfrac35,\,\tfrac45\,]$. Then
+\[
+  D_{\vc{u}}f(1,2)
+  = \bigl\langle[\,4,\,13\,],\;[\,\tfrac35,\,\tfrac45\,]\bigr\rangle
+  = \frac{12}{5}+\frac{52}{5}
+  = \frac{64}{5} = 12.8 .
+\]
+Positive, so $f$ increases as you set off that way.
+\end{ex}
+
+\begin{ex}
+Same $f$ and same point, but in the direction $\vc{v}=[\,-13,\,4\,]$. Here
+$\norm{\vc{v}}=\sqrt{169+16}=\sqrt{185}$, and
+\[
+  D_{\vc{u}}f(1,2)
+  = \frac{1}{\sqrt{185}}\bigl\langle[\,4,\,13\,],\,[\,-13,\,4\,]\bigr\rangle
+  = \frac{-52+52}{\sqrt{185}} = 0 .
+\]
+The rate is zero: walking that way, $f$ does not change at all to first order.
+By the orthogonality test of the vector unit's \S11.7, that happened precisely
+because $[\,-13,\,4\,]$ is orthogonal to the gradient --- and the directions
+orthogonal to $\grad f$ are the ones along which $f$ holds still. Those are the
+level curves.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{In which direction is the rate of change greatest?}
+%------------------------------------------------------------------------------
+Now the question worth asking. Standing at $\vc{x}$, every unit vector $\vc{u}$
+gives some rate $D_{\vc{u}}f(\vc{x})$. \emph{Which $\vc{u}$ makes it as large as
+possible?}
+
+Write the formula of \S8.2 and then rewrite the dot product the way the vector
+unit's \S11.3 does, in terms of the angle $\theta$ between $\grad f(\vc{x})$ and
+$\vc{u}$:
+\begin{equation}\label{eq:steepest}
+  D_{\vc{u}}f(\vc{x})
+  \;=\; \ip{\grad f(\vc{x})}{\vc{u}}
+  \;=\; \norm{\grad f(\vc{x})}\,\norm{\vc{u}}\cos\theta
+  \;=\; \norm{\grad f(\vc{x})}\cos\theta ,
+\end{equation}
+the last step because $\norm{\vc{u}}=1$.
+
+Read what \eqref{eq:steepest} says. As $\vc{u}$ swings around the point, the
+factor $\norm{\grad f(\vc{x})}$ does not move --- it is fixed by the point, not
+by the direction. The \emph{only} thing that varies is $\cos\theta$, and
+$\cos\theta$ is largest, equal to $1$, exactly when $\theta=0$. So the rate is
+greatest when the angle between $\vc{u}$ and the gradient is zero: when $\vc{u}$
+points the same way as $\grad f(\vc{x})$.
+
+There is exactly one unit vector that does that. Assuming
+$\grad f(\vc{x})\neq\vc{0}$, take
+\[
+  \vc{u} \;=\; \frac{\grad f(\vc{x})}{\norm{\grad f(\vc{x})}} ,
+\]
+the normalisation of the gradient (vector unit \S12.1). Substituting it into the
+formula of \S8.2 confirms the value:
+\[
+  D_{\vc{u}}f(\vc{x})
+  = \left\langle \grad f(\vc{x}),\;
+      \frac{\grad f(\vc{x})}{\norm{\grad f(\vc{x})}}\right\rangle
+  = \frac{\ip{\grad f(\vc{x})}{\grad f(\vc{x})}}{\norm{\grad f(\vc{x})}}
+  = \frac{\norm{\grad f(\vc{x})}^{2}}{\norm{\grad f(\vc{x})}}
+  = \norm{\grad f(\vc{x})} ,
+\]
+using $\ip{\vc{w}}{\vc{w}}=\norm{\vc{w}}^{2}$ from the vector unit's \S11.6.
+
+So the rate of change at $\vc{x}$ is maximal along the direction of
+$\grad f(\vc{x})$, and the maximal rate is $\norm{\grad f(\vc{x})}$. Since that
+value is positive, $f$ genuinely increases in that direction: the gradient is an
+\emph{ascent} direction, and no direction ascends faster.
+
+\begin{center}
+\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
+\begin{minipage}{0.9\textwidth}
+\centering
+At a point $\vc{x}$ where both partial derivatives exist and
+$\grad f(\vc{x})\neq\vc{0}$, the gradient $\grad f(\vc{x})$ points in the
+direction of \textbf{steepest ascent} of $f$, and its length
+$\norm{\grad f(\vc{x})}$ is the rate of climb in that direction.
+\end{minipage}}
+\end{center}
+
+\begin{rmk}[The two extremes, and the flat directions]
+The same reading of \eqref{eq:steepest} settles the other cases at no extra
+cost. $\cos\theta$ is smallest, equal to $-1$, when $\theta=\pi$ --- so the rate
+is \emph{most negative} when $\vc{u}$ points opposite to the gradient, and
+$-\grad f(\vc{x})$ is the direction of \textbf{steepest descent}. And
+$\cos\theta=0$ when $\theta=\pi/2$, so the rate is zero exactly along the
+directions orthogonal to the gradient, which is what the second example of
+\S8.2 found by arithmetic. Those are the directions in which $f$ holds still:
+the gradient crosses the level curves of $f$ at right angles.
+\end{rmk}
 
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
-  \draw[axisline] (-0.3,0) -- (5.0,0) node[right,font=\scriptsize,black]{$x_1$};
-  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$x_2$};
-  % f grows outward, so the centre is the low point
+  \draw[axisline] (-0.3,0) -- (5.0,0) node[right,font=\scriptsize,black]{$x$};
+  \draw[axisline] (0,-0.3) -- (0,3.7) node[above,font=\scriptsize,black]{$y$};
   \foreach \r in {0.30,0.52,0.74,0.96}
     { \draw[gray!45] (2.3,1.75) circle (\r); }
   \node[font=\scriptsize,gray!70] at (2.3,3.15) {level curves of $f$};
   \coordinate (P) at (3.0,2.23);
   \fill[black] (P) circle (1.6pt);
   \node[below right,font=\scriptsize,inner sep=2pt] at (P) {$\vc{x}$};
-  % uphill: outward, away from the centre
   \draw[vecarr,ForestGreen!70!black] (P) -- (3.72,2.73)
         node[above right,font=\scriptsize,inner sep=1pt]{$\grad f(\vc{x})$};
-  % downhill: inward, drawn out to clear space on the far side
   \draw[vecarr,BrickRed] (P) -- (1.36,1.09)
         node[below left,font=\scriptsize,inner sep=1pt]{$-\grad f(\vc{x})$};
 \end{tikzpicture}
 \end{center}
 
 \noindent The two arrows show \emph{directions}; their drawn lengths are not to
-scale. The gradient crosses the level curves at right angles, heading toward the
-ones where $f$ is larger. Reversing it, $-\grad f(\vc{x})$ gives the direction of
-steepest \emph{descent} --- here, straight toward the low point at the centre.
+scale. The gradient heads toward the level curves where $f$ is larger. Reversing
+it gives the direction of steepest descent --- here, straight toward the low
+point at the centre.
 
-\lookahead That last observation is the whole idea behind an algorithm you will
-meet later. To find a point where $f$ is as small as possible, start anywhere,
-compute $-\grad f$, take a step in that direction, and repeat --- walking
-downhill until the ground levels out. It is called \emph{gradient descent}, and
-it is the workhorse of modern optimisation and machine learning. It exists
-because of the property in the box above.
+\begin{rmk}[The same thing happens in one variable]
+With one variable there are only two directions to move, and the gradient is the
+single number $f'(x)$. If $f'(x)>0$ then $f$ increases as $x$ increases, so
+``uphill'' is the positive direction; if $f'(x)<0$, uphill is the negative
+direction. In both cases uphill is the direction the derivative points, and
+$\lvert f'(x)\rvert$ says how steep the slope is. The gradient is that statement
+with more than two directions available --- which is why it must be a vector
+rather than a sign.
+\end{rmk}
 
 %------------------------------------------------------------------------------
-\subsection{Why this is the right package}
+\subsection{Gradient descent}
 %------------------------------------------------------------------------------
-Collecting the partials into a vector could look like mere bookkeeping --- a
-convenient way to write $n$ things at once. It is more than that, for a reason
-already visible in the last example.
+The descent half of the last remark is the more useful one in practice, because
+most problems worth solving are phrased as \emph{make this quantity small}.
 
-The gradient of $f(\vc{x})=\ip{\vc{a}}{\vc{x}}$ came out as $\vc{a}$, not as a
-list of unrelated numbers that happen to be stored together. The package has an
-identity of its own. And because $\grad f(\vc{x})$ is a vector in $\R^{n}$,
-everything the vector unit built applies to it: it has a length, it has a
-direction, it can be dotted with other vectors, it can be projected, and it can
-be compared for orthogonality.
+Suppose $f(x,y)$ measures how badly something is performing --- the error of a
+prediction, the cost of a design --- and you want the $(x,y)$ that makes it as
+small as possible. You cannot see the whole surface. But at whatever point you
+are standing, you can compute $\grad f$, and $-\grad f$ tells you which way is
+downhill, faster than any other way. So: step that way, and repeat.
+\[
+  \vc{x}_{k+1} \;=\; \vc{x}_{k} \;-\; \alpha\,\grad f(\vc{x}_k),
+  \qquad \alpha>0 .
+\]
+The number $\alpha$ is the \textbf{step size}, controlling how far to move
+before recomputing. This is \textbf{gradient descent}, and it is the workhorse
+of modern optimisation and machine learning --- the method by which very nearly
+every neural network in existence is trained. It exists because of the boxed
+statement in \S8.3 and nothing more.
 
-\S7.3 has already spent two of those operations: the direction of $\grad f$ and
-its length. The next section spends the dot product.
+\lookahead Two questions are already visible. The iteration stops making
+progress where $\grad f=\vc{0}$, so those points deserve a name and a study ---
+they are the candidates for maxima and minima. And knowing only the slope,
+gradient descent has no idea whether the ground ahead curves up or down, so it
+cannot tell how big a step is safe; answering that needs a \emph{second}
+derivative, which in more than one variable is neither a number nor a vector.
+Part 2 of this unit takes both up.
 
 %==============================================================================
 \section{Linear approximation}
 %==============================================================================
 One of the oldest uses of a derivative is to replace a complicated function, near
-a single point, by a simple one. The gradient does this in $n$ dimensions exactly
-as $f'$ does in one --- and comparing the two formulas shows what kind of object
-the gradient really is.
+a single point, by a simple one. The gradient does this in the plane exactly as
+$f'$ does on the line --- and comparing the two formulas shows what kind of
+object the gradient really is.
 
 %------------------------------------------------------------------------------
 \subsection{One variable}
@@ -937,22 +1211,22 @@ The true value is $2.02484\ldots$, so the estimate is off by about $1.5\times
 \end{ex}
 
 %------------------------------------------------------------------------------
-\subsection{In \texorpdfstring{$n$}{n} dimensions}
+\subsection{Two variables}
 %------------------------------------------------------------------------------
-Now let $f:\R^{n}\to\R$ and let $\vc{a}\in\R^{n}$ be the point we are near.
+Now let $f:\R^{2}\to\R$ and let $\vc{a}=(a_1,a_2)$ be the point we are near.
 Every piece of \eqref{eq:lin1} survives, but two of them change type.
 
 The starting value $f(\vc{a})$ is still a scalar. The displacement is now
-$\vc{x}-\vc{a}$, a \emph{vector} in $\R^{n}$ --- it must record how far we moved
-in every coordinate, not just one. And the rate is now $\grad f(\vc{a})$, also a
-vector. To turn a vector of rates and a vector of displacements into a single
-number, there is exactly one natural operation available, and the vector unit
-built it: the dot product.
+$\vc{x}-\vc{a}$, a \emph{vector} --- it must record how far we moved in both
+coordinates, not just one. And the rate is now $\grad f(\vc{a})$, also a vector.
+To turn a vector of rates and a vector of displacements into a single number,
+there is exactly one natural operation available, and the vector unit built it:
+the dot product.
 
-\begin{defn}[Linear approximation in $n$ variables]
-Let $f:\R^{n}\to\R$ have a gradient at $\vc{a}$. The \textbf{linear
+\begin{defn}[Linear approximation in two variables]
+Let $f:\R^{2}\to\R$ have a gradient at $\vc{a}$. The \textbf{linear
 approximation} of $f$ at $\vc{a}$ is
-\begin{equation}\label{eq:linn}
+\begin{equation}\label{eq:lin2}
   L(\vc{x}) \;=\; f(\vc{a}) + \ip{\grad f(\vc{a})}{\;\vc{x}-\vc{a}} ,
 \end{equation}
 and $f(\vc{x})\approx L(\vc{x})$ for $\vc{x}$ near $\vc{a}$.
@@ -960,25 +1234,22 @@ and $f(\vc{x})\approx L(\vc{x})$ for $\vc{x}$ near $\vc{a}$.
 
 \noindent Set the two formulas side by side:
 \[
-  \underbrace{f(a) + f'(a)\,(x-a)}_{n=1}
+  \underbrace{f(a) + f'(a)\,(x-a)}_{\text{one variable}}
   \qquad\longleftrightarrow\qquad
-  \underbrace{f(\vc{a}) + \ip{\grad f(\vc{a})}{\vc{x}-\vc{a}}}_{\text{general } n} .
+  \underbrace{f(\vc{a}) + \ip{\grad f(\vc{a})}{\vc{x}-\vc{a}}}_{\text{two variables}} .
 \]
 They are the same formula. The only change is that a product of two numbers has
-become a dot product of two vectors --- and when $n=1$ the dot product of two
-one-component vectors \emph{is} ordinary multiplication, so \eqref{eq:linn}
-contains \eqref{eq:lin1} as its smallest case.
+become a dot product of two vectors.
 
-Written out in coordinates, \eqref{eq:linn} reads
+Written out in coordinates, \eqref{eq:lin2} reads
 \[
-  L(\vc{x}) = f(\vc{a})
-    + \pd{f}{x_1}(\vc{a})\,(x_1-a_1)
-    + \cdots
-    + \pd{f}{x_n}(\vc{a})\,(x_n-a_n) ,
+  L(x,y) = f(a_1,a_2)
+    + \pd{f}{x}(\vc{a})\,(x-a_1)
+    + \pd{f}{y}(\vc{a})\,(y-a_2) ,
 \]
 one term per direction: each partial derivative converts the displacement in its
-own coordinate into a contribution to the change in $f$, and the contributions
-are added up.
+own coordinate into a contribution to the change in $f$, and the two
+contributions are added.
 
 \begin{ex}
 Let $f(x,y)=x^{2}+y^{2}$ and approximate near $\vc{a}=(1,2)$. There
@@ -998,279 +1269,40 @@ both effects.
 \end{ex}
 
 \begin{rmk}[What the graph of $L$ is]
-For $n=1$ the linear approximation is a tangent \emph{line}. For $n=2$ it is a
-tangent \emph{plane}, resting on the surface at one point. For general $n$ it is
-a tangent hyperplane. In every case it is the flat object that best matches $f$
-at $\vc{a}$.
+For one variable the linear approximation is a tangent \emph{line}. For two it
+is a tangent \emph{plane}, resting on the surface at a single point. In both
+cases it is the flat object that best matches $f$ at $\vc{a}$ --- and it is the
+same plane whose slices, in the two coordinate directions, are the tangent lines
+drawn in \S6.2.
 \end{rmk}
 
 \begin{rmk}[Why the gradient deserves to be called the derivative]
-\eqref{eq:linn} is the strongest answer to the question of what replaces $f'$ in
-several variables. In one variable, $f'(a)$ is the number that makes the best
-linear approximation work. In $n$ variables, $\grad f(\vc{a})$ is the vector
-that plays that role --- the same job, the same position in the formula, a
-different type of object. Collecting the partials into a vector was not
-bookkeeping after all: it produced the thing that behaves like a derivative.
+\eqref{eq:lin2} is the strongest answer to the question of what replaces $f'$ in
+two variables. In one variable, $f'(a)$ is the number that makes the best linear
+approximation work. In two, $\grad f(\vc{a})$ is the vector that plays that role
+--- the same job, the same position in the formula, a different type of object.
+Collecting the partials into a vector was not bookkeeping after all: it produced
+the thing that behaves like a derivative.
 \end{rmk}
 
-\lookahead \eqref{eq:linn} is also where the next ideas come from. Keeping
-$\vc{x}-\vc{a}$ a fixed unit vector and reading off the resulting change gives
-the rate of $f$ in that direction, completing the question left open in \S5.3.
-Asking where $L$ is flat --- where $\grad f(\vc{a})=\vc{0}$ --- locates the
-candidates for maxima and minima. And approximating with something better than a
-flat object requires a \emph{second} derivative --- which in $n$ dimensions turns
-out to be a matrix rather than a vector. That matrix is the subject of \S9.
-
-%==============================================================================
-\section{The Jacobian and the Hessian}
-%==============================================================================
-Differentiating $f:\R^{n}\to\R$ produced $\grad f$, which is not a function of
-the same type as $f$: it takes a point of $\R^{n}$ and returns a \emph{vector}
-in $\R^{n}$. To differentiate a second time we first need to know what the
-derivative of such a function even is.
-
-%------------------------------------------------------------------------------
-\subsection{Functions with vector output}
-%------------------------------------------------------------------------------
-So far the output has always been a single number. Allow it to be a vector.
-
-\begin{defn}[Vector-valued function]
-A function $\mt{F}:\R^{n}\to\R^{m}$ takes a vector $\vc{x}\in\R^{n}$ and returns
-a vector $\mt{F}(\vc{x})\in\R^{m}$. Writing out the $m$ components,
+\begin{rmk}[And it closes the loop of \S8.2]
+Put $\vc{x}=\vc{a}+h\vc{u}$ into \eqref{eq:lin2}, so that the displacement is
+$h\vc{u}$. The dot product is linear in that slot, so
 \[
-  \mt{F}(\vc{x}) = \bigl[\,F_1(\vc{x}),\,F_2(\vc{x}),\,\dots,\,F_m(\vc{x})\,\bigr],
+  L(\vc{a}+h\vc{u}) = f(\vc{a}) + h\,\ip{\grad f(\vc{a})}{\vc{u}} ,
 \]
-where each \textbf{component function} $F_i:\R^{n}\to\R$ is a scalar function of
-the kind \S5 introduced.
-\end{defn}
-
-\noindent So a vector-valued function is nothing more than $m$ scalar functions
-travelling together --- the same packaging move as \S7.1, applied to outputs
-instead of derivatives.
-
-\begin{ex}
-$\mt{F}(x,y)=\bigl[\,x^{2}-y^{2},\;2xy\,\bigr]$ is a function $\R^{2}\to\R^{2}$,
-with $F_1(x,y)=x^{2}-y^{2}$ and $F_2(x,y)=2xy$. (If those two components look
-familiar, they are the real and imaginary parts of $z^{2}$ for $z=x+iy$.)
-\end{ex}
-
-%------------------------------------------------------------------------------
-\subsection{The Jacobian}
-%------------------------------------------------------------------------------
-Each component $F_i$ has $n$ partial derivatives. With $m$ components that is
-$mn$ numbers --- too many for a vector, and naturally arranged in a grid.
-
-\begin{defn}[Jacobian]
-Let $\mt{F}:\R^{n}\to\R^{m}$ have all partial derivatives at $\vc{x}$. Its
-\textbf{Jacobian} is the $m\times n$ matrix
-\[
-  \mt{J}_{\mt{F}}(\vc{x})
-  =
-  \begin{bmatrix}
-    \pd{F_1}{x_1} & \pd{F_1}{x_2} & \cdots & \pd{F_1}{x_n}\\[6pt]
-    \pd{F_2}{x_1} & \pd{F_2}{x_2} & \cdots & \pd{F_2}{x_n}\\[4pt]
-    \vdots        & \vdots        & \ddots & \vdots\\[2pt]
-    \pd{F_m}{x_1} & \pd{F_m}{x_2} & \cdots & \pd{F_m}{x_n}
-  \end{bmatrix},
-  \qquad
-  \bigl(\mt{J}_{\mt{F}}\bigr)_{ij} = \pd{F_i}{x_j} .
-\]
-It is also written $D\mt{F}$, and it is what ``the derivative of $\mt{F}$''
-means.
-\end{defn}
-
-\noindent Read the shape carefully: \textbf{one row per output, one column per
-input}. Row $i$ collects all the partials of the single component $F_i$ --- so
-row $i$ is the gradient of $F_i$. The Jacobian is a stack of gradients, one for
-each component function.
-
-When $m=1$ there is a single row, and the Jacobian is the gradient written
-across. The gradient was the Jacobian all along, in the case where the output
-was one number.
-
-\begin{ex}
-For $\mt{F}(x,y)=\bigl[\,x^{2}-y^{2},\;2xy\,\bigr]$, differentiating each
-component with respect to each variable gives the $2\times2$ matrix
-\[
-  \mt{J}_{\mt{F}}(x,y)=
-  \begin{bmatrix}
-    2x & -2y\\
-    2y & \phantom{-}2x
-  \end{bmatrix} .
-\]
-Note that this matrix is \emph{not} symmetric --- $-2y$ against $2y$. Jacobians
-in general have no symmetry to them.
-\end{ex}
-
-\begin{ex}
-For $\mt{F}(x,y,z)=[\,xyz,\;x+y+z\,]$, a function $\R^{3}\to\R^{2}$, the
-Jacobian is $2\times3$:
-\[
-  \mt{J}_{\mt{F}}(x,y,z)=
-  \begin{bmatrix}
-    yz & xz & xy\\
-    1  & 1  & 1
-  \end{bmatrix} .
-\]
-Two outputs, three inputs, so two rows and three columns.
-\end{ex}
-
-%------------------------------------------------------------------------------
-\subsection{The gradient is such a function}
-%------------------------------------------------------------------------------
-Now return to $f:\R^{n}\to\R$. Section \S7.1 recorded its gradient's signature:
-\[
-  \grad f : \R^{n}\longrightarrow\R^{n} .
-\]
-That is exactly a vector-valued function of the kind just defined, with $m=n$.
-So it has a Jacobian --- and that Jacobian is the second derivative we have been
-looking for.
-
-%------------------------------------------------------------------------------
-\subsection{The Hessian}
-%------------------------------------------------------------------------------
-\begin{defn}[Hessian]
-Let $f:\R^{n}\to\R$ have all second partial derivatives at $\vc{x}$. Its
-\textbf{Hessian} is the $n\times n$ matrix of those second partials,
-\[
-  \mt{H}_{f}(\vc{x}) = \mt{J}_{\grad f}(\vc{x}),
-  \qquad
-  \bigl(\mt{H}_{f}\bigr)_{ij}
-  \;=\; \pd{}{x_i}\!\left(\pd{f}{x_j}\right)
-  \;=\; \pdd{f}{x_i}{x_j} .
-\]
-\end{defn}
-
-\noindent Written out for $n=2$, with the variables called $x$ and $y$:
-\[
-  \mt{H}_{f}
-  =
-  \begin{bmatrix}
-    \pdd{f}{x}{x} & \pdd{f}{x}{y}\\[8pt]
-    \pdd{f}{y}{x} & \pdd{f}{y}{y}
-  \end{bmatrix} .
-\]
-The two entries on the diagonal are obtained by differentiating twice in the
-same variable. The two off the diagonal are the \textbf{mixed partials}:
-differentiate once in each variable, in the two possible orders.
-
-\begin{ex}
-Take $f(x,y)=x^{2}y+3y^{2}$, whose gradient was computed in \S7.2:
-\[
-  \grad f(x,y) = \bigl[\,2xy,\;\;x^{2}+6y\,\bigr] .
-\]
-Differentiate each component with respect to each variable:
-\[
-  \pd{}{x}(2xy)=2y,\quad
-  \pd{}{x}(x^{2}+6y)=2x,\quad
-  \pd{}{y}(2xy)=2x,\quad
-  \pd{}{y}(x^{2}+6y)=6,
-\]
-so
-\[
-  \mt{H}_{f}(x,y)=
-  \begin{bmatrix}
-    2y & 2x\\
-    2x & 6
-  \end{bmatrix} .
-\]
-The two mixed partials both came out $2x$, even though they were computed by
-differentiating in opposite orders.
-\end{ex}
-
-\begin{ex}
-Take $f(x,y,z)=x^{2}y+y^{2}z+z^{2}x$, so that
-\[
-  \grad f = \bigl[\,2xy+z^{2},\;\;x^{2}+2yz,\;\;y^{2}+2zx\,\bigr] .
-\]
-Differentiating each component in each of the three variables gives
-\[
-  \mt{H}_{f}(x,y,z)=
-  \begin{bmatrix}
-    2y & 2x & 2z\\
-    2x & 2z & 2y\\
-    2z & 2y & 2x
-  \end{bmatrix} .
-\]
-Again every mixed pair agrees: the $(1,2)$ and $(2,1)$ entries are both $2x$,
-the $(1,3)$ and $(3,1)$ entries are both $2z$, and the $(2,3)$ and $(3,2)$
-entries are both $2y$.
-\end{ex}
-
-\noindent Twice is a coincidence. It is not.
-
-%------------------------------------------------------------------------------
-\subsection{Clairaut's theorem}
-%------------------------------------------------------------------------------
-\begin{thm}[Clairaut]
-Let $f:\R^{n}\to\R$. If the mixed second partial derivatives
-$\pdd{f}{x_i}{x_j}$ and $\pdd{f}{x_j}{x_i}$ exist and are \emph{continuous} near
-a point, then at that point they are equal:
-\[
-  \pdd{f}{x_i}{x_j} \;=\; \pdd{f}{x_j}{x_i} .
-\]
-\end{thm}
-
-\noindent In words: \emph{the order of differentiation does not matter}.
-Differentiating first with respect to $x$ and then with respect to $y$ gives the
-same result as doing it the other way round. This is not obvious --- the two
-computations pass through entirely different intermediate expressions, as both
-examples above show --- and it is why the mixed entries kept agreeing.
-
-\begin{warn}[The continuity hypothesis is doing work]
-Clairaut's theorem is a theorem, not a definition, and it can fail. There exist
-functions whose two mixed partials both exist at a point and are \emph{not}
-equal there; what such functions lack is the continuity of those mixed partials
-near the point. Every function you will meet in this course --- polynomials,
-exponentials, logarithms, sines and cosines, and anything built from them by the
-rules of \S2 --- satisfies the hypothesis comfortably, so the conclusion is
-always available. It is worth knowing that it rests on something.
-\end{warn}
-
-%------------------------------------------------------------------------------
-\subsection{The Hessian is symmetric}
-%------------------------------------------------------------------------------
-Clairaut's theorem is a statement about two numbers. Read as a statement about
-the matrix holding them, it says something clean.
-
-The $(i,j)$ entry of the Hessian is $\pdd{f}{x_i}{x_j}$ and the $(j,i)$ entry is
-$\pdd{f}{x_j}{x_i}$. Clairaut says these are equal, for every pair $i$ and $j$.
-So every entry of $\mt{H}_f$ equals its mirror image across the diagonal --- which
-is precisely the definition of a symmetric matrix from the matrix unit, \S6.5.
-
-\begin{center}
-\fcolorbox{RoyalBlue!45}{RoyalBlue!7}{%
-\begin{minipage}{0.9\textwidth}
-\centering
-If the mixed second partial derivatives of $f$ are continuous, then its Hessian
-is \textbf{symmetric}:
-\[
-  \mt{H}_{f} = \mt{H}_{f}\T .
-\]
-\end{minipage}}
-\end{center}
-
-\noindent Both worked examples above are symmetric, as they had to be. Contrast
-this with the Jacobian of \S9.2, which had no such property: a general Jacobian
-need not even be square, let alone symmetric. Symmetry is not a feature of
-second derivatives in general --- it is a consequence of the Hessian being the
-second derivative of a \emph{scalar} function, so that its two indices play
-interchangeable roles.
-
-\begin{rmk}
-This is worth registering as more than a curiosity. Symmetric matrices are
-easier to work with than general ones in almost every respect, and a great deal
-of what can be said about maxima, minima and the shape of a surface near a point
-depends on the Hessian being symmetric. An $n\times n$ symmetric matrix also
-carries only $n(n+1)/2$ independent numbers rather than $n^{2}$, so storing one
-costs roughly half as much.
+and the change in the approximation, divided by the distance $h$ travelled, is
+$\ip{\grad f(\vc{a})}{\vc{u}}$ --- exactly the directional derivative claimed in
+\S8.2. The formula asserted there is the linear approximation read along a
+single direction.
 \end{rmk}
 
-\lookahead The gradient told us which way $f$ is going; the Hessian tells us how
-that direction is itself changing --- the curvature of $f$. Where the gradient
-vanishes, it is the Hessian that decides whether the flat point is a minimum, a
-maximum, or neither. And an optimisation method that uses curvature rather than
-slope alone can take much better-informed steps than the one built on the
-gradient by itself.
+\lookahead Two roads lead out of here. Asking where $L$ is flat --- where
+$\grad f(\vc{a})=\vc{0}$ --- locates the candidates for maxima and minima, the
+points at which gradient descent stalls. And approximating with something better
+than a flat object requires a \emph{second} derivative, which for a function of
+two variables turns out to be neither a number nor a vector but a
+\emph{matrix}. Both belong to Part 2, which also lifts everything in \S5--\S9
+from the plane to $\R^{n}$.
 
 \end{document}
