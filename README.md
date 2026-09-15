@@ -121,7 +121,11 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
     basis and span, orthogonality and subspaces, complex numbers
   - `matrix-unit/` — linear systems and matrix notation
   - `computational-unit/` — operation counting, $k$-nearest neighbours,
-    $k$-means clustering, Gram–Schmidt, matrix multiplication
+    $k$-means clustering, Gram–Schmidt, matrix multiplication, gradient descent
+  - `vector-calc-unit/` — derivatives and the gradient, $n$ dimensions and the
+    Hessian
+  - `python-recipe/` — `MATH231_python_recipes.md`, a running set of short
+    Python recipes keyed to the lecture sections
 - **`setup/`** — student setup guides: 1 · Git and GitHub, 2 · Python, pip, and
   an IDE.
 
