@@ -3,7 +3,7 @@
 ## Homework out now
 
 - [**Homework 1 — Vectors and Complex Numbers**](homework/MATH231_homework_1.pdf)
-  — due **Sunday, September 20, 2026, 11:59 PM**
+  — due **Sunday, September 27, 2026, 11:59 PM**
 
 > **Homework 1 is not final yet.** It will be updated again later this week with
 > the final set of questions. Pull the latest version before you start working,
@@ -13,22 +13,23 @@
 
 Section ranges are **inclusive** at both ends. A section appearing on two
 consecutive dates was started in the first meeting and finished in the second.
+A range that ends at a subsection (§11.1, say) stopped partway through that
+section.
 
 | Date | Lecture | Sections | What that was |
 |---|---|---|---|
 | Tue, Sep 1 | [Vector Unit, Part 1](lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic.pdf) | §1–§7 | magnitude and direction; the Euclidean norm; the derivative as a vector quantity; vector vs. scalar quantities; one-dimensional vectors; notation, $\mathbb{R}^2$, and signatures; addition and subtraction |
 | Thu, Sep 3 | [Vector Unit, Part 1](lectures/vector-unit/MATH231_vectors_1_definition_and_arithmetic.pdf) | §7–§9 | addition and subtraction, the parallelogram rule and the triangle inequality; scalar multiplication, mirroring, and the eight algebraic laws; equality of vectors |
 | Thu, Sep 3 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §1–§3 | where the real numbers run out; the imaginary unit and $a+bi$; the complex plane |
-
-## Looking ahead
-
-| Date | Lecture | Sections | What that will be |
-|---|---|---|---|
-| Tue, Sep 8 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §4–§7 | arithmetic — addition, multiplication, the conjugate, and division; the modulus, distance, and discs; the unit circle, trigonometric form, and Euler's formula; multiplication by $i$ as a rotation |
-| Tue, Sep 8 | [Vector Unit, Part 2](lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection.pdf) | from §10 | begins the part — relative orientation: parallel, orthogonal, and the angle between. The dot product and projection follow in §11–§12. |
-
-> **Planned, not promised.** Pacing shifts, and this table is a forecast. The
-> recap above it is the record of what actually happened.
+| Tue, Sep 8 | [Complex Numbers](lectures/vector-unit/MATH231_complex_numbers.pdf) | §4–§5.1 | arithmetic: addition, subtraction, multiplication, and division; the modulus |
+| Tue, Sep 8 | [Vector Unit, Part 2](lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection.pdf) | §10–§11.1 | relative orientation: parallel, orthogonal, and the angle between; review of the law of cosines. Stopped just before §11.2, where the law of cosines is applied to $\mathbf{u}-\mathbf{v}$ to derive the dot product formula |
+| Thu, Sep 10 | [Vector Unit, Part 2](lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection.pdf) | §11.2–§12 | the law of cosines applied to $\mathbf{u}-\mathbf{v}$; the dot product and cosine similarity; the orthogonality test and the algebraic laws of the dot product; unit vectors, projection, and the orthogonal piece. Finishes Part 2 |
+| Tue, Sep 15 | [Vector Unit, Part 3](lectures/vector-unit/MATH231_vectors_3_norms_and_metrics.pdf) | §13–§15 | the Cauchy–Schwarz inequality; metrics, and the family of norms: Euclidean, Manhattan, Chebyshev, the $p$-norm, and unit balls; what makes a norm a norm. All of Part 3 |
+| Thu, Sep 17 | [Vector Calculus Unit, Part 1](lectures/vector-calc-unit/MATH231_veccalc_1_derivatives_and_the_gradient.pdf) | §1–§7 | the derivative in one variable and its rules; the exponential and the logarithm; functions of two variables; partial derivatives; the gradient. §8 onward comes later |
+| Tue, Sep 22 | [Vector Calculus Unit, Part 1](lectures/vector-calc-unit/MATH231_veccalc_1_derivatives_and_the_gradient.pdf) | §4.2–§4.3 | the derivative of the exponential function, derived two ways: by implicit differentiation, and from the definition of the derivative |
+| Tue, Sep 22 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §16–§18.4 | the standard basis of $\mathbb{R}^2$; linear combinations, span, and basis; coordinates; dimension; other bases, and pairs that fail to span; ending on the definition of linear independence and dependence |
+| Thu, Sep 24 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §18.4–§20 | independent vectors span the plane; what a dependent pair is a basis for; subspaces; stepping up to $\mathbb{R}^3$. Finishes Part 4 |
+| Thu, Sep 24 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §21–§24.2 | orthogonal nonzero vectors are linearly independent, first in $\mathbb{R}^2$ and then in $\mathbb{R}^3$; the Pythagorean identity, proved; the standard basis in three dimensions; $\mathbb{R}^n$ and its standard basis, with every definition restated in $n$ dimensions (formulas stated, not derived) |
 
 ## About this course
 
