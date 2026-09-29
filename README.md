@@ -2,6 +2,11 @@
 
 ## Homework out now
 
+- [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
+  — due date to be announced on the class Discord
+- [**Extra Credit 1 — NumPy for Homework 2**](homework/MATH231_extra_credit_1.pdf)
+  — optional; the programming companion to Homework 2. Due date and value to be
+  announced on the class Discord
 - [**Homework 1 — Vectors and Complex Numbers**](homework/MATH231_homework_1.pdf)
   — due **Sunday, September 27, 2026, 11:59 PM**
 
@@ -128,7 +133,8 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
 
 ### Assessments
 
-- **`homework/`** — the 5 homework assignments
+- **`homework/`** — the 5 homework assignments, and the optional extra-credit
+  assignments that accompany them
 - **`projects/`** — the 3 projects
 - **`exams/`** — the two midterms and the final
 - **`demos/`** — in-lecture computational demos
