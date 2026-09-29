@@ -1,0 +1,678 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  EXTRA CREDIT 1 -- NumPy for Homework 2
+%
+%  WHAT THIS IS.  The NumPy part of Homework 2, split off as an optional
+%  assignment when programming on homework became extra credit.  It carries the
+%  tutorial, the two-file Python submission rules, and the nine problems that
+%  were Part G, renumbered 1-9.  Homework 2 itself is now written only and never
+%  mentions Python.
+%
+%  CROSS-REFERENCES.  Every lettered problem number here (E.1, B.2, F.6(a), ...)
+%  points into homework/MATH231_homework_2.tex.  Renumber a problem there and
+%  the reference here must change with it.  Where a Part G problem leaned on a
+%  Homework 2 problem that was cut from the final version, it now states what it
+%  needs itself:
+%     Problem 3(c)  -- the equality cases of the norm inequalities (was E.9(d))
+%     Problem 4(c)  -- the identity ||x^ - y^||^2 = 2 - 2cos (was E.4(d))
+%     Problem 9     -- the gradient-descent step (was printed in F.11)
+%  and two pieces that only checked cut problems were dropped: G.1(c) (the
+%  orthogonal basis of R^4, E.7) and the D.2(c) and E.7(b) cases of G.5(b).
+%
+%  RUNS AHEAD.  Problem 9 uses gradient descent, veccalc S8.4, which had not been
+%  lectured when this was written.  The step is printed in the problem.
+%
+%  NO MATRICES, with two flagged exceptions: np.corrcoef in Problem 1(b)
+%  returns a small table that is read at one entry, and the optional plotting
+%  section uses np.meshgrid.
+%
+%  THREE THINGS TO SET BEFORE HANDING THIS OUT:
+%     \duedate  -- currently a placeholder.
+%     \ecworth  -- how much extra credit this is worth; currently a placeholder.
+%     The submission path in the "What to submit" callout, if you want a
+%     different directory layout than extra-credit/ec1/ in the student repo.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only; uses
+%  listings).
+%==============================================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{listings}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}{}{0em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{}{0em}{}
+\titlespacing*{\section}{0pt}{16pt}{7pt}
+
+% Long \texttt names would otherwise stick out of the margin.
+\setlength{\emergencystretch}{3em}
+
+% The problem heading is a line of its own, so that part (a) -- or the opening
+% sentence -- always starts below it, as in Homework 2.
+\makeatletter
+\newcounter{prob}
+\newenvironment{prob}[1][]
+  {\par\addvspace{20pt plus 6pt minus 4pt}%
+   \needspace{4\baselineskip}%
+   \refstepcounter{prob}%
+   \noindent\textbf{Problem~\theprob}%
+   \if\relax\detokenize{#1}\relax\else\ (#1)\fi\textbf{.}%
+   \par\nobreak\@afterindentfalse\@afterheading}
+  {\par\addvspace{20pt plus 6pt minus 4pt}}
+\makeatother
+
+% code blocks -- same style as Setup Guide 2 and Homework 1
+\lstdefinestyle{term}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single, rulecolor=\color{gray!45},
+  framesep=5pt, xleftmargin=8pt, xrightmargin=8pt,
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, aboveskip=8pt, belowskip=8pt
+}
+\lstdefinestyle{py}{
+  style=term, language=Python,
+  keywordstyle=\color{RoyalBlue}\bfseries,
+  commentstyle=\color{gray!80}\itshape,
+  stringstyle=\color{ForestGreen},
+  emph={np,numpy}, emphstyle=\color{BrickRed}
+}
+\lstset{style=py}
+
+\newcommand{\heads}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{BrickRed}{\textbf{Watch out.}}\ #1}\par\smallskip}
+\newcommand{\checkpoint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{ForestGreen}{\textbf{Checkpoint.}}\ #1}\par\smallskip}
+
+% shaded call-out box.  The body is collected into a savebox first, because
+% \colorbox needs its whole argument at once.
+\definecolor{softbg}{HTML}{F2F6FA}
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\sffamily\color{RoyalBlue}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\grad}{\nabla}
+
+%--------------------------------------------------------- fill this in ------
+\newcommand{\duedate}{to be announced on the class Discord}
+\newcommand{\ecworth}{to be announced on the class Discord}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Extra Credit 1 \textbullet\ NumPy for Homework 2}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{Due:} \duedate. \quad \textbf{Worth:} \ecworth.
+
+\medskip
+\noindent\textbf{This assignment is optional.} It earns extra credit and nothing
+else: skipping it costs you nothing, and no later assignment depends on it. It
+is the programming companion to Homework 2 --- almost every problem checks, or
+takes further, a problem you worked by hand there.
+
+\medskip
+\noindent\textbf{Problem numbers.} A number with a letter --- E.1, B.2, F.6(a)
+--- refers to \textbf{Homework 2}. A bare number --- Problem 3, Problem 7(c) ---
+refers to this assignment.
+
+\medskip
+\noindent\textbf{Grading.} Every problem is worth the same number of points. The
+assignment is graded by running \texttt{runec1.py} and reading what it prints ---
+on whether it produces correct answers, not on programming style.
+
+\medskip
+\noindent\textbf{Use it to check Homework 2.} Every numerical answer on Homework 2
+can be verified in a few lines of NumPy, and you are encouraged to check all of
+them before submitting --- that is what the tool is for. Two limits. The hand
+work on Homework 2 must still be shown: a correct number with no derivation earns
+partial credit at best. And no proof can be checked this way, since code confirms
+a statement only for the numbers you tried, not for all of them.
+
+\medskip
+\noindent\textbf{Collaboration} is encouraged --- work at a board together, argue
+about the problems. What you submit must be written by you, in your own code.
+
+\begin{callout}{What to submit}
+Push two Python files to your own MATH 231 GitHub repository, in a folder named
+\texttt{extra-credit/ec1/}:
+\begin{itemize}[leftmargin=1.4em,itemsep=5pt,topsep=3pt]
+  \item \texttt{ec1.py} --- your work, one function per question part;
+  \item \texttt{runec1.py} --- which imports those functions and runs them all,
+        labelling each answer.
+\end{itemize}
+Do not submit a copy of your output: \texttt{runec1.py} is \textbf{run as
+submitted}, and the assignment is graded from what it prints. \emph{How to
+structure your submission}, below, specifies both files in full. The rules are
+the same as on Homework 1.
+
+\textbf{Python is the only language accepted.} Any other language earns no
+credit, however correct it is.
+
+If you have not set up the repository yet, Setup Guide 1 (\S\,``Create your
+folders'' and \S\,``Save your work and send it to GitHub'') is the walkthrough.
+Only pushed work can be graded.
+\end{callout}
+
+\begin{callout}{Label every answer}
+The labelling is built into the file structure specified under \emph{How to
+structure your submission}: one function per question part in \texttt{ec1.py},
+named after that part, with a comment naming it directly above; and one labelled
+line per part in \texttt{runec1.py}. Code that runs correctly but cannot be
+matched to a question is graded the same way an unlabelled answer sheet is.
+\end{callout}
+
+%==============================================================================
+\section{What is new since Homework 1}
+%==============================================================================
+\noindent This assignment assumes Homework 1's Part F: arrays, \texttt{+},
+\texttt{-}, scaling, \texttt{np.linalg.norm}, \texttt{np.isclose},
+\texttt{np.allclose}, and the two-file submission. The short tutorial below
+covers only what is new --- vectors of any length, the dot product, the other
+norms, angles, and functions of one and two variables. Then comes the submission
+specification (the same rules as before, with the file names changed), then
+Problems 1--9. The \textbf{Python Recipe Book} (\texttt{lectures/python-recipe/})
+covers the vector calls in its \S2 and floating-point behaviour in its \S7; the
+remaining calls are introduced below or in the problem that uses them.
+
+\subsection{Vectors in \texorpdfstring{$\R^{n}$}{Rn}}
+
+Nothing changes when a vector has more than two entries.
+
+\begin{lstlisting}
+import numpy as np
+
+u = np.array([1.0, -2.0, 0.0, 3.0])   # a vector in R^4
+len(u)                                # 4 -- the n in R^n
+
+np.zeros(5)                           # array([0., 0., 0., 0., 0.])
+np.ones(5)                            # the all-ones vector 1 in R^5
+np.arange(1, 6)                       # array([1, 2, 3, 4, 5])
+
+e3 = np.zeros(5)                      # the standard basis vector e_3 in R^5:
+e3[2] = 1.0                           # slot 3 is index 2
+\end{lstlisting}
+
+\heads{Adding vectors of different lengths raises an error, exactly as in
+lecture: \texttt{np.ones(3) + np.ones(4)} fails with \texttt{ValueError}.}
+
+\subsection{The dot product}
+
+\begin{lstlisting}
+v = np.array([2.0, 1.0, -1.0, 0.0])
+
+u @ v              # 0.0  -- the dot product <u, v>
+np.dot(u, v)       # 0.0  -- the same number
+u @ u              # 14.0 -- <u, u> = ||u||^2
+\end{lstlisting}
+
+\heads{\texttt{u * v} is still \emph{not} the dot product. It multiplies entry by
+entry and returns a vector. \texttt{np.sum(u * v)} does equal \texttt{u @ v},
+but write \texttt{u @ v}: it says what you mean.}
+
+\subsection{The other norms, and a few reductions}
+
+\begin{lstlisting}
+np.linalg.norm(u)               # 3.7416...  ||u||_2 = sqrt(14)
+np.linalg.norm(u, ord=1)        # 6.0        ||u||_1
+np.linalg.norm(u, ord=np.inf)   # 3.0        ||u||_inf
+np.linalg.norm(u, ord=3)        # ||u||_3
+
+np.abs(u)                       # array([1., 2., 0., 3.]) -- entrywise |u_i|
+np.sum(u)                       # 2.0  -- the sum of the entries
+np.max(np.abs(u))               # 3.0  -- the largest |u_i|
+np.mean(u)                      # 0.5  -- the average entry
+\end{lstlisting}
+
+\subsection{Angles}
+
+\begin{lstlisting}
+c = (u @ v) / (np.linalg.norm(u) * np.linalg.norm(v))  # cos(u, v)
+theta = np.arccos(np.clip(c, -1.0, 1.0))                # radians, in [0, pi]
+np.degrees(theta)                                       # 90.0
+\end{lstlisting}
+
+\noindent \texttt{np.clip} guards against rounding pushing \texttt{c} a hair
+outside $[-1,1]$, where \texttt{np.arccos} is undefined and returns
+\texttt{nan}.
+
+\subsection{Functions of one and two variables}
+
+A mathematical function becomes a Python function with \texttt{def}. NumPy
+supplies the elementary functions.
+
+\begin{lstlisting}
+def f(x, y):
+    return x**3 - 3*x*y + y**2
+
+f(1.0, 2.0)                  # -1.0
+
+np.exp(1.0)                  # 2.718281828...   e^1
+np.log(2.0)                  # 0.693147...      the NATURAL log, ln 2
+np.sin(np.pi / 6)            # 0.4999999...     sin(pi/6)
+np.sqrt(9.2)                 # 3.03315...
+\end{lstlisting}
+
+\heads{\texttt{np.log} is $\ln$. The base-$10$ logarithm is \texttt{np.log10};
+you will not need it.}
+
+\noindent A function can be handed to another function, just like a number. That
+is how Problem 7 differentiates \emph{any} $f$ with one piece of code:
+
+\begin{lstlisting}
+def twice(g, x):
+    return 2 * g(x)
+
+twice(np.exp, 0.0)           # 2.0
+\end{lstlisting}
+
+\subsection{Loops over step sizes, and random vectors}
+
+\begin{lstlisting}
+hs = 10.0 ** -np.arange(1, 16)     # 1e-1, 1e-2, ..., 1e-15
+for h in hs:
+    print(h, (np.exp(h) - 1) / h)
+
+rng = np.random.default_rng(231)   # a fixed seed, as in Homework 1
+x = rng.normal(size=10)            # a random vector in R^10
+\end{lstlisting}
+
+%==============================================================================
+\section{How to structure your submission}
+%==============================================================================
+The assignment is submitted as \textbf{two} Python files with different jobs,
+exactly as on Homework 1.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=6pt,topsep=4pt]
+  \item \texttt{ec1.py} --- \textbf{your work}. One function per lettered part,
+        named \texttt{q}\,\emph{number}\,\emph{letter}: Problem 2(a) becomes
+        \texttt{q2a}, Problem 7(c) becomes \texttt{q7c}. Each function
+        \textbf{returns} its answer; when an answer has several pieces, return
+        them together as a tuple or a list. Helper functions (\texttt{my\_dot},
+        \texttt{pnorm}, \texttt{proj}, \dots) are defined in this file too, and
+        may be shared between parts.
+  \item \texttt{runec1.py} --- \textbf{the driver}. It imports those functions
+        from \texttt{ec1.py} and calls them in order, one line per part,
+        printing a label before each answer. It contains no mathematics of its
+        own. \textbf{This is the file that is run to grade the assignment.}
+\end{itemize}
+
+\medskip
+\noindent\textbf{\texttt{ec1.py} --- definitions only.} Nothing may run when the
+file is imported: define your functions and stop. A \texttt{print} sitting at the
+left margin fires the moment \texttt{runec1.py} imports the file, and its output
+lands above the labels, where it cannot be matched to a question.
+
+\begin{lstlisting}
+# ec1.py -- the work.  Definitions only; nothing runs on import.
+
+import numpy as np
+
+def pnorm(v, p):                    # a helper, used by several parts
+    ...
+
+# --- 2(c) ---------------------------------------------------------
+def q2c():
+    v = np.array([-3.0, 4.0])
+    return [pnorm(v, p) for p in (1, 2, 3, 4, 10, 100)] + [infnorm(v)]
+\end{lstlisting}
+
+\noindent\textbf{\texttt{runec1.py} --- one line per part.} Import the functions,
+then call them in the order the questions appear. Each line prints a label
+followed by the answer that call produced:
+
+\begin{lstlisting}
+# runec1.py -- runs every question in order.  No mathematics in this file.
+
+import ec1
+
+print("Output of question 1 part a : ", ec1.q1a())
+print("Output of question 1 part b : ", ec1.q1b())
+print("Output of question 2 part a : ", ec1.q2a())
+\end{lstlisting}
+
+\medskip
+\noindent\textbf{The label is required, and its wording is fixed:}
+
+\begin{center}
+\texttt{"Output of question <number> part <letter> : "}
+\end{center}
+
+\noindent So Problem 7(c) is labelled \texttt{Output of question 7 part c :}\ .
+
+\heads{Several parts below ask you to ``answer in a comment''. Those comments go
+in \texttt{ec1.py}, directly under the function for that part, and are read by
+the grader. A part that asks \emph{only} for a comment still gets its function
+and its labelled line: define it to return the string \texttt{"see comment"}.
+Everything else is \emph{returned}, not printed: \texttt{runec1.py} does all the
+printing.}
+
+\heads{Problems 2, 3, 4, 6 and 8 use random numbers. Create the generator
+\emph{inside} the function that uses it, with the seed given, so that every run
+of \texttt{runec1.py} prints the same thing.}
+
+\checkpoint{Run \texttt{runec1.py} once before you push and read the output top
+to bottom. Every part of every question should appear, in order, under its own
+label, with no error and nothing unlabelled.}
+
+%==============================================================================
+\section{The problems}
+%==============================================================================
+
+\begin{prob}[Checking Homework 2, Part E]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Enter $\vc{u}$, $\vc{v}$, $\vc{w}$ of Problem E.1 and return the values
+        asked for in every one of its parts (a)--(g), in order, as one list.
+        The angle in (e) should be in degrees.
+  \item For the data $\vc{x}$ and $\vc{y}$ of Problem E.5, return:
+        $\proj{\one}{\vc{x}}$; the deviation vector; its dot product with
+        $\one$; $\sigma^{2}$ and $\sigma$; and $r$. Then return, alongside your
+        own values, \texttt{np.mean(x)}, \texttt{np.var(x)}, \texttt{np.std(x)}
+        and \texttt{np.corrcoef(x, y)[0, 1]}, and check each pair with
+        \texttt{np.isclose}. (\texttt{np.corrcoef} returns a small table of
+        correlations rather than a single number; its entry \texttt{[0, 1]} is
+        $r$. That indexing is all you need to know about it.)
+\end{enumerate}
+
+\noindent State in a comment under each function whether every value agrees with
+your hand computation. If any disagree, find the error --- it is far more often
+in the hand computation than in the code.
+\end{prob}
+
+\begin{prob}[Writing the dot product and the $p$-norm yourself]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{my\_dot(u, v)} using a \texttt{for} loop over the indices
+        --- not \texttt{@}, \texttt{np.dot}, or \texttt{np.sum(u * v)}. It
+        should raise a \texttt{ValueError} if the lengths differ. Return
+        \texttt{my\_dot} on the three pairs of Problem E.1(d), each checked
+        against \texttt{@} with \texttt{np.isclose}.
+  \item Write \texttt{pnorm(v, p)} for $p\ge1$ and \texttt{infnorm(v)}, using
+        only \texttt{np.abs}, \texttt{np.sum}, \texttt{np.max} and
+        \texttt{**}. With \texttt{rng = np.random.default\_rng(231)}, draw five
+        random vectors in $\R^{7}$ and, for each, compare \texttt{pnorm} with
+        \texttt{np.linalg.norm(v, ord=p)} for $p=1,2,3,4.5$, and
+        \texttt{infnorm} with \texttt{ord=np.inf}. Return \texttt{True} only if
+        all $25$ comparisons pass.
+  \item For $\vc{v}=[\,-3,\,4\,]$, return \texttt{pnorm(v, p)} for
+        $p=1,2,3,4,10,100$, and \texttt{infnorm(v)}. Compare with Problem
+        B.1(iii).
+  \item With \texttt{rng = np.random.default\_rng(7)}, draw one random vector in
+        $\R^{10}$ and return \texttt{pnorm} for $p=1,2,4,8,16,32,64,128$,
+        followed by \texttt{infnorm}. In a comment: at roughly which $p$ is
+        $\norm{\vc{v}}_p$ within $1\%$ of $\norm{\vc{v}}_\infty$?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[The norm inequalities at scale]
+Problem E.7 proved, for $\vc{v}\in\R^{n}$,
+\[
+  \norm{\vc{v}}_\infty\le\norm{\vc{v}}_2\le\norm{\vc{v}}_1
+  \le\sqrt{n}\,\norm{\vc{v}}_2\le n\,\norm{\vc{v}}_\infty .
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item With \texttt{rng = np.random.default\_rng(231)}, draw $10{,}000$ random
+        vectors in $\R^{10}$ and count how many satisfy all four inequalities.
+  \item In the same run, return the largest and the smallest value of
+        $\norm{\vc{v}}_1/\norm{\vc{v}}_2$ you observed, next to the bounds $1$
+        and $\sqrt{10}$ that E.7 predicts.
+  \item Find a nonzero vector in $\R^{10}$ for which
+        $\norm{\vc{v}}_2\le\norm{\vc{v}}_1$ is an equality, and one for which
+        $\norm{\vc{v}}_1\le\sqrt{n}\,\norm{\vc{v}}_2$ is an equality. Build both
+        in code, and return \texttt{np.isclose} verdicts confirming it.
+  \item Answer in a comment. The random vectors came much closer to one of the
+        two bounds in (b) than to the other. Which one? Using your vectors from
+        (c), say what a vector must look like to attain each bound, and why one
+        kind is far rarer among random draws than the other. Finally: does the
+        count in (a) prove E.7?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Similarity and nearest neighbours]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{cos\_sim(u, v)}. For the documents of Problem E.4, return
+        $\cos(A,X)$ and $d_2(A,X)$ for $X=B,C,D$.
+  \item For the depot problem B.2, return, for each of \texttt{ord=1},
+        \texttt{ord=2} and \texttt{ord=np.inf}, the name (\texttt{"A"},
+        \texttt{"B"} or \texttt{"C"}) of the nearest customer. Let the code find
+        the minimum; do not type the answer in.
+  \item For nonzero $\vc{x},\vc{y}\in\R^{n}$, the unit vectors
+        $\uv{x}=\vc{x}/\norm{\vc{x}}$ and $\uv{y}=\vc{y}/\norm{\vc{y}}$ satisfy
+        \[
+          \norm{\uv{x}-\uv{y}}^{2} \;=\; 2-2\cos(\vc{x},\vc{y}) ,
+        \]
+        so once every document is normalized, ranking by distance and ranking
+        by cosine similarity give the same order. With
+        \texttt{rng = np.random.default\_rng(231)}, draw $1000$ pairs of random
+        vectors in $\R^{50}$ and check the identity on every pair with
+        \texttt{np.isclose}. Return the number of pairs that pass.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Projections and coordinates in $\R^{n}$]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{proj(u, v)}, returning $\proj{\vc{u}}{\vc{v}}$. Use it on
+        Problem A.3(a) and on the pair of Problem D.3, and return each
+        projection together with the dot product of its orthogonal piece against
+        the vector projected onto.
+  \item Write \texttt{coords(basis, x)}, where \texttt{basis} is a Python list of
+        mutually orthogonal nonzero arrays, returning the list of coefficients
+        $\ip{\vc{b}}{\vc{x}}/\ip{\vc{b}}{\vc{b}}$. Write also
+        \texttt{is\_orthogonal\_set(vectors)}, which checks every pair with
+        \texttt{np.isclose}. Return the coordinates (and the orthogonality
+        verdict) for every vector in Problems D.1(a) and D.1(c).
+  \item For each case in (b), rebuild the vector from its coordinates and return
+        the \texttt{np.allclose} verdict against the original.
+  \item Now misuse \texttt{coords} on the basis $\{[2,1],[1,3]\}$ of Problem
+        C.1, which is not orthogonal, with $\vc{x}=[\,5,\,5\,]$. Return the
+        coefficients it produces, the vector they rebuild, and the
+        \texttt{np.allclose} verdict. Explain in a comment which step of the
+        derivation in vector unit \S21.6 fails when the basis is not
+        orthogonal.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Life in high dimensions]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Return the angle in degrees between $\one$ and $\vc{e}_1$ in $\R^{n}$
+        for $n=2,3,4,10,100,10000$, computed from the vectors themselves (not
+        from the formula $1/\sqrt{n}$ of Problem E.6). Compare with E.6(b).
+  \item With \texttt{rng = np.random.default\_rng(231)}, for each
+        $n=2,10,100,1000,10000$ draw $2000$ pairs of random vectors in $\R^{n}$
+        and compute the average of $\lvert\cos(\vc{x},\vc{y})\rvert$ over the
+        pairs. Return the five averages, and the five values of
+        $\sqrt{n}$ times the average.
+  \item Answer in a comment, in two or three sentences: what happens to the angle
+        between two random vectors as $n$ grows? Search engines and language
+        models represent words and documents as vectors in $\R^{n}$ with $n$ in
+        the hundreds or thousands and entries of both signs. If two such vectors
+        have cosine similarity $0.3$, is that a large number or a small one, and
+        why? (Raw word counts, as in Problem E.4, behave differently: their
+        entries are never negative, so their cosine is never negative, and the
+        experiment in (b) does not describe them.)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[The derivative as a limit, numerically]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{diff\_quotient(f, x, h)}, returning
+        $\bigl(f(x+h)-f(x)\bigr)/h$. For $f=\exp$ at $x=1$, return the error
+        $\lvert\text{quotient}-e\rvert$ for each $h=10^{-1},10^{-2},\dots,10^{-15}$,
+        and the value of $h$ that gave the smallest error.
+  \item Answer in a comment: the error shrinks as $h$ shrinks, and then grows
+        again. Explain both halves. (The Recipe Book's ``Watching
+        cancellation'', \S7, is the second half.)
+  \item Return $(e^{h}-1)/h$ and $(1+h)^{1/h}$ for $h=10^{-1},\dots,10^{-8}$.
+        Which two numbers from the vector calculus lecture are they approaching?
+  \item With $h=10^{-6}$, use \texttt{diff\_quotient} to check your answers to
+        Problem F.1(a), (b), (e) and (f) at $x=2$: code your hand formula for
+        each derivative, and compare with \texttt{np.isclose(..., rtol=1e-4)}.
+        Return the four verdicts.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Partial derivatives and the gradient, numerically]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{partial\_x(f, x, y, h=1e-6)} and
+        \texttt{partial\_y(f, x, y, h=1e-6)} from the limit definitions, and
+        \texttt{grad(f, x, y)} returning the gradient as a NumPy array. Return
+        \texttt{grad} of $x^{3}-3xy+y^{2}$ at $(1,2)$, $(2,-1)$ and $(0,0)$, next
+        to your hand values from Problem F.6(a), with \texttt{np.allclose}
+        verdicts (use \texttt{atol=1e-4}).
+  \item Return $\norm{\grad f(2,-1)}$ computed numerically, next to the exact
+        value.
+  \item Check your answers to Problem F.4(b), (c) and (h) at the point
+        $(1,\,0.5)$: code your hand formulas and compare. Return the verdicts.
+  \item For $f(x,y)=\sqrt{x^{2}+y^{2}}$, with
+        \texttt{rng = np.random.default\_rng(231)}, draw five random points and
+        return $\norm{\grad f}$ at each. Compare with Problem F.6(d).
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[Running ahead: gradient descent]
+This problem uses \S8.4 of the vector calculus unit, which has not been lectured
+yet. Everything you need is here:
+
+\begin{callout}{From \S8.4}
+\textbf{Gradient descent} minimizes a function $f:\R^{2}\to\R$ by repeatedly
+stepping in the direction of steepest descent, $-\grad f$:
+\[
+  \vc{x}_{k+1} \;=\; \vc{x}_k-\alpha\,\grad f(\vc{x}_k),
+\]
+with a fixed step size $\alpha>0$ and a chosen starting point $\vc{x}_0$.
+\end{callout}
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write \texttt{descend(grad\_f, x0, alpha, steps)}, returning the list of
+        all points $\vc{x}_0,\vc{x}_1,\dots,\vc{x}_{\text{steps}}$. For
+        $f(x,y)=x^{2}+4y^{2}$, with $\vc{x}_0=(2,1)$ and $\alpha=0.1$, return
+        $\vc{x}_1$ and $\vc{x}_2$, and the point and the value of $f$ after $50$
+        steps.
+  \item Repeat with $\alpha=0.25$ and with $\alpha=0.3$. Return the point and
+        the value of $f$ after $50$ steps for each.
+  \item Answer in a comment. Show by hand that for this $f$ one step is
+        $x_{k+1}=(1-2\alpha)x_k$ and $y_{k+1}=(1-8\alpha)y_k$. Use it to explain
+        all three runs, and find the range of $\alpha$ for which the iteration
+        converges to the minimum.
+\end{enumerate}
+
+\noindent Finally, answer in a comment at the end of your file, in three or four
+sentences: which problems on Homework 2 could NumPy check for you, and which
+could it not? Name at least one proof problem and say precisely what a computer
+run would and would not establish about it.
+\end{prob}
+
+\begin{callout}{What NumPy can and cannot do for you}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{10.4cm}@{}}
+\toprule
+\textbf{Homework 2} & \textbf{Can NumPy check it?} \\
+\midrule
+A --- projection         & A.1--A.3 and the numbers in A.4--A.6, yes; the proofs, no. \\
+B --- norms and metrics  & B.1 and B.2, yes; B.3--B.5, no. \\
+C --- bases and span     & C.1--C.3 and C.7, yes; the proofs in C.4--C.6, no. \\
+D --- orthogonality      & D.1, D.2 and the numbers in D.3, yes; the proof in D.3, D.4, D.5, no. \\
+E --- $\R^{n}$           & The numbers, yes; E.2, E.3(c), E.5(a), E.7, no. \\
+F --- derivatives        & Every derivative at a point, yes; F.3, F.6(c)--(d), no. \\
+\midrule
+This assignment          & It \emph{is} the check. \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+A numerical derivative checks a formula at the points you try. It cannot tell you
+the formula is right everywhere --- but a mismatch at one point proves the
+formula wrong.
+\end{callout}
+
+%==============================================================================
+\section{Optional and ungraded: drawing the pictures}
+%==============================================================================
+\noindent Not required, not graded, and not needed for any later assignment. It
+needs \texttt{matplotlib}, as in Homework 1:
+
+\begin{lstlisting}
+python -m pip install matplotlib
+\end{lstlisting}
+
+\heads{Keep this out of \texttt{ec1.py} and \texttt{runec1.py}, in a scratch file
+of its own. \texttt{plt.show()} halts a program until you close the window, so a
+plot left in your submission stalls the run it is graded from.}
+
+\noindent The unit balls of vector unit \S14.8, for several values of $p$. Each
+point of the ordinary unit circle is rescaled to have $p$-norm $1$:
+
+\begin{lstlisting}
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.linspace(0, 2*np.pi, 400)
+x, y = np.cos(t), np.sin(t)
+for p in [1, 1.5, 2, 4, 10]:
+    size = (np.abs(x)**p + np.abs(y)**p) ** (1/p)   # the p-norm of each point
+    plt.plot(x / size, y / size, label=f"p = {p}")
+
+plt.gca().set_aspect("equal")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.show()
+\end{lstlisting}
+
+\noindent The level curves of $g(x,y)=x^{2}+4y^{2}$ --- the function Problem 9
+minimizes --- with its gradient drawn at a grid of points. \texttt{np.meshgrid}
+builds the grid of points; you do not need to understand the shape of what it
+returns to use it.
+
+\begin{lstlisting}
+xs = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(xs, xs)
+plt.contour(X, Y, X**2 + 4*Y**2, levels=12)
+
+xg = np.linspace(-2, 2, 9)
+XG, YG = np.meshgrid(xg, xg)
+plt.quiver(XG, YG, 2*XG, 8*YG, color="C3")   # the gradient [2x, 8y]
+
+plt.gca().set_aspect("equal")
+plt.show()
+\end{lstlisting}
+
+\noindent Notice that the arrows cross every level curve at a right angle, and
+that they do not point away from the centre except along the two axes.
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\smallskip
+\noindent{\small Questions about any problem here belong in the class Discord,
+where everyone can see the answer. Questions that are specific to your own work
+--- ``why does my \texttt{runec1.py} stop at Problem 4?'' --- are better brought
+to office hours, Thursdays 3:00--4:00 PM in Kiely Hall 508. Please email ahead.}
+
+\end{document}

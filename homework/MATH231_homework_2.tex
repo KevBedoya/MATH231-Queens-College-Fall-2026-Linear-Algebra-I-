@@ -1,0 +1,1082 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  HOMEWORK 2 -- Norms, Bases, R^n, and the Gradient
+%
+%  SCOPE.  This file covers five lectures:
+%     lectures/vector-unit/MATH231_vectors_2_dot_product_and_projection  (S10-S12)
+%     lectures/vector-unit/MATH231_vectors_3_norms_and_metrics           (S13-S15)
+%     lectures/vector-unit/MATH231_vectors_4_basis_and_span              (S16-S20)
+%     lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces (S21-S24)
+%     lectures/vector-calc-unit/MATH231_veccalc_1_derivatives_and_the_gradient
+%                                                                  (S1-S7)
+%  Nothing here uses veccalc S8 onward.  The draft's three problems on the
+%  object-type of the gradient, the directional derivative, and gradient
+%  descent / linear approximation were held back for a later assignment; they
+%  are in plan/future_homework/ (gitignored).
+%
+%  WRITTEN ONLY.  There is no programming part.  The NumPy part, with its
+%  Python submission rules, is a separate, optional assignment:
+%  homework/MATH231_extra_credit_1.tex.  It refers to this assignment's problems
+%  by number, so renumbering a problem here means updating it there too.
+%
+%  PART A.  Unit vectors, unknown components, an application (work and forces
+%  on a ramp), the failure of cancellation, the parallelogram and polarization
+%  identities, and the algebra of the projection map.
+%
+%  PART E IS THE R^n PART.  Its applications: document similarity (E.4),
+%  mean/variance/correlation as a projection and a cosine (E.5), and the
+%  geometry of the high-dimensional cube (E.6).
+%
+%  NUMBERING.  As in Homework 1: parts are lettered, problems numbered by part.
+%  Section references are to the VECTOR UNIT unless a problem is in Part F,
+%  whose preamble says that its bare section numbers refer to the vector
+%  calculus unit (which restarts at S1).
+%
+%  DELIBERATE OMISSIONS, so that nothing here outruns the lectures:
+%   - No matrices.
+%   - No cross product, and no general n x n independence test.  Independence
+%     of three vectors in R^3 (C.7) is checked from the definition in the
+%     S24.2 table.
+%   - Spanning of R^3 by three independent vectors is "announced rather than
+%     established" in S21.4.  So D.1(c) makes the student substitute the
+%     coordinates back, which is what actually shows the vector is that
+%     combination.
+%   - No second derivatives, Hessians, or R^n calculus (veccalc Part 2).
+%
+%  NO ANSWER KEY, by design, as in Homework 1.
+%
+%  TWO THINGS TO SET BEFORE HANDING THIS OUT:
+%     \duedate  -- currently a placeholder.
+%     The submission path in the "What to submit" callout, if you want a
+%     different directory layout than homework/hw2/ in the student repo.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only).
+%==============================================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}
+                      {Part \thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{16pt}{7pt}
+
+\renewcommand{\thesection}{\Alph{section}}
+
+% Keeps long inline formulas from pushing a line into the margin.
+\setlength{\emergencystretch}{3em}
+
+% The problem heading is a line of its own, so that part (a) -- or the opening
+% sentence -- always starts below it.  (An amsthm theorem cannot promise this: a
+% list that opens the body runs its first item onto the heading line.)  The
+% extra air above and below keeps consecutive questions reading as separate
+% blocks rather than one continuous column of text.
+\makeatletter
+\newcounter{prob}[section]
+\renewcommand{\theprob}{\thesection.\arabic{prob}}
+\newenvironment{prob}[1][]
+  {\par\addvspace{20pt plus 6pt minus 4pt}%
+   \needspace{4\baselineskip}%
+   \refstepcounter{prob}%
+   \noindent\textbf{Problem~\theprob}%
+   \if\relax\detokenize{#1}\relax\else\ (#1)\fi\textbf{.}%
+   \par\nobreak\@afterindentfalse\@afterheading}
+  {\par\addvspace{20pt plus 6pt minus 4pt}}
+\makeatother
+
+\newcommand{\heads}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{BrickRed}{\textbf{Watch out.}}\ #1}\par\smallskip}
+\newcommand{\hint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{RoyalBlue}{\textbf{Hint.}}\ #1}\par\smallskip}
+
+% shaded call-out box.  The body is collected into a savebox first, because
+% \colorbox needs its whole argument at once.
+\definecolor{softbg}{HTML}{F2F6FA}
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\sffamily\color{RoyalBlue}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\Sph}[1]{\mathbb{S}^{#1}}
+\newcommand{\ivec}{\vec{\imath}}
+\newcommand{\jvec}{\vec{\jmath}}
+\newcommand{\kvec}{\vec{k}}
+\DeclareMathOperator{\spanop}{span}
+\newcommand{\grad}{\nabla}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\dd}[2]{\frac{d #1}{d #2}}
+
+%--------------------------------------------------------- fill this in ------
+\newcommand{\duedate}{to be announced on the class Discord}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Homework 2 \textbullet\ Norms, Bases, $\R^{n}$, and
+        the Gradient}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{Due:} \duedate.
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{7.2cm}@{}}
+\toprule
+\textbf{Lecture} & \textbf{Sections} & \textbf{Topics} \\
+\midrule
+Vector Unit, Part 2 & \S10--\S12 &
+  \emph{revisited}: normalization and unit vectors; the direction--magnitude
+  decomposition; projection and the orthogonal piece, used in new ways \\[3pt]
+Vector Unit, Part 3 & \S13--\S15 &
+  Cauchy--Schwarz and its equality case; the metric axioms; the Manhattan and
+  Chebyshev metrics; the $p$-norm and $p\to\infty$; unit balls; the norm
+  axioms \textbf{N1}--\textbf{N3} \\[3pt]
+Vector Unit, Part 4 & \S16--\S20 &
+  the standard basis; linear combinations, span, basis, coordinates;
+  dimension; linear independence; subspaces; $\R^{3}$ \\[3pt]
+Vector Unit, Part 5 & \S21--\S24 &
+  orthogonal vectors are independent; coordinates by projection; making a
+  basis orthogonal; the Pythagorean identity; $\R^{n}$ and every definition in
+  $\Sigma$ notation \\[3pt]
+Vector Calculus Unit, Part 1 & \S1--\S7 &
+  the derivative and its rules; $e^{x}$ and $\ln x$ and their derivatives;
+  functions of two variables; partial derivatives; the gradient \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Grading.} Every problem is worth the same number of points.
+
+\medskip
+\noindent\textbf{On the proof problems} (A.1(d), A.4(c)--(d), A.5, A.6(a)--(c),
+B.3, B.4, B.5, the justifications in C.4, C.5, C.6, D.3, D.4, D.5, E.2, E.3(c),
+E.5(a), E.7, F.3, and F.6(c)--(d)). None of them requires a clever idea. What
+they require is that you write down what you are assuming, work in components or
+from the stated laws, justify each equality by naming the fact that licenses it,
+and end with a sentence saying what you have shown. A chain of equalities with
+no words is not a proof; neither is a paragraph of words with no computation.
+Several of them ask you \emph{not} to use components: that restriction is the
+point of the problem, because an argument that uses only the laws works in
+$\R^{n}$ unchanged.
+
+\medskip
+\noindent\textbf{Collaboration} is encouraged --- work at a board together, argue
+about the problems. What you submit must be written by you, in your own words.
+
+\begin{callout}{What to submit}
+Push your written work for Parts A--F to your own MATH 231 GitHub repository,
+as a single PDF named \texttt{hw2.pdf} in a folder named \texttt{homework/hw2/}.
+Handwritten and scanned or photographed is completely fine, as long as it is
+legible and the pages are in order.
+
+\textbf{PDF is the only accepted format.} A \texttt{.docx}, a \texttt{.jpg}, a
+\texttt{.png}, a \texttt{.heic}, or a link to a file hosted somewhere else will
+not be graded. Phone scanning apps export PDF directly, and every word processor
+can ``Save as PDF''.
+
+\textbf{Type Parts A--F up instead and you earn $+5$ points of extra credit on
+this assignment.} Any typesetting system counts --- \LaTeX, Word's equation
+editor, or anything else that produces readable mathematics --- and the extra
+credit is for the whole of Parts A--F, not for typing up some of it. The file
+you submit must still be a PDF.
+
+If you have not set up the repository yet, Setup Guide 1 (\S\,``Create your
+folders'' and \S\,``Save your work and send it to GitHub'') is the walkthrough.
+Only pushed work can be graded.
+\end{callout}
+
+\begin{callout}{Label every answer}
+Label each answer with the number of the problem it answers --- \texttt{A.3(d)},
+\texttt{C.2(e)}, \texttt{F.4(h)} --- and put your answers \textbf{in the same
+order as they appear in this assignment}. A grader who cannot tell which
+question a piece of work belongs to cannot award it credit, and that is the most
+common way a correct answer loses points.
+
+\textbf{You do not have to copy the question out.} This applies to handwritten
+and typed submissions alike: the label alone is enough. Write \texttt{A.3(d)},
+then your work. Do not reproduce the wording of the problem.
+\end{callout}
+
+%==============================================================================
+\section{Dot product and projection, revisited}
+%==============================================================================
+\emph{Vector Unit, Part 2.} For $\vc{u}\neq\vc{0}$,
+\[
+  \uv{u} \;=\; \frac{\vc{u}}{\norm{\vc{u}}},
+  \qquad
+  \comp{\vc{u}}{\vc{v}} \;=\; \frac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}},
+  \qquad
+  \proj{\vc{u}}{\vc{v}} \;=\; \frac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}^{2}}\,\vc{u} ,
+\]
+and the laws of the dot product are \textbf{D1} symmetry, \textbf{D2}
+additivity, \textbf{D3} homogeneity, \textbf{D4} positive definiteness,
+introduced in \S11.8 (``The algebraic laws of the dot product'') of the Vector
+Unit, Part 2 lecture, \emph{Orientation, the Dot Product, and Projection}.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Unit vectors and the direction--magnitude decomposition]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Normalize each vector below and check that the result has norm $1$.
+        Then write each vector in the direction--magnitude form
+        $\vc{u}=\norm{\vc{u}}\,\uv{u}$ of \S12.2:
+        \[
+          [\,-5,\,12\,],\qquad [\,2,\,-2\,],\qquad [\,0,\,-7\,],\qquad
+          [\,\sqrt3,\,1\,].
+        \]
+  \item Write down the vector of length $10$ pointing the same way as
+        $[\,3,\,-4\,]$, and the vector of length $3$ pointing \emph{opposite}
+        to $[\,1,\,2\,]$. Build each one as (scalar)$\times$(unit vector).
+  \item Recall from \S12.1 that $\Sph{1}$ is the \textbf{unit circle}, the set of
+        all unit vectors in the plane:
+        \[
+          \Sph{1} \;=\; \bigl\{\,\vc{u}\in\R^{2} \;:\; \norm{\vc{u}}=1\,\bigr\}.
+        \]
+        Which of $[\,0.6,\,-0.8\,]$, $[\,\tfrac12,\,\tfrac12\,]$,
+        $[\,-1,\,0\,]$ and $[\,\cos2,\,\sin2\,]$ lie in $\Sph{1}$? Justify each.
+  \item Let $\vc{u}\neq\vc{0}$ and $\alpha\neq0$. Show that normalizing
+        $\alpha\vc{u}$ gives $\uv{u}$ when $\alpha>0$ and $-\uv{u}$ when
+        $\alpha<0$. Which rule from \S8 does the work?
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Solving for an unknown component]
+Find every real number $k$ satisfying each condition. Show the equation you
+solve.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $[\,k,\,3\,]$ is orthogonal to $[\,2,\,-4\,]$.
+  \item $[\,k,\,1\,]$ is orthogonal to $[\,k,\,-4\,]$.
+  \item The angle between $[\,k,\,1\,]$ and $[\,1,\,0\,]$ is $\pi/3$.
+  \item $\cos\bigl([\,1,\,k\,],[\,3,\,3\,]\bigr)=\tfrac12$.
+\end{enumerate}
+
+\heads{In (c) and (d) you will want to square both sides. Squaring can create a
+``solution'' of the squared equation that fails the original one. Check every
+candidate in the original equation and say why you discard any that fail.}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Work, and a box on a ramp]
+In physics a force is a \emph{vector} $\vc{F}\in\R^{2}$: its direction is the
+way it pushes, and its norm $\norm{\vc{F}}$ is how hard. Call a force
+\emph{constant} when it is the same vector at every moment of the motion. If a
+constant force acts on an object that moves along a straight line, from its
+starting point to its finishing point, the \emph{displacement} is the vector
+$\vc{s}\in\R^{2}$ from start to finish, and the \textbf{work} done by the force
+is the scalar
+\[
+  W \;=\; \ip{\vc{F}}{\vc{s}} ,
+\]
+a single real number --- in joules, when $\vc{F}$ is in newtons and $\vc{s}$ in
+metres. So in this problem $\vc{F}$, $\vc{s}$, $\vc{d}$, $\vc{G}$ and $\vc{P}$
+are vectors in $\R^{2}$, while $W$, every norm, and every component such as
+$\comp{\vc{d}}{\vc{G}}$ are scalars. A box sits on a ramp that rises in the
+direction $\vc{d}=[\,4,\,3\,]$, and gravity pulls on it with the constant force
+$\vc{G}=[\,0,\,-50\,]$.
+
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\comp{\vc{d}}{\vc{G}}$, $\proj{\vc{d}}{\vc{G}}$, and the
+        orthogonal piece $\vc{G}-\proj{\vc{d}}{\vc{G}}$. Check that the
+        orthogonal piece is orthogonal to $\vc{d}$.
+  \item Compute the norms of the two pieces. One of them pulls the box down the
+        ramp and the other presses it into the ramp surface. Which is which?
+  \item The box is pushed from $(0,0)$ to $(8,6)$. Compute the work done by
+        gravity, and explain what its sign means.
+  \item Over the same displacement a worker pushes with $\vc{P}=[\,30,\,10\,]$.
+        Compute the work two ways: as $\ip{\vc{P}}{\vc{s}}$, and as
+        $\comp{\vc{s}}{\vc{P}}\cdot\norm{\vc{s}}$. Explain why the second
+        formula says that only the part of $\vc{P}$ along $\vc{s}$ does work.
+  \item Of all forces of magnitude $40$, which one does the most work over this
+        displacement, and how much? Name a nonzero force that does no work at
+        all. Justify both with $\ip{\vc{F}}{\vc{s}}=\norm{\vc{F}}\norm{\vc{s}}\cos\theta$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[No cancellation, and what an equation of dot products says]
+Let $\vc{u}=[\,2,\,-1\,]$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Find three different vectors $\vc{v}$ with $\ip{\vc{u}}{\vc{v}}=5$.
+  \item Compute $\proj{\vc{u}}{\vc{v}}$ for each of your three. What do you
+        notice? Describe the set of \emph{all} $\vc{v}$ with
+        $\ip{\vc{u}}{\vc{v}}=5$ geometrically.
+  \item Prove that for all $\vc{u},\vc{v},\vc{w}\in\R^{2}$: if
+        $\ip{\vc{u}}{\vc{v}}=\ip{\vc{u}}{\vc{w}}$, then $\vc{u}$ is
+        orthogonal to $\vc{v}-\vc{w}$. Use only \textbf{D1}--\textbf{D4}.
+  \item Prove: if $\ip{\vc{x}}{\vc{v}}=\ip{\vc{x}}{\vc{w}}$ for
+        \emph{every} $\vc{x}\in\R^{2}$, then $\vc{v}=\vc{w}$.
+        \hint{You are allowed to choose $\vc{x}$. One choice finishes the proof in
+        two lines using \textbf{D4}.}
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The parallelogram law, polarization, and two theorems from Euclid]
+In (a)--(d), work from \textbf{D1}--\textbf{D4} and
+$\ip{\vc{w}}{\vc{w}}=\norm{\vc{w}}^{2}$ only --- no components --- so that each
+argument holds in $\R^{n}$ as written.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item \textbf{Parallelogram law.} Prove
+        $\norm{\vc{u}+\vc{v}}^{2}+\norm{\vc{u}-\vc{v}}^{2}
+         =2\norm{\vc{u}}^{2}+2\norm{\vc{v}}^{2}$.
+  \item \textbf{Polarization.} Prove
+        $\ip{\vc{u}}{\vc{v}}
+         =\tfrac14\bigl(\norm{\vc{u}+\vc{v}}^{2}-\norm{\vc{u}-\vc{v}}^{2}\bigr)$.
+  \item Prove
+        $\ip{\vc{u}+\vc{v}}{\vc{u}-\vc{v}}=\norm{\vc{u}}^{2}-\norm{\vc{v}}^{2}$,
+        and deduce that \emph{the diagonals of a rhombus are orthogonal}. (A
+        rhombus is a parallelogram with four equal sides, which is the case
+        $\norm{\vc{u}}=\norm{\vc{v}}$.)
+  \item \textbf{Thales' theorem.} Let $\vc{a}\neq\vc{0}$ and let $\vc{p}$ be any
+        vector with $\norm{\vc{p}}=\norm{\vc{a}}$ and $\vc{p}\neq\pm\vc{a}$. So
+        $-\vc{a}$, $\vc{a}$ and $\vc{p}$ are three points on the circle of
+        radius $\norm{\vc{a}}$ centred at the origin, and $-\vc{a}$, $\vc{a}$
+        are the ends of a diameter. Use (c) to prove that
+        $\vc{p}-\vc{a}$ is orthogonal to $\vc{p}+\vc{a}$. Then say which angle
+        of which triangle has been shown to be a right angle.
+  \item Check (a) and (b) numerically on $\vc{u}=[\,3,\,1\,]$ and
+        $\vc{v}=[\,-1,\,2\,]$, and check (d) on $\vc{a}=[\,5,\,0\,]$,
+        $\vc{p}=[\,3,\,4\,]$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Three facts about projection]
+Let $\vc{u}\neq\vc{0}$. Prove each statement for all $\vc{v},\vc{w}\in\R^{2}$ and
+scalars $\alpha,\beta$, using the formula for $\proj{\vc{u}}{\vc{v}}$ and
+\textbf{D1}--\textbf{D4}.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item \textbf{Only the line matters.} For every $\alpha\neq0$,
+        $\proj{\alpha\vc{u}}{\vc{v}}=\proj{\vc{u}}{\vc{v}}$. But
+        $\comp{\alpha\vc{u}}{\vc{v}}$ equals $\comp{\vc{u}}{\vc{v}}$ when
+        $\alpha>0$ and $-\comp{\vc{u}}{\vc{v}}$ when $\alpha<0$.
+  \item \textbf{A shadow of a shadow.}
+        $\proj{\vc{u}}{\proj{\vc{u}}{\vc{v}}}=\proj{\vc{u}}{\vc{v}}$. Say what
+        this means geometrically.
+  \item \textbf{Projection is linear in what is projected.}
+        $\proj{\vc{u}}{\vc{v}+\vc{w}}=\proj{\vc{u}}{\vc{v}}+\proj{\vc{u}}{\vc{w}}$
+        and $\proj{\vc{u}}{\beta\vc{v}}=\beta\,\proj{\vc{u}}{\vc{v}}$.
+  \item \textbf{But not in the direction projected onto.} Show by computing
+        that $\proj{\vc{u}+\vc{w}}{\vc{v}}\neq\proj{\vc{u}}{\vc{v}}+\proj{\vc{w}}{\vc{v}}$
+        for $\vc{u}=[\,1,\,0\,]$, $\vc{w}=[\,1,\,1\,]$, $\vc{v}=[\,0,\,1\,]$.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Cauchy--Schwarz, metrics, and the family of norms}
+%==============================================================================
+\emph{Vector Unit, Part 3.} For $\vc{v}=[\,v_1,\,v_2\,]$ and $p\ge1$,
+\[
+  \norm{\vc{v}}_1=\lvert v_1\rvert+\lvert v_2\rvert,
+  \qquad
+  \norm{\vc{v}}_2=\sqrt{v_1^{2}+v_2^{2}},
+  \qquad
+  \norm{\vc{v}}_\infty=\max\bigl\{\lvert v_1\rvert,\lvert v_2\rvert\bigr\},
+  \qquad
+  \norm{\vc{v}}_p=\bigl(\lvert v_1\rvert^{p}+\lvert v_2\rvert^{p}\bigr)^{1/p},
+\]
+and each norm gives a metric $d_p(\vc{x},\vc{y})=\norm{\vc{x}-\vc{y}}_p$. A bare
+$\norm{\vc{v}}$ still means $\norm{\vc{v}}_2$. The metric axioms are
+\textbf{M1}--\textbf{M4} (\S14.1), the norm axioms \textbf{N1}--\textbf{N3}
+(\S15.1). Leave answers exact unless a decimal is asked for.
+
+%------------------------------------------------------------------------------
+\begin{prob}[The family of norms, by hand]
+Let $\vc{v}$ range over the four vectors
+\[
+  \text{(a) }[\,-3,\,4\,],\qquad
+  \text{(b) }[\,5,\,-12\,],\qquad
+  \text{(c) }[\,2,\,2\,],\qquad
+  \text{(d) }[\,-7,\,0\,],
+\]
+\begin{enumerate}[label=\textbf{(\roman*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\norm{\vc{v}}_1$, $\norm{\vc{v}}_2$ and $\norm{\vc{v}}_\infty$,
+        and confirm the ordering
+        $\norm{\vc{v}}_\infty\le\norm{\vc{v}}_2\le\norm{\vc{v}}_1$ of \S14.8.
+  \item For one of the four, all three norms are equal. Which one, and what
+        feature of the vector forces it?
+  \item For vector (a), compute $\norm{\vc{v}}_p$ for $p=3$, $4$ and $10$, to four
+        decimal places. The values should be decreasing toward
+        $\norm{\vc{v}}_\infty$. Compute the upper bound $2^{1/p}M$ from the
+        squeeze argument of \S14.7 at $p=10$, where
+        $M=\norm{\vc{v}}_\infty$, and confirm that $\norm{\vc{v}}_{10}$ lies
+        between $M$ and that bound.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Which customer is nearest? It depends on the metric]
+A depot sits at $P=(1,-1)$, and three customers at $A=(7,-1)$, $B=(6,1)$ and
+$C=(5,3)$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Make a table of $d_1$, $d_2$ and $d_\infty$ from $P$ to each customer.
+  \item Three vehicles leave the depot: a \emph{taxi} that must follow a
+        rectangular street grid, a \emph{drone} that flies in a straight line,
+        and an \emph{overhead crane} whose east--west and north--south motors run
+        at the same time and the same speed. Which metric measures the trip for
+        each vehicle? Which customer is nearest for each?
+  \item On one set of axes, sketch the three ``circles'' of radius $6$ centred at
+        $P$ --- the sets $\{\vc{x}: d(P,\vc{x})=6\}$ for $d=d_1,d_2,d_\infty$ ---
+        and plot $A$, $B$, $C$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The Manhattan and Chebyshev metrics are metrics]
+A function $d$ that takes two vectors of $\R^{2}$ and returns a real number is a
+\textbf{metric} on $\R^{2}$ when it satisfies the metric axioms of \S14.1. The
+three you need here are, for all $\vc{x},\vc{y},\vc{z}\in\R^{2}$:
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\textbf{M1} & $d(\vc{x},\vc{y})=0$ if and only if $\vc{x}=\vc{y}$
+            & zero distance only from a point to itself \\
+\textbf{M2} & $d(\vc{x},\vc{y})=d(\vc{y},\vc{x})$ & symmetry \\
+\textbf{M3} & $d(\vc{x},\vc{y})+d(\vc{y},\vc{z})\ge d(\vc{x},\vc{z})$
+            & the triangle inequality \\
+\end{tabular}
+\end{center}
+\S14.3 left the first of the two metrics below as an exercise. Prove both
+directly from the definitions and the scalar triangle inequality
+$\lvert a+b\rvert\le\lvert a\rvert+\lvert b\rvert$ for real numbers ---
+not by citing \S15.2.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that $d_1$ satisfies \textbf{M1}, \textbf{M2} and \textbf{M3} on
+        $\R^{2}$.
+  \item Prove the same for $d_\infty$.
+        \hint{For \textbf{M3}, fix a coordinate $i$ and show
+        $\lvert x_i-z_i\rvert\le d_\infty(\vc{x},\vc{y})+d_\infty(\vc{y},\vc{z})$.
+        Since this holds for $i=1$ and for $i=2$, it holds for the larger of
+        the two.}
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[When Cauchy--Schwarz is an equality]
+\S13 showed, using the angle $\theta$, that equality in
+$\lvert\ip{\vc{u}}{\vc{v}}\rvert\le\norm{\vc{u}}\norm{\vc{v}}$ happens exactly
+for parallel or antiparallel vectors, and the remark ``Cauchy--Schwarz, one more
+time'' in \S23.4 settled it again using the Pythagorean identity. Prove it a
+third way, from \textbf{D1}--\textbf{D4} alone --- no angle, and no appeal to
+Pythagoras --- so that nothing but the laws is needed.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Show that if $\vc{v}=\alpha\vc{u}$ for some scalar $\alpha$, then
+        $\lvert\ip{\vc{u}}{\vc{v}}\rvert=\norm{\vc{u}}\norm{\vc{v}}$.
+  \item Now suppose $\vc{u}\neq\vc{0}$ and
+        $\lvert\ip{\vc{u}}{\vc{v}}\rvert=\norm{\vc{u}}\norm{\vc{v}}$. Put
+        $c=\ip{\vc{u}}{\vc{v}}/\norm{\vc{u}}^{2}$. Expand
+        $\norm{\vc{v}-c\vc{u}}^{2}$ using \textbf{D1}--\textbf{D4} and show
+        that
+        \[
+          \norm{\vc{v}-c\vc{u}}^{2}
+          \;=\;
+          \norm{\vc{v}}^{2}-\frac{\ip{\vc{u}}{\vc{v}}^{2}}{\norm{\vc{u}}^{2}} .
+        \]
+        Conclude that $\vc{v}=c\vc{u}$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The reverse triangle inequality]
+Let $\norm{\cdot}$ be \emph{any} norm on $\R^{2}$ --- you may use only
+\textbf{N1}--\textbf{N3}. Prove that for all $\vc{u},\vc{v}$,
+\[
+  \bigl\lvert\,\norm{\vc{u}}-\norm{\vc{v}}\,\bigr\rvert
+  \;\le\;
+  \norm{\vc{u}-\vc{v}} .
+\]
+\hint{Write $\vc{u}=(\vc{u}-\vc{v})+\vc{v}$ and apply \textbf{N3} to get one
+inequality. Swap the roles of $\vc{u}$ and $\vc{v}$ for the other, and use
+\textbf{N2} with $\alpha=-1$ to see that $\norm{\vc{v}-\vc{u}}=\norm{\vc{u}-\vc{v}}$.}
+\end{prob}
+
+%==============================================================================
+\section{Bases, span, independence, and subspaces}
+%==============================================================================
+\emph{Vector Unit, Part 4.} Recall that $\alpha\vc{u}+\beta\vc{v}$ is a
+\textbf{linear combination}, the \textbf{span} is the set of all of them, and a
+\textbf{basis} spans without redundancy (\S16.3). Two vectors are
+\textbf{linearly independent} when $\alpha\vc{u}+\beta\vc{v}=\vc{0}$ forces
+$\alpha=\beta=0$ (\S18.4); for more vectors the definition is the same with more
+terms (the table in \S24.2). For a pair in $\R^{2}$, the number
+$D=u_1v_2-u_2v_1$ decides everything: when $D\neq0$ the coordinates of
+$\vc{w}$ are
+\[
+  \alpha=\frac{w_1v_2-w_2v_1}{D},\qquad
+  \beta=\frac{u_1w_2-u_2w_1}{D}\qquad(\S18.5).
+\]
+\S18.5 proves that an independent pair has $D\neq0$. The converse holds too, and
+you may use it: if $D\neq0$, apply the elimination of \S18.5 with
+$\vc{w}=\vc{0}$, which gives $\alpha D=0$ and $\beta D=0$, so the only
+combination producing $\vc{0}$ is the trivial one.
+A \textbf{subspace} is a subset that is non-empty, closed under addition, and
+closed under scalar multiplication (\S19.3).
+
+\heads{The lecture labels the three subspace conditions S1--S3. Those are
+\emph{not} the scalar-multiplication laws S1--S4 of \S8.4. To avoid the clash,
+this assignment refers to them by name: non-empty, closed under addition, closed
+under scaling.}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Coordinates against a basis that is not the standard one]
+Let $\vc{u}=[\,2,\,1\,]$ and $\vc{v}=[\,1,\,3\,]$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $D$ and explain why $\{\vc{u},\vc{v}\}$ is a basis of $\R^{2}$.
+  \item Find the coordinates of $\vc{w}=[\,5,\,5\,]$ and of
+        $\vc{w}=[\,1,\,-2\,]$ by setting up the linear system and eliminating
+        by hand, as in \S18.1.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Independent or dependent?]
+For each pair, decide whether it is linearly independent. Argue from the
+definition --- set up $\alpha\vc{u}+\beta\vc{v}=\vc{0}$ and solve --- and
+confirm with $D$. For each \emph{dependent} pair, exhibit scalars $\alpha,\beta$,
+not both zero, with $\alpha\vc{u}+\beta\vc{v}=\vc{0}$; then describe the span as
+a set, give a basis for it, and state its dimension.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}c c c @{\qquad} c c c@{}}
+\toprule
+ & $\vc{u}$ & $\vc{v}$ & & $\vc{u}$ & $\vc{v}$ \\
+\midrule
+(a) & $[\,3,\,-6\,]$ & $[\,-1,\,2\,]$ & (d) & $[\,\tfrac12,\,\tfrac34\,]$ & $[\,2,\,3\,]$ \\
+(b) & $[\,2,\,5\,]$  & $[\,5,\,2\,]$  & (e) & $[\,\sqrt2,\,1\,]$ & $[\,2,\,\sqrt2\,]$ \\
+(c) & $[\,0,\,0\,]$  & $[\,4,\,1\,]$  & (f) & $[\,3,\,1\,]$ & $[\,-1,\,3\,]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \setcounter{enumi}{6}
+  \item Find every $k$ for which $[\,k,\,2\,]$ and $[\,8,\,k\,]$ are
+        dependent, and for each such $k$ give the equation of the line they
+        span.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[A spanning set that is not a basis of $\R^{2}$]
+Let $S=\bigl\{[\,1,\,2\,],\ [\,3,\,1\,],\ [\,4,\,3\,]\bigr\}$, a set of three
+vectors in $\R^{2}$. It spans $\R^{2}$, but it is not a basis of $\R^{2}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Show that $[\,4,\,3\,]=[\,1,\,2\,]+[\,3,\,1\,]$, and use it to write
+        a combination $a[1,2]+b[3,1]+c[4,3]=\vc{0}$ with $a,b,c$ not all zero.
+  \item Write $\vc{w}=[\,7,\,4\,]$ as a combination of the three vectors in two
+        different ways.
+  \item Show that for \emph{every} real number $t$,
+        \[
+          (1-t)[\,1,\,2\,]+(2-t)[\,3,\,1\,]+t[\,4,\,3\,]=[\,7,\,4\,] .
+        \]
+        So $\vc{w}$ has infinitely many sets of ``coordinates'' against $S$.
+  \item Which of the three two-element subsets of $S$ are bases of $\R^{2}$?
+  \item In two sentences: $S$ spans $\R^{2}$, so why is it not a basis? Which
+        half of ``basis'' --- existence of coordinates, or their uniqueness ---
+        does it fail?
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Subspace or not?]
+For each subset of $\R^{2}$, decide whether it is a subspace of $\R^{2}$. If it
+is, prove the
+three conditions, give a basis, and state its dimension. If it is not, name a
+condition that fails and give explicit vectors (and a scalar, if needed) that
+show it.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\{(x,y) : 3x-5y=0\}$
+  \item $\{(x,y) : x+y=1\}$
+  \item $\{(x,y) : xy=0\}$
+  \item $\{(x,y) : y=x^{2}\}$
+  \item $\{(x,y) : x \text{ and } y \text{ are both integers}\}$
+  \item $\{(x,y) : 2x=y \text{ and } x=3y\}$
+  \item $\{(x,y) : x^{2}+y^{2}\le 1\}$
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Three short proofs about span and independence]
+Work from the definitions. Do not write vectors in components.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove: if $\vc{w}\in\spanop\{\vc{u},\vc{v}\}$, then
+        $\spanop\{\vc{u},\vc{v},\vc{w}\}=\spanop\{\vc{u},\vc{v}\}$.
+        Prove both inclusions. (This is the general form of \S18.6, where
+        dropping a redundant vector cost nothing.)
+  \item Prove: if $\vc{u}$ and $\vc{v}$ are linearly independent, then so are
+        $\vc{u}+\vc{v}$ and $\vc{u}-\vc{v}$.
+  \item Prove the converse of (b): if $\vc{u}+\vc{v}$ and $\vc{u}-\vc{v}$ are
+        linearly independent, then so are $\vc{u}$ and $\vc{v}$.
+        \hint{Write $\vc{a}=\vc{u}+\vc{v}$ and $\vc{b}=\vc{u}-\vc{v}$, express
+        $\vc{u}$ and $\vc{v}$ in terms of $\vc{a}$ and $\vc{b}$, and substitute
+        into $\alpha\vc{u}+\beta\vc{v}=\vc{0}$.}
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Intersections and unions of subspaces]
+Let $S$ and $T$ be subspaces of $\R^{2}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that the intersection $S\cap T$ is a subspace.
+  \item Prove: if $S\cup T$ is a subspace, then $S\subseteq T$ or
+        $T\subseteq S$.
+        \hint{Suppose neither holds, and pick $\vc{s}\in S$ with $\vc{s}\notin T$
+        and $\vc{t}\in T$ with $\vc{t}\notin S$. Then $\vc{s}+\vc{t}$ lies in
+        $S\cup T$, so it lies in $S$ or in $T$. Show that either case leads to a
+        contradiction.}
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Spans in $\R^{3}$]
+Let $\vc{a}=[\,1,\,1,\,0\,]$ and $\vc{b}=[\,0,\,1,\,1\,]$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Show that $\vc{a}$ and $\vc{b}$ are linearly independent.
+  \item Decide whether each of $[\,1,\,2,\,1\,]$, $[\,1,\,0,\,0\,]$ and
+        $[\,2,\,-1,\,-3\,]$ lies in $\spanop\{\vc{a},\vc{b}\}$. For each that
+        does, give the coefficients. For each that does not, show that the
+        system has no solution.
+  \item Show that $\spanop\{\vc{a},\vc{b}\}=\{[\,x,\,y,\,z\,] : y=x+z\}$. What
+        kind of geometric object is it, and what is its dimension?
+  \item Let $\vc{c}=[\,1,\,0,\,0\,]$. Using the definition in the table of
+        \S24.2, show that $\vc{a}$, $\vc{b}$, $\vc{c}$ are linearly
+        independent, and write $[\,3,\,5,\,4\,]$ as a combination of them.
+  \item Is the plane $z=1$ a subspace of $\R^{3}$? One sentence.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Orthogonality and the Pythagorean identity}
+%==============================================================================
+\emph{Vector Unit, Part 5.} Nonzero, mutually orthogonal vectors are linearly
+independent (\S21.2). Against an orthogonal basis, coordinates need no system:
+the coefficient of each basis vector $\vc{b}$ is
+$\ip{\vc{b}}{\vc{w}}/\norm{\vc{b}}^{2}$, and $\vc{w}$ is the sum of its shadows on
+the basis vectors (\S21.6). And if $\vc{u}\perp\vc{v}$ then
+$\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}$ (\S23).
+
+\medskip
+\noindent In $\R^{3}$, \S21.4 proves that three mutually orthogonal nonzero
+vectors are independent, but only \emph{announces} that they span. So wherever a
+problem below asks for coordinates in $\R^{3}$, substituting them back is part of
+the answer: that step is what shows the vector really is that combination.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Coordinates by projection alone]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $\vc{u}=[\,3,\,4\,]$ and $\vc{v}=[\,-8,\,6\,]$. Check that they are
+        nonzero and orthogonal, and say which result makes them a basis of
+        $\R^{2}$. Then find the coordinates of $[\,2,\,11\,]$, $[\,-1,\,7\,]$
+        and $[\,5,\,0\,]$ with one dot product and one division per coordinate,
+        and check each by substituting back.
+  \item For $[\,5,\,0\,]$, find the coordinates again with the formula of
+        \S18.5. You should get the same numbers with noticeably more work.
+  \item Let $\vc{u}=[\,1,\,1,\,1\,]$, $\vc{v}=[\,1,\,-1,\,0\,]$ and
+        $\vc{w}=[\,1,\,1,\,-2\,]$. Check that they are mutually orthogonal and
+        nonzero. Find the coefficients of $\vc{x}=[\,3,\,5,\,-2\,]$ and of
+        $\vc{y}=[\,0,\,0,\,6\,]$ by projection, and substitute back.
+  \item Write $\vc{x}$ from (c) as the sum of its three shadows
+        $\proj{\vc{u}}{\vc{x}}+\proj{\vc{v}}{\vc{x}}+\proj{\vc{w}}{\vc{x}}$,
+        listing each shadow as a vector.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Manufacturing an orthogonal basis]
+The \emph{lookahead} at the end of \S21.6 promised that any basis can be
+converted into an orthogonal one by subtracting projections. Here is the first
+step of that procedure.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $\vc{u}=[\,3,\,1\,]$ and $\vc{v}=[\,2,\,4\,]$. Show that they are
+        independent but not orthogonal. Compute
+        $\vc{v}'=\vc{v}-\proj{\vc{u}}{\vc{v}}$ and check that
+        $\vc{v}'\perp\vc{u}$.
+  \item Find the coordinates of $\vc{w}=[\,7,\,9\,]$ against the orthogonal
+        basis $\{\vc{u},\vc{v}'\}$ by projection. Then use
+        $\vc{v}'=\vc{v}-\proj{\vc{u}}{\vc{v}}$ to rewrite the result as a
+        combination of the original $\vc{u}$ and $\vc{v}$, and check it.
+  \item Explain why $\spanop\{\vc{u},\vc{v}'\}=\spanop\{\vc{u},\vc{v}\}$:
+        show that each of $\vc{v}'$ and $\vc{v}$ is a combination of the other
+        pair.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Projection and the squared cosine]
+Prove that for $\vc{u},\vc{v}\neq\vc{0}$,
+\[
+  \frac{\norm{\proj{\vc{u}}{\vc{v}}}^{2}}{\norm{\vc{v}}^{2}}
+  \;=\;\cos^{2}(\vc{u},\vc{v}) ,
+\]
+and evaluate both sides for $\vc{u}=[\,1,\,2\,]$ and $\vc{v}=[\,4,\,7\,]$.
+Read the left side as ``the fraction of $\vc{v}$'s squared length explained by
+the direction $\vc{u}$''. For this pair, is it close to $1$ or to $0$, and what
+does that say about the angle?
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Pythagoras for three vectors, and for $n$]
+Work from the laws alone (\S23.2 does), so that the result holds in any
+$\R^{n}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove: if $\vc{u},\vc{v},\vc{w}$ are mutually orthogonal, then
+        $\norm{\vc{u}+\vc{v}+\vc{w}}^{2}
+         =\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}+\norm{\vc{w}}^{2}$.
+  \item Deduce: if $\vc{u},\vc{v},\vc{w}$ are orthonormal, then
+        $\norm{\alpha\vc{u}+\beta\vc{v}+\gamma\vc{w}}^{2}
+         =\alpha^{2}+\beta^{2}+\gamma^{2}$. In words: against an orthonormal
+        basis, the squared length of a vector is the sum of the squares of its
+        coordinates.
+  \item State, in $\Sigma$ notation and without proof, the version of (a) for
+        $k$ mutually orthogonal vectors $\vc{u}_1,\dots,\vc{u}_k$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Everything orthogonal to a vector]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove: if $\vc{w}\perp\vc{u}$ and $\vc{w}\perp\vc{v}$, then $\vc{w}$ is
+        orthogonal to every vector in $\spanop\{\vc{u},\vc{v}\}$.
+  \item For a vector $\vc{u}\in\R^{2}$, let
+        $\vc{u}^{\perp}=\{\vc{x}\in\R^{2} : \ip{\vc{u}}{\vc{x}}=0\}$. Prove that
+        $\vc{u}^{\perp}$ is a subspace of $\R^{2}$.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Computing in \texorpdfstring{$\R^{n}$}{Rn}}
+%==============================================================================
+\emph{Vector Unit, \S20.3 and \S24.} Every definition of the unit holds in
+$\R^{n}$ with a $\Sigma$ in it (the table in \S24.2). The ones used most below:
+\[
+  \ip{\vc{u}}{\vc{v}}=\sum_{i=1}^{n}u_iv_i,
+  \qquad
+  \norm{\vc{v}}_p=\Bigl(\sum_{i=1}^{n}\lvert v_i\rvert^{p}\Bigr)^{1/p},
+  \qquad
+  \norm{\vc{v}}_\infty=\max_{1\le i\le n}\lvert v_i\rvert,
+  \qquad
+  \cos(\vc{u},\vc{v})=\frac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}\norm{\vc{v}}} .
+\]
+Write $\vc{e}_i$ for the standard basis vector with a $1$ in slot $i$, and
+$\one=[\,1,\,1,\,\dots,\,1\,]$ for the all-ones vector in $\R^{n}$. In $\R^{n}$
+the angle between nonzero vectors is \emph{defined} as
+$\theta=\arccos\cos(\vc{u},\vc{v})\in[0,\pi]$ (\S24.5). The sum formulas
+$\sum_{i=1}^{n}i=\tfrac{n(n+1)}{2}$ and
+$\sum_{i=1}^{n}i^{2}=\tfrac{n(n+1)(2n+1)}{6}$ are in the foundations review.
+
+\medskip
+\noindent Cauchy--Schwarz holds in $\R^{n}$ (\S24.3). Your proof of Homework 1
+Problem E.2 used only \textbf{D1}--\textbf{D4}, so it already proves it.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Arithmetic in $\R^{4}$]
+Let
+\[
+  \vc{u}=[\,1,\,-2,\,0,\,3\,],\qquad
+  \vc{v}=[\,2,\,1,\,-1,\,0\,],\qquad
+  \vc{w}=[\,0,\,3,\,2,\,-1\,],\qquad
+  \alpha=-2 .
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\vc{u}+\vc{v}$, \ $\vc{u}-\vc{v}$, \ $\alpha\vc{w}$, \ and
+        $2\vc{u}-\vc{v}+3\vc{w}$.
+  \item $\norm{\vc{u}}$, $\norm{\vc{v}}$, $\norm{\vc{w}}$, exactly.
+  \item $\norm{\vc{u}}_1$, $\norm{\vc{u}}_\infty$, $\norm{\vc{w}}_1$,
+        $\norm{\vc{w}}_\infty$.
+  \item $\ip{\vc{u}}{\vc{v}}$, $\ip{\vc{u}}{\vc{w}}$, $\ip{\vc{v}}{\vc{w}}$.
+        Which pair is orthogonal?
+  \item $\cos(\vc{u},\vc{w})$ and $\cos(\vc{v},\vc{w})$, exactly, and the angle
+        between $\vc{u}$ and $\vc{w}$ in degrees.
+  \item $d_2(\vc{u},\vc{w})$, $d_1(\vc{u},\vc{w})$ and
+        $d_\infty(\vc{u},\vc{w})$, and confirm they come out in the order
+        \S14.8 predicts.
+  \item $\vc{u}$ written as a combination of $\vc{e}_1,\dots,\vc{e}_4$, and
+        $\ip{\vc{e}_4}{\vc{u}}$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The dot-product laws in $\R^{n}$]
+\S24.3 says the laws survive in $\R^{n}$ because the proofs ``run over $n$ slots
+instead of $2$''. Run them. Use $\Sigma$ notation throughout, and at each step
+name the fact you use: a property of real numbers, or one of the rules for sums
+in the foundations review (splitting a sum, pulling out a constant).
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item \textbf{D1}: $\ip{\vc{u}}{\vc{v}}=\ip{\vc{v}}{\vc{u}}$.
+  \item \textbf{D2}: $\ip{\vc{u}}{\vc{v}+\vc{w}}=\ip{\vc{u}}{\vc{v}}+\ip{\vc{u}}{\vc{w}}$.
+  \item \textbf{D3}: $\ip{\vc{u}}{\alpha\vc{v}}=\alpha\ip{\vc{u}}{\vc{v}}$.
+  \item \textbf{D4}: $\ip{\vc{u}}{\vc{u}}\ge0$, with equality only for
+        $\vc{u}=\vc{0}$.
+  \item \textbf{N2} and \textbf{N3} for the $1$-norm on $\R^{n}$:
+        $\norm{\alpha\vc{v}}_1=\lvert\alpha\rvert\norm{\vc{v}}_1$ and
+        $\norm{\vc{u}+\vc{v}}_1\le\norm{\vc{u}}_1+\norm{\vc{v}}_1$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Norms of patterned vectors]
+Let $n\ge1$. Give each answer as a formula in $n$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\norm{\one}_1$, $\norm{\one}_2$, $\norm{\one}_\infty$.
+  \item Let $\vc{v}=[\,1,\,2,\,3,\,\dots,\,n\,]$. Compute $\norm{\vc{v}}_1$,
+        $\norm{\vc{v}}_2$, $\norm{\vc{v}}_\infty$ and $\ip{\one}{\vc{v}}$.
+  \item With $\vc{v}$ as in (b), show that
+        \[
+          \cos(\one,\vc{v}) \;=\; \frac{\sqrt6}{2}\sqrt{\frac{n+1}{2n+1}} .
+        \]
+        Evaluate the angle between $\one$ and $\vc{v}$ in degrees for $n=1$,
+        $2$ and $10$, and find its limit as $n\to\infty$.
+  \item For $i\neq j$, compute $\norm{\vc{e}_i-\vc{e}_j}_1$,
+        $\norm{\vc{e}_i-\vc{e}_j}_2$ and $\norm{\vc{e}_i-\vc{e}_j}_\infty$.
+        Why does the answer not depend on $n$, $i$ or $j$?
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Cosine similarity for documents]
+A common way to compare documents is to count words. Fix a vocabulary of five
+words --- \emph{vector}, \emph{matrix}, \emph{norm}, \emph{pizza},
+\emph{soccer} --- and record each document as a vector in $\R^{5}$ of word
+counts:
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l c@{}}
+\toprule
+\textbf{Document} & \textbf{Counts} \\
+\midrule
+$A$ & $[\,3,\,1,\,4,\,0,\,0\,]$ \\
+$B$ & $[\,6,\,2,\,8,\,0,\,0\,]$ \\
+$C$ & $[\,0,\,0,\,0,\,1,\,5\,]$ \\
+$D$ & $[\,2,\,0,\,3,\,1,\,0\,]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\cos(A,B)$, $\cos(A,C)$, $\cos(A,D)$ and $\cos(C,D)$ exactly,
+        and the last two to four decimal places.
+  \item Compute the Euclidean distances $d_2(A,B)$, $d_2(A,C)$, $d_2(A,D)$.
+  \item Which document is most similar to $A$ by cosine similarity? Which is
+        nearest to $A$ by Euclidean distance? Document $B$ is document $A$ pasted
+        in twice. Explain which of the two measures gives the sensible answer
+        for comparing topics, and why.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The mean and the variance are a projection]
+A data set of $n$ numbers is a vector $\vc{x}\in\R^{n}$. Take
+$\vc{x}=[\,4,\,7,\,1,\,8,\,5\,]$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\proj{\one}{\vc{x}}$. Then prove, for any $\vc{x}\in\R^{n}$,
+        that $\proj{\one}{\vc{x}}=\bar{x}\,\one$, where
+        $\bar{x}=\tfrac1n\sum_{i=1}^{n}x_i$ is the mean. Projecting onto $\one$
+        replaces every entry by the average.
+  \item The orthogonal piece $\vc{x}-\bar{x}\one$ is the vector of
+        \emph{deviations from the mean}. Compute it, check that it is orthogonal
+        to $\one$, and deduce the general fact that deviations from the mean sum
+        to zero.
+  \item The (population) \textbf{variance} is
+        $\sigma^{2}=\tfrac1n\norm{\vc{x}-\bar{x}\one}^{2}$ and the
+        \textbf{standard deviation} is $\sigma$. Compute both.
+  \item For a second data set $\vc{y}$, the \textbf{correlation coefficient}
+        of $\vc{x}$ and $\vc{y}$ is the cosine similarity of their deviation
+        vectors, $r=\cos(\vc{x}-\bar{x}\one,\ \vc{y}-\bar{y}\one)$. Compute
+        $r$ exactly and to four decimal places for
+        $\vc{y}=[\,3,\,5,\,1,\,6,\,5\,]$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The standard basis, and the diagonals of a cube]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Show that $\ip{\vc{e}_i}{\vc{v}}=v_i$ for every $\vc{v}\in\R^{n}$, and
+        that $\ip{\vc{e}_i}{\vc{e}_j}$ is $1$ when $i=j$ and $0$ otherwise.
+  \item Show that the cosine of the angle between the diagonal $\one$ and the
+        edge direction $\vc{e}_1$ is $1/\sqrt{n}$. Give the angle in degrees for
+        $n=2$, $3$, $4$ and $100$, and find its limit as $n\to\infty$. Say in one
+        sentence what this means for the long diagonal of a high-dimensional
+        cube.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Comparing the norms in $\R^{n}$]
+Prove each inequality for every $\vc{v}\in\R^{n}$. Work from the $\Sigma$
+formulas.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\norm{\vc{v}}_\infty\le\norm{\vc{v}}_2\le\norm{\vc{v}}_1$.
+        \hint{For the second, compare
+        $\norm{\vc{v}}_1^{2}=\bigl(\sum\lvert v_i\rvert\bigr)^{2}$ with
+        $\sum v_i^{2}$. What do the cross terms contribute?}
+  \item $\norm{\vc{v}}_1\le n\,\norm{\vc{v}}_\infty$ and
+        $\norm{\vc{v}}_2\le\sqrt{n}\,\norm{\vc{v}}_\infty$.
+  \item $\norm{\vc{v}}_1\le\sqrt{n}\,\norm{\vc{v}}_2$.
+        \hint{Apply Cauchy--Schwarz in $\R^{n}$ to the vectors
+        $[\,\lvert v_1\rvert,\,\dots,\,\lvert v_n\rvert\,]$ and $\one$.}
+\end{enumerate}
+\noindent In one sentence: together these say that in $\R^{n}$ any two of the
+three norms are within a factor of $n$ of each other. What changes as $n$ grows?
+\end{prob}
+
+%==============================================================================
+\section{Derivatives, partial derivatives, and the gradient}
+%==============================================================================
+\emph{Vector Calculus Unit, Part 1.} In this part, a bare section number such as
+\S6.1 refers to the \emph{vector calculus} unit, whose numbering restarts at
+$1$. References into the vector unit say so. Throughout,
+\[
+  f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h},
+  \qquad
+  \pd{f}{x}(x,y)=\lim_{h\to0}\frac{f(x+h,y)-f(x,y)}{h},
+  \qquad
+  \grad f=\Bigl[\,\pd{f}{x},\ \pd{f}{y}\,\Bigr],
+\]
+and the exponential and logarithm laws are \textbf{E1}--\textbf{E5} and
+\textbf{L1}--\textbf{L5} of \S3.
+
+%------------------------------------------------------------------------------
+\begin{prob}[The rules, in one variable]
+Differentiate each function, and name the rule or rules you use --- those of
+\S2, and the derivatives of $e^{x}$ and $\ln x$ found in \S4. Simplify where it
+helps.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $x^{3}e^{x}$
+  \item $\ln(x^{2}+1)$
+  \item $e^{-x^{2}/2}$
+  \item $\dfrac{\sin x}{1+e^{x}}$
+  \item $\sqrt{x}\,\ln x$
+  \item $\ln(\ln x)$
+  \item $e^{3x}\tan x$
+  \item $\sec(x^{2})$
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Exponential and logarithm algebra]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Simplify each expression, naming the law of \S3 used at each step:
+        \[
+          \ln\bigl(e^{3}e^{-5}\bigr),\qquad
+          e^{2\ln3},\qquad
+          \ln\sqrt{e},\qquad
+          \ln8-3\ln2,\qquad
+          e^{\ln5-\ln2}.
+        \]
+  \item Solve $e^{2x}-3e^{x}+2=0$.
+        \hint{It is a quadratic in the unknown $e^{x}$.}
+  \item Solve $\ln x+\ln(x-3)=\ln4$. One solution of the quadratic you reach
+        must be rejected. Which one, and why?
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Two ways, again]
+\S4.2 and \S4.3 found the derivative of $e^{x}$ two ways: by implicit
+differentiation, and from the definition. Do the same kind of thing here.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $a>0$. Derive $\dfrac{d}{dx}a^{x}=a^{x}\ln a$ in two ways:
+        \begin{enumerate}[label=(\roman*),leftmargin=2.2em,itemsep=3pt,topsep=3pt]
+          \item write $a^{x}=e^{x\ln a}$, justifying it by the inverse
+                relation $e^{\ln a}=a$ and \textbf{E4}, then use the chain rule;
+          \item put $y=a^{x}$, take $\ln$ of both sides using \textbf{L4}, and
+                differentiate implicitly.
+        \end{enumerate}
+  \item \S4.2 went from $\ln$ to $\exp$. Go the other way: taking
+        $\tfrac{d}{dx}e^{x}=e^{x}$ as known, derive
+        $\tfrac{d}{dx}\ln x=1/x$ by writing $y=\ln x$ as $e^{y}=x$ and
+        differentiating implicitly.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Partial derivatives]
+Compute $\partial f/\partial x$ and $\partial f/\partial y$. Assume each
+function is considered where it is defined.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $f(x,y)=3x^{2}y^{3}-4xy+7$
+  \item $f(x,y)=x\,e^{xy}$
+  \item $f(x,y)=\ln(x^{2}+y^{2})$
+  \item $f(x,y)=\sin x\cos y$
+  \item $f(x,y)=x/y$
+  \item $f(x,y)=(x-2y)^{5}$
+  \item $f(x,y)=e^{x}\ln y$
+  \item $f(x,y)=\sqrt{x^{2}+y^{2}}$
+\end{enumerate}
+
+\heads{In (b), the variable held constant appears in two places --- in front, and
+inside the exponent. Holding $y$ fixed, $f$ is a product of two functions of
+$x$, so the product rule is needed. Holding $x$ fixed, the front $x$ is a
+constant.}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Partial derivatives in context]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item The volume of a cylinder of radius $r$ and height $h$ is
+        $V(r,h)=\pi r^{2}h$. Compute $\partial V/\partial r$ and
+        $\partial V/\partial h$, evaluate both at $r=3$~cm, $h=10$~cm, and
+        give their units. Use them to estimate which adds more volume: widening
+        the radius by $1$~mm or raising the height by $1$~mm. Then compute the
+        two actual changes and compare.
+  \item For a fixed amount of gas, pressure depends on temperature $T$ (in
+        kelvin) and volume $V$ (in litres) as $P(T,V)=8T/V$ (in kilopascals).
+        Compute $P$, $\partial P/\partial T$ and $\partial P/\partial V$ at
+        $T=300$, $V=10$, with units. Explain the sign of each partial derivative
+        physically.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The gradient]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $f(x,y)=x^{3}-3xy+y^{2}$. Compute $\grad f$, evaluate it at $(1,2)$,
+        $(2,-1)$ and $(0,0)$, and compute $\norm{\grad f(2,-1)}$.
+  \item Find every point where $\grad f=\vc{0}$ for the $f$ of (a).
+  \item Let $f(x,y)=\ln(x^{2}+y^{2})$. Show that
+        $\norm{\grad f(x,y)}=2/\norm{[x,y]}$, and describe the direction of
+        $\grad f$.
+  \item Let $f(x,y)=\sqrt{x^{2}+y^{2}}=\norm{[x,y]}$. Show that
+        $\grad f(x,y)$ is the \emph{normalization} of $[\,x,\,y\,]$ (vector unit
+        \S12.1), so that $\norm{\grad f}=1$ at every point other than the
+        origin. Why is $\grad f$ undefined at the origin?
+\end{enumerate}
+\end{prob}
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\smallskip
+\noindent{\small Questions about any problem here belong in the class Discord,
+where everyone can see the answer. Questions that are specific to your own work
+--- ``is my proof of C.6(b) valid?'' --- are better brought to office hours,
+Thursdays 3:00--4:00 PM in Kiely Hall 508. Please email ahead.}
+
+\end{document}

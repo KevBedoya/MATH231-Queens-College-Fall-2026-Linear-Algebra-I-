@@ -12,3 +12,7 @@
 
 # Instructor-side authoring aids. Not course material, not distributed.
 skills/
+
+# Catalog of problems held back for future homework. Untracked for now, so
+# nothing in it reaches students before it is assigned.
+plan/future_homework/
