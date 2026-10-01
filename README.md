@@ -1,5 +1,19 @@
 # MATH 231 — Linear Algebra I (Queens College, Fall 2026)
 
+## Midterm 1 study material
+
+- [**Midterm 1 Practice #1**](exams/midterm1/MATH231_midterm_1_practice_1.pdf)
+- [**Midterm 1 Practice #2**](exams/midterm1/MATH231_midterm_1_practice_2.pdf)
+  — same format as Practice #1, with new questions
+- [**Midterm 1 Cheat Sheet**](exams/midterm1/MATH231_midterm_1_cheat_sheet.pdf)
+  — two pages: notation, vector formulas, definitions, derivatives, and complex
+  numbers
+
+Both practice exams cover the material of Homework 1 and Homework 2. Each ends
+with a table listing the homework problems every question is modeled on, so you
+know where to look when one gives you trouble. They are practice, not a
+statement about the format, the length, or the questions of the actual midterm.
+
 ## Homework out now
 
 - [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
@@ -136,12 +150,13 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
 - **`homework/`** — the 5 homework assignments, and the optional extra-credit
   assignments that accompany them
 - **`projects/`** — the 3 projects
-- **`exams/`** — the two midterms and the final
+- **`exams/`** — the two midterms and the final. `exams/midterm1/` holds the
+  Midterm 1 practice exams and cheat sheet
 - **`demos/`** — in-lecture computational demos
 
-Projects, exams and demos are placeholders so far — those directories exist but
-the material is written and distributed as the semester progresses. Assignments
-that have been distributed are linked at the top of this README.
+Projects and demos are placeholders so far — those directories exist but the
+material is written and distributed as the semester progresses. Assignments and
+study material that have been distributed are linked at the top of this README.
 
 ## Reference texts
 
