@@ -1,0 +1,614 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MIDTERM 1 CHEAT SHEET -- two pages, front and back
+%
+%  SCOPE.  The material of Homework 1 and Homework 2, which is the material of
+%  the two practice midterms in this directory.  Five sections, in this order:
+%     1  Notation
+%     2  Vector formulas: arithmetic, norms and distance, the dot product and
+%        angles, projection and component, facts particular to R^n
+%     3  Definitions: combinations, span, independence, basis, coordinates,
+%        dimension, subspaces, orthogonality, the norm and metric axioms
+%     4  Derivatives: the rules, exp and log, partial derivatives, gradient
+%     5  Complex numbers
+%  Section references in brackets point at the lecture that introduced the
+%  fact: V1-V5 are the five parts of the Vector Unit, VC1 is Vector Calculus
+%  Unit Part 1, and CN is the Complex Numbers lecture.
+%
+%  FIT.  Must stay exactly two pages.  It is set in three columns at 8pt; the
+%  page break before Section 3 is fixed, so material added to Section
+%  1 or 2 has to fit on page 1, and material added to 3-5 on page 2.  Each page
+%  is its own multicols* block, which fills columns top to bottom without
+%  balancing them.
+%
+%  Compile with tectonic (or pdflatex; standard TeX Live packages only).
+%==============================================================================
+
+\documentclass[8pt]{extarticle}
+
+\usepackage[letterpaper,margin=0.42in,top=0.38in,bottom=0.42in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.5pt}
+\setlength{\columnsep}{11pt}
+\setlength{\columnseprule}{0.3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\emergencystretch}{2em}
+
+% Tight displays: a cheat sheet is all displays.
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{2pt}%
+  \setlength{\belowdisplayskip}{2pt}%
+  \setlength{\abovedisplayshortskip}{1pt}%
+  \setlength{\belowdisplayshortskip}{1pt}}
+
+\setlist{leftmargin=1.1em,itemsep=0.5pt,topsep=1pt,parsep=0pt,partopsep=0pt}
+
+%------------------------------------------------------------------ style ----
+% Section bar: a full-width coloured band with the section number and title.
+\newcommand{\sect}[2]{\par\vspace{4pt}\noindent
+  \colorbox{RoyalBlue}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+    \color{white}\bfseries\sffamily\normalsize #1\enspace #2}}\par\vspace{2pt}}
+% Sub-heading inside a section.
+\newcommand{\sub}[1]{\par\vspace{3pt}\noindent
+  {\color{RoyalBlue}\bfseries\sffamily #1}\par\vspace{0.5pt}}
+% A lecture pointer, set small and grey.
+\newcommand{\src}[1]{{\color{gray}\,[#1]}}
+% A warning line.
+\newcommand{\warn}[1]{\par\noindent{\color{BrickRed}\bfseries!}\ #1\par}
+\definecolor{softbg}{HTML}{F2F6FA}
+\newcommand{\shade}[1]{\par\smallskip\noindent\colorbox{softbg}{%
+  \parbox{\dimexpr\linewidth-2\fboxsep}{#1}}\par\smallskip}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\Rez}{\operatorname{Re}}
+\newcommand{\Imz}{\operatorname{Im}}
+\DeclareMathOperator{\spanop}{span}
+\newcommand{\grad}{\nabla}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries\sffamily MATH 231 -- Midterm 1 Cheat Sheet}\\[1pt]
+{\small\sffamily Homework 1 and Homework 2 material \textbullet\ vectors,
+ complex numbers, derivatives \textbullet\ Kevin Bedoya, Fall 2026}
+\end{center}
+\vspace{-4pt}
+
+\begin{multicols*}{3}
+\raggedcolumns
+
+%==============================================================================
+\sect{1}{Notation}
+%==============================================================================
+\begin{tabularx}{\linewidth}{@{}>{$}l<{$} >{\raggedright\arraybackslash}X@{}}
+\vc{u},\ \vc{v},\ \vc{x} & \textbf{vectors} (bold) \\
+\alpha,\ \beta,\ k,\ t & \textbf{scalars}: real numbers \\
+{}[\,u_1,\,u_2\,] & vector of $\R^{2}$ with components $u_1,u_2$ \\
+\R^{n} & all lists $[\,v_1,\dots,v_n\,]$ of $n$ reals \\
+\vc{0} & zero vector $[\,0,\dots,0\,]$ \\
+\vc{e}_i & standard basis vector: $1$ in slot $i$, $0$ else \\
+\one & all-ones vector $[\,1,1,\dots,1\,]$ \\
+\ip{\vc{u}}{\vc{v}},\ \vc{u}\cdot\vc{v} & dot product (a \emph{scalar}) \\
+\norm{\vc{v}},\ \norm{\vc{v}}_2 & Euclidean norm (length) \\
+\norm{\vc{v}}_1;\ \norm{\vc{v}}_\infty & Manhattan; Chebyshev norm \\
+\norm{\vc{v}}_p & the $p$-norm, $p\ge1$ \\
+d_p(\vc{x},\vc{y}) & distance $\norm{\vc{x}-\vc{y}}_p$ \\
+\uv{u} & unit vector $\vc{u}/\norm{\vc{u}}$ \\
+\cos(\vc{u},\vc{v}) & cosine similarity \\
+\theta\in[0,\pi] & angle between two vectors \\
+\vc{u}\perp\vc{v} & orthogonal: $\ip{\vc{u}}{\vc{v}}=0$ \\
+\comp{\vc{v}}{\vc{u}} & component of $\vc{u}$ along $\vc{v}$ (\emph{scalar}) \\
+\proj{\vc{v}}{\vc{u}} & projection of $\vc{u}$ onto $\vc{v}$ (\emph{vector}) \\
+\spanop\{\vc{u},\vc{v}\} & all combinations $\alpha\vc{u}+\beta\vc{v}$ \\
+\dim V & dimension of $V$ \\
+\in,\ \notin & is / is not an element of \\
+\subseteq;\ \cap;\ \cup & subset; intersection; union \\
+\{\vc{x} : P\} & the set of all $\vc{x}$ with property $P$ \\
+\forall;\ \exists & for all; there exists \\
+\Rightarrow;\ \Leftrightarrow & implies; if and only if \\
+\textstyle\sum_{i=1}^{n} a_i & $a_1+a_2+\dots+a_n$ \\
+\max_i\lvert v_i\rvert & the largest $\lvert v_i\rvert$ \\
+f:A\to B & signature: inputs from $A$, outputs in $B$ \\
+f'(x),\ \tfrac{d}{dx} & derivative \\
+\partial f/\partial x & partial derivative \\
+\grad f & gradient $[\,\partial f/\partial x,\ \partial f/\partial y\,]$ \\
+i;\ \C & $i^{2}=-1$; the complex numbers \\
+\Rez z,\ \Imz z & real part, imaginary part \\
+\conj{z};\ \lvert z\rvert & conjugate; modulus \\
+\end{tabularx}
+
+\smallskip
+\textbf{Signatures.} $\norm{\cdot}:\R^{2}\to\R$ is \emph{unary};
+$+:\R^{2}\times\R^{2}\to\R^{2}$ and
+$\ip{\cdot}{\cdot}:\R^{2}\times\R^{2}\to\R$ are \emph{binary}; scalar
+multiplication is $\R\times\R^{2}\to\R^{2}$.
+
+\textbf{Vector vs.\ scalar quantity.} A vector quantity has a magnitude
+\emph{and} a direction (velocity, force, displacement, acceleration, momentum,
+a gradient). A scalar quantity has magnitude only (speed, mass, work,
+temperature, distance travelled).
+
+%==============================================================================
+\sect{2}{Vector formulas}
+%==============================================================================
+\sub{2.1\enspace Arithmetic \src{V1 \S7--\S9}}
+Componentwise, in any $\R^{n}$:
+\begin{gather*}
+  \vc{u}\pm\vc{v}=[\,u_1\pm v_1,\ \dots,\ u_n\pm v_n\,],\\
+  \alpha\vc{v}=[\,\alpha v_1,\ \dots,\ \alpha v_n\,].
+\end{gather*}
+$-\vc{v}=(-1)\vc{v}$ \ and \ $\vc{u}-\vc{v}=\vc{u}+(-\vc{v})$.
+\begin{itemize}
+  \item \textbf{Arrow} from tail $P$ to head $Q$: the vector $Q-P$
+        (\emph{head minus tail}).
+  \item \textbf{Equality}: $\vc{u}=\vc{v}$ iff every component agrees. Equal
+        norms are \emph{not} enough.
+  \item $\alpha>0$ keeps the direction, $\alpha<0$ reverses it,
+        $\lvert\alpha\rvert$ scales the length; $0\vc{v}=\vc{0}$.
+\end{itemize}
+\textbf{The eight laws} \src{V1 \S8.4}, for all $\vc{u},\vc{v},\vc{w}$ and
+scalars $\alpha,\beta$:
+
+\begin{tabular}{@{}l l@{}}
+\textbf{A1} & $\vc{u}+\vc{v}=\vc{v}+\vc{u}$ \\
+\textbf{A2} & $(\vc{u}+\vc{v})+\vc{w}=\vc{u}+(\vc{v}+\vc{w})$ \\
+\textbf{A3} & $\vc{u}+\vc{0}=\vc{u}$ \\
+\textbf{A4} & $\vc{u}+(-\vc{u})=\vc{0}$ \\
+\textbf{S1} & $\alpha(\vc{u}+\vc{v})=\alpha\vc{u}+\alpha\vc{v}$ \\
+\textbf{S2} & $(\alpha+\beta)\vc{u}=\alpha\vc{u}+\beta\vc{u}$ \\
+\textbf{S3} & $\alpha(\beta\vc{u})=(\alpha\beta)\vc{u}$ \\
+\textbf{S4} & $1\vc{u}=\vc{u}$ \\
+\end{tabular}
+
+\warn{Subtraction is neither commutative nor associative:
+$\vc{u}-\vc{v}=-(\vc{v}-\vc{u})$.}
+
+\sub{2.2\enspace Norms and distance \src{V1 \S2, V3 \S14}}
+\begin{gather*}
+  \norm{\vc{v}}_2=\sqrt{\textstyle\sum v_i^{2}},\qquad
+  \norm{\vc{v}}_2^{2}=\ip{\vc{v}}{\vc{v}},\\
+  \norm{\vc{v}}_1=\textstyle\sum\lvert v_i\rvert,\qquad
+  \norm{\vc{v}}_\infty=\max_i\lvert v_i\rvert,\\
+  \norm{\vc{v}}_p=\Bigl(\textstyle\sum\lvert v_i\rvert^{p}\Bigr)^{1/p}
+  \ \ (p\ge1).
+\end{gather*}
+\begin{itemize}
+  \item \textbf{Scaling}: $\norm{\alpha\vc{v}}=\lvert\alpha\rvert\norm{\vc{v}}$,
+        because $\sqrt{\alpha^{2}}=\lvert\alpha\rvert$.
+  \item \textbf{Unit vector}: $\uv{u}=\vc{u}/\norm{\vc{u}}$ for
+        $\vc{u}\neq\vc{0}$; then $\vc{u}=\norm{\vc{u}}\,\uv{u}$. Length $L$
+        along $\vc{u}$: $L\uv{u}$; opposite: $-L\uv{u}$.
+  \item \textbf{Triangle inequality}:
+        $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$, with equality
+        iff one is a multiple $\alpha\ge0$ of the other.
+  \item \textbf{Reverse}:
+        $\bigl\lvert\norm{\vc{u}}-\norm{\vc{v}}\bigr\rvert\le\norm{\vc{u}-\vc{v}}$.
+  \item \textbf{Ordering} in $\R^{n}$:
+        \[\norm{\vc{v}}_\infty\le\norm{\vc{v}}_2\le\norm{\vc{v}}_1\le n\norm{\vc{v}}_\infty;\]
+        also $\norm{\vc{v}}_2\le\sqrt n\,\norm{\vc{v}}_\infty$ and
+        $\norm{\vc{v}}_1\le\sqrt n\,\norm{\vc{v}}_2$.
+  \item \textbf{Unit circles} $\{\norm{\vc{v}}_p=1\}$: $p=1$ a diamond
+        (corners $(\pm1,0),(0,\pm1)$); $p=2$ the round circle; $p=\infty$ a
+        square (corners $(\pm1,\pm1)$).
+  \item \textbf{Which metric?} $d_1$: taxi on a street grid. $d_2$: drone in
+        a straight line. $d_\infty$: crane, both motors at once.
+  \item Compare square roots by squaring: $\sqrt{40}<7=\sqrt{49}$.
+\end{itemize}
+
+\sub{2.3\enspace Dot product and angles \src{V2 \S10--\S11, V3 \S13}}
+\begin{gather*}
+  \ip{\vc{u}}{\vc{v}}=\textstyle\sum_{i=1}^{n}u_iv_i
+  =\norm{\vc{u}}\norm{\vc{v}}\cos\theta,\\
+  \cos(\vc{u},\vc{v})=\dfrac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}\norm{\vc{v}}}
+  \in[-1,1],\\
+  \theta=\arccos\bigl(\cos(\vc{u},\vc{v})\bigr)\in[0,\pi].
+\end{gather*}
+{\setlength{\tabcolsep}{4pt}%
+\begin{tabular}{@{}l l l@{}}
+\toprule
+$\cos(\vc{u},\vc{v})$ & angle & the pair is \\
+\midrule
+$1$     & $0$           & parallel: $\vc{v}=\alpha\vc{u}$, $\alpha>0$ \\
+$(0,1)$ & acute         & none of the three \\
+$0$     & $\pi/2$       & orthogonal \\
+$(-1,0)$& obtuse        & none of the three \\
+$-1$    & $\pi$         & antiparallel: $\vc{v}=\alpha\vc{u}$, $\alpha<0$ \\
+\bottomrule
+\end{tabular}}
+
+\smallskip
+Cosine similarity ignores length:
+$\cos(\alpha\vc{u},\vc{v})=\cos(\vc{u},\vc{v})$ for $\alpha>0$, but
+$\cos(-\vc{u},\vc{v})=-\cos(\vc{u},\vc{v})$.
+
+\textbf{The dot-product laws} \src{V2 \S11.8}:
+
+\begin{tabular}{@{}l l@{}}
+\textbf{D1} & $\ip{\vc{u}}{\vc{v}}=\ip{\vc{v}}{\vc{u}}$ \\
+\textbf{D2} & $\ip{\vc{u}}{\vc{v}+\vc{w}}=\ip{\vc{u}}{\vc{v}}+\ip{\vc{u}}{\vc{w}}$ \\
+\textbf{D3} & $\ip{\vc{u}}{\alpha\vc{v}}=\alpha\ip{\vc{u}}{\vc{v}}$ \\
+\textbf{D4} & $\ip{\vc{u}}{\vc{u}}=\norm{\vc{u}}^{2}\ge0$, $=0$ only for
+              $\vc{u}=\vc{0}$ \\
+\end{tabular}
+
+\smallskip
+With D1, D2 and D3 also work in the first slot; and
+$\ip{\vc{x}}{\vc{0}}=0$ for every $\vc{x}$.
+
+\textbf{Expansions}, from D1--D4. The third line is the
+\emph{parallelogram law}, the fourth \emph{polarization}:
+\begin{gather*}
+  \norm{\vc{u}\pm\vc{v}}^{2}
+  =\norm{\vc{u}}^{2}\pm2\ip{\vc{u}}{\vc{v}}+\norm{\vc{v}}^{2},\\
+  \ip{\vc{u}+\vc{v}}{\vc{u}-\vc{v}}=\norm{\vc{u}}^{2}-\norm{\vc{v}}^{2},\\
+  \norm{\vc{u}+\vc{v}}^{2}+\norm{\vc{u}-\vc{v}}^{2}
+  =2\norm{\vc{u}}^{2}+2\norm{\vc{v}}^{2},\\
+  \ip{\vc{u}}{\vc{v}}
+  =\tfrac14\bigl(\norm{\vc{u}+\vc{v}}^{2}-\norm{\vc{u}-\vc{v}}^{2}\bigr).
+\end{gather*}
+
+\textbf{Cauchy--Schwarz}:
+$\lvert\ip{\vc{u}}{\vc{v}}\rvert\le\norm{\vc{u}}\norm{\vc{v}}$, with equality
+iff one is a multiple of the other.
+
+\warn{No cancellation: $\ip{\vc{u}}{\vc{v}}=\ip{\vc{u}}{\vc{w}}$ gives only
+$\vc{u}\perp(\vc{v}-\vc{w})$, not $\vc{v}=\vc{w}$.}
+
+\sub{2.4\enspace Component and projection \src{V2 \S12}}
+For $\vc{v}\neq\vc{0}$; the subscript is the vector projected \emph{onto}.
+\begin{gather*}
+  \comp{\vc{v}}{\vc{u}}=\frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}}
+  =\norm{\vc{u}}\cos\theta\quad\text{(a scalar)},\\
+  \proj{\vc{v}}{\vc{u}}=\frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}^{2}}\,\vc{v}
+  =\comp{\vc{v}}{\vc{u}}\,\uv{v}\quad\text{(a vector)}.
+\end{gather*}
+\begin{itemize}
+  \item \textbf{Orthogonal piece} $\vc{u}-\proj{\vc{v}}{\vc{u}}$ is
+        $\perp\vc{v}$, and
+        $\vc{u}=\proj{\vc{v}}{\vc{u}}+(\vc{u}-\proj{\vc{v}}{\vc{u}})$.
+  \item $\norm{\vc{u}}^{2}=\norm{\proj{\vc{v}}{\vc{u}}}^{2}
+        +\norm{\vc{u}-\proj{\vc{v}}{\vc{u}}}^{2}$, so
+        $\norm{\proj{\vc{v}}{\vc{u}}}\le\norm{\vc{u}}$.
+  \item $\proj{\alpha\vc{v}}{\vc{u}}=\proj{\vc{v}}{\vc{u}}$ for
+        $\alpha\neq0$; the component flips sign when $\alpha<0$.
+  \item $\proj{\vc{v}}{\proj{\vc{v}}{\vc{u}}}=\proj{\vc{v}}{\vc{u}}$, and
+        projection is linear in what is projected.
+  \item In general $\proj{\vc{v}}{\vc{u}}\neq\proj{\vc{u}}{\vc{v}}$.
+\end{itemize}
+\textbf{Work} done by a constant force $\vc{F}$ over displacement $\vc{s}$:
+$W=\ip{\vc{F}}{\vc{s}}=\comp{\vc{s}}{\vc{F}}\,\norm{\vc{s}}$ (joules). For a
+fixed $\norm{\vc{F}}$, $W$ is largest when $\vc{F}$ points along $\vc{s}$, and
+$W=0$ when $\vc{F}\perp\vc{s}$. On a ramp in direction $\vc{d}$,
+$\proj{\vc{d}}{\vc{G}}$ pulls along the ramp and
+$\vc{G}-\proj{\vc{d}}{\vc{G}}$ presses into it.
+
+\sub{2.5\enspace Particular to $\R^{n}$ \src{V5 \S24}}
+\begin{itemize}
+  \item $\ip{\vc{e}_i}{\vc{v}}=v_i$; \ $\ip{\vc{e}_i}{\vc{e}_j}=1$ if $i=j$,
+        else $0$; \ $\norm{\vc{e}_i-\vc{e}_j}_2=\sqrt2$ for $i\neq j$.
+  \item $\norm{\one}_1=n$, \ $\norm{\one}_2=\sqrt n$, \
+        $\norm{\one}_\infty=1$, \ $\cos(\one,\vc{e}_i)=1/\sqrt n$.
+  \item $\proj{\one}{\vc{x}}=\bar{x}\,\one$, where $\bar{x}$ is the mean of
+        the entries.
+  \item \textbf{Documents} as word-count vectors: cosine similarity compares
+        topic and ignores length; Euclidean distance is thrown off by length
+        (a document pasted in twice has $\cos=1$ but is far away).
+\end{itemize}
+
+\sub{2.6\enspace Exact values for angles}
+{\setlength{\tabcolsep}{3.2pt}%
+\begin{tabular}{@{}>{$}c<{$} *{8}{>{$}c<{$}}@{}}
+\toprule
+\theta & 0 & \frac\pi6 & \frac\pi4 & \frac\pi3 & \frac\pi2 & \frac{2\pi}3
+       & \frac{3\pi}4 & \pi \\
+\midrule
+\cos & 1 & \frac{\sqrt3}2 & \frac{\sqrt2}2 & \frac12 & 0 & -\frac12
+     & -\frac{\sqrt2}2 & -1 \\
+\sin & 0 & \frac12 & \frac{\sqrt2}2 & \frac{\sqrt3}2 & 1 & \frac{\sqrt3}2
+     & \frac{\sqrt2}2 & 0 \\
+\bottomrule
+\end{tabular}}
+
+\smallskip
+Degrees: $\pi/6=30^{\circ}$, $\pi/4=45^{\circ}$, $\pi/3=60^{\circ}$,
+$\pi/2=90^{\circ}$, $2\pi/3=120^{\circ}$, $3\pi/4=135^{\circ}$,
+$\pi=180^{\circ}$. For $-\theta$, cosine is unchanged and sine flips sign.
+
+\sub{2.7\enspace Quick checks}
+\begin{itemize}
+  \item A cosine outside $[-1,1]$ means an arithmetic error.
+  \item A norm is never negative, and is $0$ only for $\vc{0}$.
+  \item An orthogonal piece must satisfy
+        $\ip{\vc{v}}{\vc{u}-\proj{\vc{v}}{\vc{u}}}=0$.
+  \item Coordinates are confirmed only by substituting them back.
+  \item $\comp{\vc{v}}{\vc{u}}$ is a number; $\proj{\vc{v}}{\vc{u}}$ is a
+        vector. Answer with the right kind of object.
+\end{itemize}
+
+\end{multicols*}
+\newpage
+\begin{multicols*}{3}
+\raggedcolumns
+%==============================================================================
+\sect{3}{Definitions}
+%==============================================================================
+\sub{Combinations and span \src{V4 \S16}}
+A \textbf{linear combination} of $\vc{v}_1,\dots,\vc{v}_k$ is
+$\alpha_1\vc{v}_1+\dots+\alpha_k\vc{v}_k$ with scalars $\alpha_i$. Their
+\textbf{span} is the set of all of them:
+\[
+  \spanop\{\vc{v}_1,\dots,\vc{v}_k\}
+  =\Bigl\{\textstyle\sum_{i}\alpha_i\vc{v}_i : \alpha_i\in\R\Bigr\}.
+\]
+A span always contains $\vc{0}$ and is always a subspace. If
+$\vc{w}\in\spanop\{\vc{u},\vc{v}\}$, then
+$\spanop\{\vc{u},\vc{v},\vc{w}\}=\spanop\{\vc{u},\vc{v}\}$.
+
+\sub{Linear independence \src{V4 \S18}}
+$\vc{v}_1,\dots,\vc{v}_k$ are \textbf{linearly independent} when
+\[
+  \alpha_1\vc{v}_1+\dots+\alpha_k\vc{v}_k=\vc{0}
+  \ \Rightarrow\ \alpha_1=\dots=\alpha_k=0 .
+\]
+They are \textbf{linearly dependent} when some combination with the $\alpha_i$
+not all zero gives $\vc{0}$; equivalently, one of them is a combination of the
+others.
+\begin{itemize}
+  \item \textbf{A pair in $\R^{2}$}: dependent $\Leftrightarrow$ one is a
+        multiple of the other $\Leftrightarrow$ $D=u_1v_2-u_2v_1=0$.
+  \item A set containing $\vc{0}$ is dependent.
+  \item Three or more vectors in $\R^{2}$ are always dependent.
+  \item If $\vc{u},\vc{v}$ are independent, so are $\vc{u}+\vc{v}$ and
+        $\vc{u}-\vc{v}$.
+\end{itemize}
+
+\sub{Basis, coordinates, dimension \src{V4 \S16--\S18}}
+A \textbf{basis} of a space $V$ is a set of vectors that \emph{spans} $V$ and
+is \emph{linearly independent}. Then every $\vc{w}\in V$ is a combination of
+the basis vectors in exactly one way; the coefficients are the
+\textbf{coordinates} of $\vc{w}$. Spanning gives existence of coordinates;
+independence gives uniqueness.
+
+\textbf{In $\R^{2}$} with $D\neq0$, the coordinates in
+$\vc{w}=\alpha\vc{u}+\beta\vc{v}$ are
+\[
+  \alpha=\frac{w_1v_2-w_2v_1}{D},
+  \qquad
+  \beta=\frac{u_1w_2-u_2w_1}{D},
+\]
+or solve the system by elimination. Always substitute back to check.
+
+The \textbf{dimension} of $V$ is the number of vectors in a basis:
+$\dim\R^{n}=n$; a line through $\vc{0}$ has dimension $1$; $\{\vc{0}\}$ has
+dimension $0$. The \textbf{standard basis} of $\R^{n}$ is
+$\vc{e}_1,\dots,\vc{e}_n$.
+
+\sub{Subspaces \src{V4 \S19}}
+A \textbf{subspace of $\R^{2}$} is a subset $S$ that is
+(1) non-empty, (2) closed under addition: $\vc{w}_1,\vc{w}_2\in S\Rightarrow
+\vc{w}_1+\vc{w}_2\in S$, and (3) closed under scalar multiplication:
+$\vc{w}\in S\Rightarrow\gamma\vc{w}\in S$ for every scalar $\gamma$.
+\begin{itemize}
+  \item Every subspace contains $\vc{0}$. If a set misses $\vc{0}$, it is not
+        a subspace.
+  \item The subspaces of $\R^{2}$ are exactly $\{\vc{0}\}$, the lines through
+        the origin, and $\R^{2}$. In $\R^{3}$, add the planes through the
+        origin.
+  \item $S\cap T$ is a subspace. $S\cup T$ is one only if $S\subseteq T$ or
+        $T\subseteq S$.
+  \item \textbf{Not} subspaces: $x+y=1$ (misses $\vc{0}$); $xy=0$ and
+        $y=x^{2}$ (not closed under $+$); $x,y\ge0$ (not closed under
+        $\gamma=-1$); integer points; the disc $x^{2}+y^{2}\le1$.
+  \item To show a set is \emph{not} a subspace, give explicit vectors (and a
+        scalar) that break one condition.
+\end{itemize}
+
+\sub{Orthogonality \src{V2 \S10, V5 \S21--\S23}}
+\begin{itemize}
+  \item $\vc{u},\vc{v}$ are \textbf{orthogonal} ($\vc{u}\perp\vc{v}$) when
+        $\ip{\vc{u}}{\vc{v}}=0$. A set is \textbf{orthogonal} when each pair
+        is, and \textbf{orthonormal} when it is orthogonal and every vector has
+        norm $1$.
+  \item Nonzero, mutually orthogonal vectors are linearly independent. The
+        converse fails: $[1,0]$ and $[1,1]$ are independent but not orthogonal.
+  \item \textbf{Coordinates against an orthogonal basis} need no system:
+        \[
+          \vc{w}=\sum_j\frac{\ip{\vc{b}_j}{\vc{w}}}{\norm{\vc{b}_j}^{2}}\,\vc{b}_j
+          =\sum_j\proj{\vc{b}_j}{\vc{w}} .
+        \]
+  \item \textbf{Pythagorean identity}: if $\vc{u}\perp\vc{v}$, then
+        $\norm{\vc{u}+\vc{v}}^{2}=\norm{\vc{u}}^{2}+\norm{\vc{v}}^{2}$. For
+        mutually orthogonal vectors,
+        $\norm{\sum\alpha_j\vc{b}_j}^{2}=\sum\alpha_j^{2}\norm{\vc{b}_j}^{2}$;
+        for orthonormal ones, $\sum\alpha_j^{2}$.
+  \item \textbf{Making a basis orthogonal}:
+        $\vc{v}'=\vc{v}-\proj{\vc{u}}{\vc{v}}$ is $\perp\vc{u}$, and
+        $\spanop\{\vc{u},\vc{v}'\}=\spanop\{\vc{u},\vc{v}\}$.
+  \item $\vc{u}^{\perp}=\{\vc{x}:\ip{\vc{u}}{\vc{x}}=0\}$ is a subspace. If
+        $\vc{w}\perp\vc{u}$ and $\vc{w}\perp\vc{v}$, then $\vc{w}$ is
+        orthogonal to all of $\spanop\{\vc{u},\vc{v}\}$.
+\end{itemize}
+
+\sub{Norms and metrics \src{V3 \S14.1, \S15.1}}
+A \textbf{norm} satisfies, for all $\vc{u},\vc{v}$ and scalars $\alpha$:
+\textbf{N1} $\norm{\vc{v}}\ge0$, and $\norm{\vc{v}}=0$ iff $\vc{v}=\vc{0}$;
+\textbf{N2} $\norm{\alpha\vc{v}}=\lvert\alpha\rvert\norm{\vc{v}}$;
+\textbf{N3} $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$.
+
+A \textbf{metric} satisfies, for all $\vc{x},\vc{y},\vc{z}$:
+\textbf{M1} $d(\vc{x},\vc{y})=0$ iff $\vc{x}=\vc{y}$;
+\textbf{M2} $d(\vc{x},\vc{y})=d(\vc{y},\vc{x})$;
+\textbf{M3} $d(\vc{x},\vc{y})+d(\vc{y},\vc{z})\ge d(\vc{x},\vc{z})$.
+
+Real-number facts for these proofs: $\lvert ab\rvert=\lvert a\rvert\lvert b\rvert$
+and $\lvert a+b\rvert\le\lvert a\rvert+\lvert b\rvert$.
+
+\shade{\textbf{Proof habits.} State what you assume. Name the law behind each
+step. ``In components'': write $\vc{u}=[\,u_1,\,u_2\,]$ and use a fact about
+real numbers in each slot. ``If and only if'': prove both directions, and say
+which one you are proving. End with a sentence saying what you have shown.}
+
+%==============================================================================
+\sect{4}{Derivatives}
+%==============================================================================
+\sub{Definition and rules \src{VC1 \S1--\S2}}
+\[
+  f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}.
+\]
+{\setlength{\tabcolsep}{4pt}%
+\begin{tabular}{@{}l l@{}}
+Constants & $(c)'=0$, \ $(cf)'=cf'$ \\
+Sum / difference & $(f\pm g)'=f'\pm g'$ \\
+Power & $(x^{n})'=nx^{n-1}$ ($n$ real) \\
+Product & $(fg)'=f'g+fg'$ \\
+Quotient & $\bigl(\tfrac fg\bigr)'=\dfrac{f'g-fg'}{g^{2}}$ \\
+Chain & $\bigl(f(g(x))\bigr)'=f'(g(x))\,g'(x)$ \\
+\end{tabular}}
+
+\sub{Derivatives to know \src{VC1 \S2, \S4}}
+\begin{tabular}{@{}>{$}l<{$} >{$}l<{$} @{\quad} >{$}l<{$} >{$}l<{$}@{}}
+\toprule
+f & f' & f & f' \\
+\midrule
+e^{x}      & e^{x}            & \sin x & \cos x \\
+e^{g(x)}   & g'(x)\,e^{g(x)}  & \cos x & -\sin x \\
+\ln x      & 1/x              & \tan x & \sec^{2}x \\
+\ln g(x)   & g'(x)/g(x)       & \sec x & \sec x\tan x \\
+a^{x}      & a^{x}\ln a       & \csc x & -\csc x\cot x \\
+\sqrt{x}   & 1/(2\sqrt{x})    & \cot x & -\csc^{2}x \\
+\bottomrule
+\end{tabular}
+
+\sub{Exponential and logarithm laws \src{VC1 \S3}}
+\begin{tabular}{@{}l l @{\quad} l l@{}}
+\textbf{E1} & $e^{0}=1$ & \textbf{L1} & $\ln1=0$ \\
+\textbf{E2} & $e^{a+b}=e^{a}e^{b}$ & \textbf{L2} & $\ln(ab)=\ln a+\ln b$ \\
+\textbf{E3} & $e^{a-b}=e^{a}/e^{b}$ & \textbf{L3} & $\ln(a/b)=\ln a-\ln b$ \\
+\textbf{E4} & $(e^{a})^{b}=e^{ab}$ & \textbf{L4} & $\ln(a^{r})=r\ln a$ \\
+\textbf{E5} & $e^{-a}=1/e^{a}$ & \textbf{L5} & $\ln e=1$ \\
+\end{tabular}
+
+\smallskip
+They are inverses: $e^{\ln x}=x$ for $x>0$, and $\ln(e^{x})=x$. So
+$a^{x}=e^{x\ln a}$, and $e^{x}>0$ always.
+\begin{itemize}
+  \item $e^{2x}+be^{x}+c=0$: put $t=e^{x}$, solve the quadratic, keep only
+        $t>0$, then $x=\ln t$.
+  \item $\ln$ equations: combine with L2--L4, exponentiate, and reject any
+        candidate that makes an argument of $\ln$ zero or negative.
+  \item Implicit differentiation: $y=\ln x\Rightarrow e^{y}=x\Rightarrow
+        e^{y}y'=1\Rightarrow y'=1/x$.
+\end{itemize}
+
+\columnbreak
+\sub{Partial derivatives and the gradient \src{VC1 \S5--\S7}}
+\[
+  \pd fx(x,y)=\lim_{h\to0}\frac{f(x+h,y)-f(x,y)}{h} .
+\]
+To find $\partial f/\partial x$, differentiate in $x$ and treat $y$ as a
+constant; for $\partial f/\partial y$, the reverse. Its units are
+(units of $f$)/(units of $x$).
+\begin{itemize}
+  \item \textbf{Gradient}: $\grad f=\bigl[\,\partial f/\partial x,\
+        \partial f/\partial y\,\bigr]$, a vector. Evaluate it at a point to
+        get a vector of numbers, then take its norm if asked.
+  \item \textbf{Where $\grad f=\vc{0}$}: solve both equations at once. Factor,
+        and split into cases (for example $2y(x-1)=0$ gives $y=0$ or $x=1$).
+  \item \textbf{Estimating a change}: with $y$ held fixed,
+        $\Delta f\approx\pd fx\,\Delta x$; with $x$ held fixed,
+        $\Delta f\approx\pd fy\,\Delta y$.
+\end{itemize}
+
+%==============================================================================
+\sect{5}{Complex numbers}
+%==============================================================================
+\sub{The basics \src{CN \S2--\S3}}
+$i^{2}=-1$. A complex number is $z=a+bi$ with $a,b$ real:
+$\Rez z=a$ and $\Imz z=b$. Both parts are \emph{real}:
+$\Imz(4-3i)=-3$. Plot $z$ at the point $(a,b)$ of the complex plane. Every
+real number is complex ($b=0$), and $z=w$ iff both parts agree.
+
+\sub{Arithmetic \src{CN \S4}}
+With $z=a+bi$ and $w=c+di$:
+\begin{gather*}
+  z\pm w=(a\pm c)+(b\pm d)i,\\
+  zw=(ac-bd)+(ad+bc)i,\\
+  \frac zw=\frac{z\,\conj{w}}{w\,\conj{w}}
+  =\frac{(ac+bd)+(bc-ad)i}{c^{2}+d^{2}},\\
+  \frac1z=\frac{\conj{z}}{\lvert z\rvert^{2}} .
+\end{gather*}
+Finish every quotient in the form $a+bi$.
+
+\textbf{Powers of $i$} repeat with period $4$:
+\[
+  i^{1}=i,\quad i^{2}=-1,\quad i^{3}=-i,\quad i^{4}=1 .
+\]
+So $i^{n}$ depends only on the remainder of $n$ divided by $4$:
+$0\mapsto1$, $1\mapsto i$, $2\mapsto-1$, $3\mapsto-i$. Also
+$(1+i)^{2}=2i$ and $(1-i)^{2}=-2i$.
+
+\sub{Conjugate and modulus \src{CN \S4.3, \S5}}
+$\conj{z}=a-bi$ is $z$ reflected in the real axis, and
+$\lvert z\rvert=\sqrt{a^{2}+b^{2}}$ is its distance from $0$.
+\begin{itemize}
+  \item $z\conj{z}=a^{2}+b^{2}=\lvert z\rvert^{2}$, a real number.
+  \item $z+\conj{z}=2\Rez z$ and $z-\conj{z}=2i\Imz z$.
+  \item $\conj{z\pm w}=\conj{z}\pm\conj{w}$, \
+        $\conj{zw}=\conj{z}\,\conj{w}$, \ $\conj{\conj{z}}=z$.
+  \item $z$ is real iff $z=\conj{z}$; and $\Rez z=0$ iff $z=-\conj{z}$.
+  \item $\lvert zw\rvert=\lvert z\rvert\lvert w\rvert$, \
+        $\lvert\conj{z}\rvert=\lvert z\rvert$, \
+        $\lvert z+w\rvert\le\lvert z\rvert+\lvert w\rvert$.
+  \item If $\lvert z\rvert=1$, then $1/z=\conj{z}$.
+\end{itemize}
+\textbf{Distance} from $z$ to $w$ is $\lvert z-w\rvert$. With centre $c$ and
+radius $r$: $\lvert z-c\rvert=r$ is a circle, $\lvert z-c\rvert\le r$ a closed
+disc, and $\lvert z-c\rvert<r$ an open disc. Read the centre carefully:
+$\lvert z+2i\rvert=\lvert z-(-2i)\rvert$ is centred at $-2i$.
+
+\sub{The unit circle and Euler's formula \src{CN \S6}}
+Points with $\lvert z\rvert=1$ are $\cos\theta+i\sin\theta$, and Euler's formula
+gives
+\begin{gather*}
+  e^{i\theta}=\cos\theta+i\sin\theta,\\
+  \lvert e^{i\theta}\rvert=1,\qquad\lvert z\,e^{i\theta}\rvert=\lvert z\rvert .
+\end{gather*}
+$e^{i\pi/2}=i$, $e^{i\pi}=-1$, $e^{3\pi i/2}=-i$, $e^{2\pi i}=1$, and
+$e^{i\pi}+1=0$ is \textbf{Euler's identity}.
+
+\sub{Multiplication as rotation \src{CN \S7}}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+times & rotates the point & $(a,b)\mapsto$ \\
+\midrule
+$i$        & $90^{\circ}$ counter-clockwise & $(-b,\,a)$ \\
+$-i$       & $90^{\circ}$ clockwise         & $(b,\,-a)$ \\
+$-1$       & $180^{\circ}$                  & $(-a,\,-b)$ \\
+$e^{i\theta}$ & $\theta$ counter-clockwise   & \\
+\bottomrule
+\end{tabular}
+
+
+\end{multicols*}
+\end{document}
