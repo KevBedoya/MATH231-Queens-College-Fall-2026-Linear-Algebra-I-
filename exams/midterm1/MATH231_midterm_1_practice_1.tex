@@ -1,0 +1,811 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MIDTERM 1, PRACTICE #1 -- built from Homework 1 and Homework 2
+%
+%  SCOPE.  Exactly the material of the two homework assignments:
+%     homework/MATH231_homework_1.tex   Parts A-E (Part F, NumPy, left out)
+%     homework/MATH231_homework_2.tex   Parts A-F
+%  Programming is not assessed on exams (syllabus S7), so there is no NumPy.
+%  Every question is a close relative of a homework problem with new numbers,
+%  not a verbatim copy -- the syllabus says exam questions are not recycled from
+%  homework.  The table on the last page maps each question to its sources.
+%
+%  FORMAT.  Five parts, by question type:
+%     A  true or false        A.1-A.10
+%     B  multiple choice      B.1-B.8
+%     C  computation          C.1-C.6
+%     D  applications         D.1-D.4
+%     E  short proofs         E.1-E.5
+%  This is longer than one class period, on purpose: it is meant to touch every
+%  topic of both homework sets.  Trim Parts C and D first if a timed version is
+%  wanted.
+%
+%  SPACING.  Items on a page are separated by \vfill, so the blank space on each
+%  page is shared out evenly below every question; each page ends with an
+%  explicit \newpage.  A problem that runs past one page continues under a
+%  "Problem X.n, continued" line.  Moving an item means checking the page breaks
+%  again.
+%
+%  CALCULATOR-FREE.  Every answer is exact and clean: angles are 0, 45, 60, 90,
+%  135 or 180 degrees, comparisons of square roots can be made by squaring, and
+%  no part asks for a decimal.  There is no answer key in this file.
+%
+%  Compile with tectonic (or pdflatex; standard TeX Live packages only).
+%==============================================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}
+                      {Part \thesection.}{0.6em}{}
+\titlespacing*{\section}{0pt}{0pt}{7pt}
+
+\renewcommand{\thesection}{\Alph{section}}
+
+% Keeps long inline formulas from pushing a line into the margin.
+\setlength{\emergencystretch}{3em}
+
+% The problem heading is a line of its own, so that part (a) -- or the opening
+% sentence -- always starts below it.  Same environment as Homework 2.
+\makeatletter
+\newcounter{prob}[section]
+\renewcommand{\theprob}{\thesection.\arabic{prob}}
+\newenvironment{prob}[1][]
+  {\par\addvspace{12pt plus 4pt minus 4pt}%
+   \needspace{4\baselineskip}%
+   \refstepcounter{prob}%
+   \noindent\textbf{Problem~\theprob}%
+   \if\relax\detokenize{#1}\relax\else\ (#1)\fi\textbf{.}%
+   \par\nobreak\@afterindentfalse\@afterheading}
+  {\par}
+\makeatother
+
+\newcommand{\hint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{RoyalBlue}{\textbf{Hint.}}\ #1}\par\smallskip}
+
+% A problem that runs onto a second page continues under this line.
+\newcommand{\contd}[1]{\newpage\noindent
+  {\small\sffamily\color{gray}Problem #1, continued}\par\medskip}
+
+% True or false: the statement on the left, the two letters to circle on the
+% right of its first line.
+\newcommand{\tf}[1]{\parbox[t]{\dimexpr\linewidth-5.5em}{#1}%
+  \hfill\textsf{\textbf{T}\qquad\textbf{F}}}
+
+% Multiple choice: four short options in one row, medium ones two by two, or
+% long ones one per line.
+\newcommand{\fourch}[4]{\par\smallskip\noindent
+  \begin{tabular}{@{}*{4}{>{\raggedright\arraybackslash}p{0.22\linewidth}}@{}}
+  (A)\ #1 & (B)\ #2 & (C)\ #3 & (D)\ #4
+  \end{tabular}\par}
+\newcommand{\twoch}[4]{\par\smallskip\noindent
+  \begin{tabular}{@{}*{2}{>{\raggedright\arraybackslash}p{0.46\linewidth}}@{}}
+  (A)\ #1 & (B)\ #2 \\[6pt]
+  (C)\ #3 & (D)\ #4
+  \end{tabular}\par}
+\newcommand{\stackch}[4]{\par\smallskip\noindent
+  \begin{tabular}{@{}l@{}}
+  (A)\ #1 \\[3pt] (B)\ #2 \\[3pt] (C)\ #3 \\[3pt] (D)\ #4
+  \end{tabular}\par}
+
+% shaded call-out box.  The body is collected into a savebox first, because
+% \colorbox needs its whole argument at once.
+\definecolor{softbg}{HTML}{F2F6FA}
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\sffamily\color{RoyalBlue}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+
+% list styles used throughout
+\newlist{tfitems}{enumerate}{1}
+\setlist[tfitems]{leftmargin=3.2em,label=\textbf{\thesection.\arabic*},
+                  itemsep=0pt,topsep=4pt}
+\newlist{parts}{enumerate}{1}
+\setlist[parts]{leftmargin=2.6em,label=\textbf{(\alph*)},itemsep=0pt,
+                topsep=6pt}
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\newcommand{\comp}[2]{\operatorname{comp}_{#1}(#2)}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\Rez}{\operatorname{Re}}
+\newcommand{\Imz}{\operatorname{Im}}
+\DeclareMathOperator{\spanop}{span}
+\newcommand{\grad}{\nabla}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Midterm 1 Practice \#1 \textbullet\ Homework 1 and
+        Homework 2 material}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.4cm}
+
+\begin{center}
+\large\sffamily Name: \rule{9cm}{0.4pt}
+\end{center}
+
+\begin{callout}{About this practice exam}
+Every question here is a close relative of a problem from Homework~1 or
+Homework~2, with new numbers. The table on the last page lists the homework
+problems each question is modeled on, so you know where to look when one gives
+you trouble.
+
+This is practice. It is not a statement about the format, the length, or the
+questions of the actual midterm.
+\end{callout}
+
+\begin{callout}{Instructions}
+\begin{itemize}[leftmargin=1.4em,itemsep=5pt,topsep=3pt]
+  \item \textbf{Parts A and B.} Circle one answer. No justification is needed;
+        the space below each question is for scratch work.
+  \item \textbf{Parts C, D and E.} Show your work in the space below each
+        question. A correct answer with no derivation earns partial credit at
+        best. If you run out of room, continue on the back of the page and say
+        so.
+  \item Leave answers in exact form: $\sqrt{13}$, $\pi/3$, $\ln2$,
+        $-\tfrac45+\tfrac75 i$. No question needs a calculator.
+  \item \textbf{Proofs.} Write down what you are assuming, justify each
+        equality by naming the fact that licenses it, and end with a sentence
+        saying what you have shown. A chain of equalities with no words is not a
+        proof.
+\end{itemize}
+\end{callout}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c l l@{}}
+\toprule
+\textbf{Part} & \textbf{Type} & \textbf{Questions} \\
+\midrule
+A & True or false   & A.1--A.10 \\
+B & Multiple choice & B.1--B.8 \\
+C & Computation     & C.1--C.6 \\
+D & Applications    & D.1--D.4 \\
+E & Short proofs    & E.1--E.5 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+%==============================================================================
+\begin{callout}{Notation used throughout}
+Bold letters ($\vc{u}$, $\vc{v}$, $\vc{x}$) are vectors; plain letters
+($\alpha$, $k$, $t$) are scalars, that is, real numbers. For
+$\vc{u}=[\,u_1,\dots,u_n\,]$ and $\vc{v}=[\,v_1,\dots,v_n\,]$ in $\R^{n}$:
+\[
+  \ip{\vc{u}}{\vc{v}}=\vc{u}\cdot\vc{v}=\sum_{i=1}^{n}u_iv_i,
+  \qquad
+  \norm{\vc{v}}=\norm{\vc{v}}_2=\sqrt{\ip{\vc{v}}{\vc{v}}},
+  \qquad
+  \norm{\vc{v}}_1=\sum_{i=1}^{n}\lvert v_i\rvert,
+  \qquad
+  \norm{\vc{v}}_\infty=\max_{1\le i\le n}\lvert v_i\rvert ,
+\]
+and each norm gives a distance $d_p(\vc{x},\vc{y})=\norm{\vc{x}-\vc{y}}_p$.
+
+For nonzero $\vc{u},\vc{v}$, the \textbf{cosine similarity} is
+$\cos(\vc{u},\vc{v})=\dfrac{\ip{\vc{u}}{\vc{v}}}{\norm{\vc{u}}\,\norm{\vc{v}}}$,
+and the angle $\theta\in[0,\pi]$ between $\vc{u}$ and $\vc{v}$ is the one with
+$\cos\theta=\cos(\vc{u},\vc{v})$. The \textbf{unit vector} in the direction of
+$\vc{u}$ is $\uv{u}=\vc{u}/\norm{\vc{u}}$.
+
+For $\vc{v}\neq\vc{0}$, the \textbf{component} of $\vc{u}$ along $\vc{v}$ (a
+scalar) and the \textbf{projection} of $\vc{u}$ onto $\vc{v}$ (a vector) are
+\[
+  \comp{\vc{v}}{\vc{u}}=\frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}},
+  \qquad
+  \proj{\vc{v}}{\vc{u}}=\frac{\ip{\vc{v}}{\vc{u}}}{\norm{\vc{v}}^{2}}\,\vc{v},
+\]
+and $\vc{u}-\proj{\vc{v}}{\vc{u}}$ is the \textbf{orthogonal piece}.
+
+In $\R^{n}$, $\vc{e}_i$ is the standard basis vector with a $1$ in slot $i$ and
+$0$ elsewhere, and $\one=[\,1,\,1,\,\dots,\,1\,]$ is the all-ones vector.
+
+A \textbf{subspace of $\R^{2}$} is a subset of $\R^{2}$ that is non-empty, closed
+under addition, and closed under scalar multiplication.
+
+For a complex number $z=a+bi$ with $a,b\in\R$: $\Rez(z)=a$, $\Imz(z)=b$,
+$\conj{z}=a-bi$, $\lvert z\rvert=\sqrt{a^{2}+b^{2}}$, and Euler's formula is
+$e^{i\theta}=\cos\theta+i\sin\theta$.
+
+For a function $f(x,y)$, the \textbf{gradient} is
+$\grad f=\bigl[\,\partial f/\partial x,\ \partial f/\partial y\,\bigr]$.
+\end{callout}
+
+\newpage
+%==============================================================================
+\section{True or false}
+%==============================================================================
+Circle \textbf{T} if the statement is always true, and \textbf{F} otherwise.
+
+\begin{tfitems}
+  \item \tf{For every scalar $\alpha$ and every vector $\vc{v}\in\R^{2}$,
+        $\norm{\alpha\vc{v}}=\alpha\,\norm{\vc{v}}$.}
+        \vfill
+  \item \tf{For all complex numbers $z$ and $w$,
+        $\conj{zw}=\conj{z}\;\conj{w}$.}
+        \vfill
+  \item \tf{$i^{2026}=-1$.}
+        \vfill
+  \item \tf{If $\vc{u},\vc{v},\vc{w}\in\R^{2}$ with $\vc{u}\neq\vc{0}$ and
+        $\ip{\vc{u}}{\vc{v}}=\ip{\vc{u}}{\vc{w}}$, then $\vc{v}=\vc{w}$.}
+        \vfill
+  \item \tf{For all nonzero $\vc{u},\vc{v}\in\R^{2}$,
+        $\proj{\vc{v}}{\vc{u}}=\proj{\vc{u}}{\vc{v}}$.}
+        \vfill
+\end{tfitems}
+
+\newpage
+\begin{tfitems}[start=6]
+  \item \tf{For every $\vc{v}\in\R^{2}$,
+        $\norm{\vc{v}}_\infty\le\norm{\vc{v}}_2\le\norm{\vc{v}}_1$.}
+        \vfill
+  \item \tf{The set $\{(x,y) : x+y=1\}$ is a subspace of $\R^{2}$.}
+        \vfill
+  \item \tf{If $\vc{u},\vc{v}\in\R^{2}$ are nonzero and orthogonal, then they
+        are linearly independent.}
+        \vfill
+  \item \tf{If $S$ and $T$ are subspaces of $\R^{2}$, then their union
+        $S\cup T$ is a subspace of $\R^{2}$.}
+        \vfill
+  \item \tf{If $f(x,y)=x^{2}y$, then $\grad f(1,2)=[\,4,\,1\,]$.}
+        \vfill
+\end{tfitems}
+
+\newpage
+%==============================================================================
+\section{Multiple choice}
+%==============================================================================
+Circle the one correct answer.
+
+\begin{tfitems}
+  \item Which vector is the unit vector in the direction of
+        $[\,-5,\,12\,]$?
+        \twoch{$\tfrac{1}{17}[\,-5,\,12\,]$}
+              {$\tfrac{1}{13}[\,-5,\,12\,]$}
+              {$\tfrac{1}{13}[\,5,\,-12\,]$}
+              {$\tfrac{1}{7}[\,-5,\,12\,]$}
+        \vfill
+  \item The quotient $\dfrac{3-2i}{1+i}$ equals
+        \fourch{$\tfrac12-\tfrac52 i$}
+               {$\tfrac52-\tfrac12 i$}
+               {$3-2i$}
+               {$\tfrac12+\tfrac52 i$}
+        \vfill
+  \item The set of complex numbers $z$ with $\lvert z-(1-2i)\rvert=3$ is
+        \stackch{the circle of radius $3$ centred at $1-2i$}
+              {the circle of radius $3$ centred at $-1+2i$}
+              {the closed disc of radius $3$ centred at $1-2i$}
+              {the circle of radius $9$ centred at $1-2i$}
+        \vfill
+\end{tfitems}
+
+\newpage
+\begin{tfitems}[start=4]
+  \item The angle between $[\,1,\,1\,]$ and $[\,-1,\,0\,]$ is
+        \fourch{$\pi/4$}{$\pi/2$}{$3\pi/4$}{$\pi$}
+        \vfill
+  \item For $\vc{u}=[\,3,\,4\,]$ and $\vc{v}=[\,1,\,0\,]$, the projection
+        $\proj{\vc{v}}{\vc{u}}$ is
+        \fourch{$3$}{$[\,3,\,0\,]$}{$[\,0,\,4\,]$}
+               {$[\,\tfrac{9}{25},\,\tfrac{12}{25}\,]$}
+        \vfill
+  \item For which value of $k$ are $[\,k,\,4\,]$ and $[\,1,\,2\,]$ linearly
+        dependent?
+        \fourch{$k=-8$}{$k=-2$}{$k=2$}{$k=8$}
+        \vfill
+\end{tfitems}
+
+\newpage
+\begin{tfitems}[start=7]
+  \item In $\R^{4}$, the cosine similarity $\cos(\one,\vc{e}_3)$ is
+        \fourch{$\tfrac14$}{$\tfrac12$}{$2$}{$4$}
+        \vfill
+  \item For $f(x,y)=y\,e^{xy}$, the partial derivative
+        $\partial f/\partial y$ is
+        \fourch{$e^{xy}$}{$x\,e^{xy}$}{$(1+xy)\,e^{xy}$}{$y^{2}e^{xy}$}
+        \vfill
+\end{tfitems}
+
+\newpage
+%==============================================================================
+\section{Computation}
+%==============================================================================
+Show your work. Leave every answer in exact form.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Vectors in the plane]
+Let $\vc{u}=[\,2,\,-1\,]$ and $\vc{v}=[\,-3,\,4\,]$ be vectors in $\R^{2}$, and
+let $\alpha=-2$ be a scalar.
+\begin{parts}
+  \item Compute $\vc{u}+\vc{v}$, \ $2\vc{u}-3\vc{v}$, \ and $\alpha\vc{u}$,
+        showing the componentwise step.
+        \vfill
+  \item Compute $\norm{\vc{u}}$, $\norm{\vc{v}}$, $\norm{\vc{u}+\vc{v}}$ and
+        $\norm{\alpha\vc{u}}$.
+        \vfill
+  \item For this pair, does the triangle inequality
+        $\norm{\vc{u}+\vc{v}}\le\norm{\vc{u}}+\norm{\vc{v}}$ hold strictly
+        ($<$) or with equality ($=$)?
+        \vfill
+\end{parts}
+\contd{C.1}
+\begin{parts}[resume]
+  \item Find a nonzero vector $\vc{x}\in\R^{2}$ for which
+        $\norm{\vc{u}+\vc{x}}=\norm{\vc{u}}+\norm{\vc{x}}$, and verify that it
+        works.
+        \vfill
+  \item The arrow from $(1,4)$ to $(3,3)$ and the arrow from $(5,0)$ to $(6,2)$
+        both have length $\sqrt5$. Write each arrow as a vector, using
+        \emph{head minus tail}, and decide which of them, if either, is the
+        vector $\vc{u}$. Justify your answer with the definition of equality of
+        vectors.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Complex arithmetic]
+Let $z=2+3i$ and $w=1-2i$. Give every answer that is not a modulus in the form
+$a+bi$ with $a$ and $b$ real.
+\begin{parts}
+  \item Compute $z+w$, \ $z-w$, \ and $zw$.
+        \vfill
+  \item Compute $\conj{z}$, \ $z\conj{z}$, \ and $\dfrac{1}{w}$.
+        \vfill
+  \item Compute $\lvert z\rvert$, $\lvert w\rvert$ and $\lvert zw\rvert$, and
+        compare $\lvert zw\rvert$ with $\lvert z\rvert\,\lvert w\rvert$.
+        \vfill
+\end{parts}
+\contd{C.2}
+\begin{parts}[resume]
+  \item Compute $(1+i)^{2}$ and $(1+i)^{4}$.
+        \vfill
+  \item Use Euler's formula to write $e^{i\pi/3}$ and $e^{3\pi i/2}$ in the
+        form $a+bi$.
+        \vfill
+  \item The point $(2,5)$ is rotated $90^{\circ}$ counter-clockwise about the
+        origin. Find the coordinates of the rotated point by a single
+        multiplication of complex numbers.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Dot products, angles, and orthogonality]
+For each pair below, compute $\ip{\vc{u}}{\vc{v}}$, $\norm{\vc{u}}$,
+$\norm{\vc{v}}$ and $\cos(\vc{u},\vc{v})$. Then give the angle $\theta$ between
+the two vectors, and state which of \emph{parallel}, \emph{antiparallel},
+\emph{orthogonal} or \emph{none of the three} describes the pair.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}c c c @{\qquad\qquad} c c c@{}}
+\toprule
+ & $\vc{u}$ & $\vc{v}$ & & $\vc{u}$ & $\vc{v}$ \\
+\midrule
+(a) & $[\,1,\,2\,]$  & $[\,-4,\,2\,]$ & (c) & $[\,3,\,1\,]$  & $[\,1,\,2\,]$  \\
+(b) & $[\,3,\,-1\,]$ & $[\,-6,\,2\,]$ & (d) & $[\,-2,\,5\,]$ & $[\,-4,\,10\,]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vfill
+\contd{C.3}
+\begin{parts}[start=5]
+  \item Find every real number $k$ for which $[\,k,\,3\,]$ is orthogonal to
+        $[\,k-2,\,-1\,]$.
+        \vfill
+  \item Find every real number $k$ for which
+        $\cos\bigl([\,k,\,1\,],[\,1,\,-1\,]\bigr)=\tfrac12$. You will want to
+        square both sides; check every candidate in the original equation, and
+        discard any that fail it.
+        \vfill
+  \item In $\R^{4}$, let $\vc{u}=[\,2,\,0,\,-1,\,2\,]$ and
+        $\vc{w}=[\,1,\,-1,\,1,\,1\,]$. Compute $\ip{\vc{u}}{\vc{w}}$,
+        $\norm{\vc{u}}$, $\norm{\vc{w}}$, and the angle between $\vc{u}$ and
+        $\vc{w}$.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Bases, independence, and coordinates]
+Two vectors $\vc{u},\vc{v}\in\R^{2}$ are \textbf{linearly independent} when
+$\alpha\vc{u}+\beta\vc{v}=\vc{0}$ forces $\alpha=\beta=0$, and
+\textbf{linearly dependent} otherwise. For $\vc{u}=[\,u_1,\,u_2\,]$ and
+$\vc{v}=[\,v_1,\,v_2\,]$, put $D=u_1v_2-u_2v_1$. The pair is linearly
+independent, and so a basis of $\R^{2}$, exactly when $D\neq0$ (Vector Unit,
+Part~4, \S18.5).
+\begin{parts}
+  \item Let $\vc{u}=[\,3,\,1\,]$ and $\vc{v}=[\,1,\,2\,]$. Compute $D$. Then
+        find the coordinates $\alpha,\beta$ of $\vc{w}=[\,7,\,4\,]$ and of
+        $\vc{w}=[\,-1,\,3\,]$ against the basis $\{\vc{u},\vc{v}\}$ of
+        $\R^{2}$, by setting up the linear system
+        $\alpha\vc{u}+\beta\vc{v}=\vc{w}$ and eliminating by hand. Check each
+        answer by substituting back.
+        \vfill
+  \item Show that $[\,4,\,-6\,]$ and $[\,-2,\,3\,]$ are linearly dependent by
+        giving scalars $\alpha,\beta$, not both zero, with
+        $\alpha[\,4,\,-6\,]+\beta[\,-2,\,3\,]=\vc{0}$. Describe their span as a
+        set $\{(x,y) : \dots\}$, give a basis of it, and state its dimension.
+        \vfill
+\end{parts}
+\contd{C.4}
+\begin{parts}[resume]
+  \item Find every real number $k$ for which $[\,k,\,3\,]$ and $[\,12,\,k\,]$
+        are linearly dependent. For each such $k$, give the equation of the line
+        through the origin that the two vectors span.
+        \vfill
+  \item Let $S=\bigl\{[\,1,\,1\,],\ [\,2,\,-1\,],\ [\,3,\,0\,]\bigr\}$. Write
+        $[\,5,\,2\,]$ as a linear combination of the three vectors of $S$ in two
+        different ways. A basis of $\R^{2}$ must span $\R^{2}$ and be linearly
+        independent; $S$ spans $\R^{2}$. Use your two combinations to show which
+        of the two conditions $S$ fails.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Orthogonal bases]
+If $\vc{b}_1,\dots,\vc{b}_k$ are nonzero, mutually orthogonal, and form a basis,
+then the coefficient of $\vc{b}_j$ in a vector $\vc{w}$ is
+$\ip{\vc{b}_j}{\vc{w}}/\norm{\vc{b}_j}^{2}$ (Vector Unit, Part~5, \S21.6).
+\begin{parts}
+  \item Let $\vc{u}=[\,2,\,1\,]$ and $\vc{v}=[\,-1,\,2\,]$. Check that they
+        are nonzero and orthogonal. Find the coordinates of $[\,4,\,7\,]$
+        against the basis $\{\vc{u},\vc{v}\}$ of $\R^{2}$ by projection, and
+        check them by substituting back.
+        \vfill
+  \item In $\R^{3}$, let $\vc{u}=[\,1,\,2,\,2\,]$, $\vc{v}=[\,2,\,1,\,-2\,]$ and
+        $\vc{w}=[\,2,\,-2,\,1\,]$. Check that they are mutually orthogonal.
+        Find, by projection, the coefficients $\alpha,\beta,\gamma$ with
+        $\vc{x}=\alpha\vc{u}+\beta\vc{v}+\gamma\vc{w}$ for
+        $\vc{x}=[\,3,\,6,\,-3\,]$, and substitute back to confirm. Then verify
+        that
+        $\norm{\vc{x}}^{2}
+         =\alpha^{2}\norm{\vc{u}}^{2}+\beta^{2}\norm{\vc{v}}^{2}
+          +\gamma^{2}\norm{\vc{w}}^{2}$.
+        \vfill
+\end{parts}
+\contd{C.5}
+\begin{parts}[resume]
+  \item Let $\vc{u}=[\,1,\,2\,]$ and $\vc{v}=[\,4,\,3\,]$. Show that they are
+        not orthogonal. Compute $\vc{v}'=\vc{v}-\proj{\vc{u}}{\vc{v}}$ and
+        check that $\vc{v}'$ is orthogonal to $\vc{u}$. Find the coordinates of
+        $[\,5,\,5\,]$ against the orthogonal basis $\{\vc{u},\vc{v}'\}$ by
+        projection. Then rewrite the result as a combination of the original
+        $\vc{u}$ and $\vc{v}$, and check it.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Derivatives, partial derivatives, and the gradient]
+\begin{parts}
+  \item Differentiate each function, and name the rule or rules you use.
+        \[
+          \text{(i) } x^{2}e^{-3x}
+          \qquad
+          \text{(ii) } \ln(x^{4}+2)
+          \qquad
+          \text{(iii) } e^{\sin x}
+          \qquad
+          \text{(iv) } \frac{\ln x}{x}
+        \]
+        \vfill
+  \item Solve $e^{2x}-5e^{x}+6=0$.
+        \vfill
+\end{parts}
+\contd{C.6}
+\begin{parts}[resume]
+  \item Solve $\ln x+\ln(x+2)=\ln 8$. Reject any candidate that does not solve
+        the original equation, and say why it fails.
+        \vfill
+  \item Compute $\partial f/\partial x$ and $\partial f/\partial y$ for
+        \[
+          f(x,y)=x^{3}y^{2}-4xy+1
+          \qquad\text{and}\qquad
+          f(x,y)=\ln(x^{2}+3y).
+        \]
+        \vfill
+  \item Let $h(x,y)=x^{3}-6xy+3y^{2}$. Compute $\grad h$, the vector
+        $\grad h(1,-1)$ and its norm, and find every point $(x,y)$ at which
+        $\grad h=\vc{0}$.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%==============================================================================
+\section{Applications}
+%==============================================================================
+Show your work, and give units wherever the problem has them.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Work, and a box on a ramp]
+A force is a vector $\vc{F}\in\R^{2}$: its direction is the way it pushes, and
+its norm $\norm{\vc{F}}$ is how hard. When a constant force $\vc{F}$ acts on an
+object that moves in a straight line with displacement $\vc{s}\in\R^{2}$, the
+\textbf{work} done by the force is the scalar $W=\ip{\vc{F}}{\vc{s}}$, in joules
+when $\vc{F}$ is in newtons and $\vc{s}$ in metres. So $\vc{F}$, $\vc{s}$,
+$\vc{d}$ and $\vc{G}$ below are vectors, while $W$, every norm, and every
+component are scalars.
+
+A box sits on a ramp that rises in the direction $\vc{d}=[\,12,\,5\,]$, and
+gravity pulls on it with the constant force $\vc{G}=[\,0,\,-26\,]$.
+\begin{parts}
+  \item Compute $\comp{\vc{d}}{\vc{G}}$, $\proj{\vc{d}}{\vc{G}}$, and the
+        orthogonal piece $\vc{G}-\proj{\vc{d}}{\vc{G}}$. Check that the
+        orthogonal piece is orthogonal to $\vc{d}$.
+        \vfill
+  \item Compute the norms of the two pieces. One pulls the box down the ramp
+        and the other presses it into the ramp's surface: which is which? Check
+        that $\norm{\vc{G}}^{2}$ is the sum of the squares of the two norms.
+        \vfill
+\end{parts}
+\contd{D.1}
+\begin{parts}[resume]
+  \item The box is pushed up the ramp from $(0,0)$ to $(24,10)$. Compute the
+        work done by gravity, and say what its sign means.
+        \vfill
+  \item Of all forces of magnitude $13$ newtons, which one does the most work
+        over this displacement, and how much? Give a nonzero force that does no
+        work at all. Justify both answers with
+        $\ip{\vc{F}}{\vc{s}}=\norm{\vc{F}}\,\norm{\vc{s}}\cos\theta$.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Which customer is nearest? It depends on the metric]
+A depot sits at $P=(-2,3)$, and three customers at $A=(5,3)$, $B=(4,5)$ and
+$C=(3,-1)$.
+\begin{parts}
+  \item Make a table of the distances $d_1$, $d_2$ and $d_\infty$ from $P$ to
+        each customer.
+        \vfill
+  \item Three vehicles leave the depot: a \emph{taxi} that must follow a
+        rectangular street grid, a \emph{drone} that flies in a straight line,
+        and an \emph{overhead crane} whose east--west and north--south motors run
+        at the same time and at the same speed. Which of $d_1$, $d_2$, $d_\infty$
+        measures the trip for each vehicle, and which customer is nearest for
+        each?
+        \vfill
+  \item On one set of axes, sketch and label the three unit circles
+        $\{\vc{v}\in\R^{2} : \norm{\vc{v}}_1=1\}$,
+        $\{\vc{v}\in\R^{2} : \norm{\vc{v}}_2=1\}$ and
+        $\{\vc{v}\in\R^{2} : \norm{\vc{v}}_\infty=1\}$.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Comparing documents]
+One way to compare documents is to count words. Fix the vocabulary
+\emph{vector}, \emph{matrix}, \emph{norm}, \emph{pizza}, \emph{soccer}, and
+record each document as the vector in $\R^{5}$ of its word counts, in that
+order:
+\[
+  \vc{a}=[\,2,\,1,\,2,\,0,\,0\,],\qquad
+  \vc{b}=[\,4,\,2,\,4,\,0,\,0\,],\qquad
+  \vc{c}=[\,0,\,0,\,0,\,3,\,4\,],\qquad
+  \vc{d}=[\,1,\,0,\,2,\,2,\,0\,].
+\]
+\begin{parts}
+  \item Compute $\cos(\vc{a},\vc{b})$, $\cos(\vc{a},\vc{c})$ and
+        $\cos(\vc{a},\vc{d})$.
+        \vfill
+  \item Compute the Euclidean distances $d_2(\vc{a},\vc{b})$,
+        $d_2(\vc{a},\vc{c})$ and $d_2(\vc{a},\vc{d})$.
+        \vfill
+  \item Which document is most similar to $\vc{a}$ by cosine similarity, and
+        which is nearest to $\vc{a}$ by Euclidean distance? Document $\vc{b}$ is
+        document $\vc{a}$ pasted in twice. Which of the two measures gives the
+        sensible answer for comparing what documents are about, and why?
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[How fast a cone's volume changes]
+A cone of radius $r$ and height $h$, both in centimetres, has volume
+$V(r,h)=\tfrac13\pi r^{2}h$ cubic centimetres.
+\begin{parts}
+  \item Compute $\partial V/\partial r$ and $\partial V/\partial h$.
+        \vfill
+  \item Evaluate both partial derivatives at $r=3$, $h=6$, and give their
+        units.
+        \vfill
+  \item Use (b) to estimate the change in volume when the radius grows by
+        $0.1$~cm with the height held fixed, and when the height grows by
+        $0.1$~cm with the radius held fixed. Which change adds more volume?
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%==============================================================================
+\section{Short proofs}
+%==============================================================================
+None of these needs a clever idea. Write down what you are assuming, justify
+each step by naming the law or fact that licenses it, and end with a sentence
+saying what you have shown.
+
+\medskip
+\noindent The laws of the dot product, from \S11.8 of Vector Unit, Part~2
+(\emph{Orientation, the Dot Product, and Projection}), hold for all
+$\vc{u},\vc{v},\vc{w}\in\R^{2}$ and all scalars $\alpha$:
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\textbf{D1} & $\ip{\vc{u}}{\vc{v}}=\ip{\vc{v}}{\vc{u}}$ & symmetry \\
+\textbf{D2} & $\ip{\vc{u}}{\vc{v}+\vc{w}}=\ip{\vc{u}}{\vc{v}}+\ip{\vc{u}}{\vc{w}}$
+            & additivity \\
+\textbf{D3} & $\ip{\vc{u}}{\alpha\vc{v}}=\alpha\,\ip{\vc{u}}{\vc{v}}$
+            & homogeneity \\
+\textbf{D4} & $\ip{\vc{u}}{\vc{u}}=\norm{\vc{u}}^{2}\ge0$, with equality only
+              for $\vc{u}=\vc{0}$ & positive definiteness \\
+\end{tabular}
+\end{center}
+
+%------------------------------------------------------------------------------
+\begin{prob}[A law of scalar multiplication, in components]
+Let $\vc{u}=[\,u_1,\,u_2\,]$ and $\vc{v}=[\,v_1,\,v_2\,]$ be vectors in
+$\R^{2}$ and let $\alpha$ be a scalar. Working in components, prove the law
+\textbf{S1} of \S8.4 of Vector Unit, Part~1:
+\[
+  \alpha(\vc{u}+\vc{v})=\alpha\vc{u}+\alpha\vc{v}.
+\]
+Name the property of the real numbers that the proof rests on.
+\end{prob}
+\vfill
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[The conjugate and the reciprocal]
+Let $z=a+bi$ with $a,b\in\R$.
+\begin{parts}
+  \item Prove that $z\conj{z}=\lvert z\rvert^{2}$.
+        \vfill
+  \item Deduce that if $z\neq0$, then
+        $\dfrac1z=\dfrac{\conj{z}}{\lvert z\rvert^{2}}$.
+        \vfill
+  \item Deduce that if $\lvert z\rvert=1$, then $\dfrac1z=\conj{z}$, and use it
+        to write $\dfrac{1}{\frac35+\frac45 i}$ in the form $a+bi$.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[Equal diagonals]
+Using only \textbf{D1}--\textbf{D4} --- no components --- prove that for all
+$\vc{u},\vc{v}\in\R^{2}$,
+\[
+  \norm{\vc{u}+\vc{v}}=\norm{\vc{u}-\vc{v}}
+  \quad\text{if and only if}\quad
+  \ip{\vc{u}}{\vc{v}}=0 .
+\]
+An ``if and only if'' needs both directions: say which one you are proving as
+you prove it.
+
+\hint{Expand $\norm{\vc{u}+\vc{v}}^{2}$ and $\norm{\vc{u}-\vc{v}}^{2}$ and
+subtract. You may use $\vc{u}-\vc{v}=\vc{u}+(-1)\vc{v}$. Norms are never
+negative, so two norms are equal exactly when their squares are.}
+\end{prob}
+\vfill
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[A shadow is never longer than the vector]
+Let $\vc{u},\vc{v}\in\R^{2}$ with $\vc{v}\neq\vc{0}$. You may use the
+Cauchy--Schwarz inequality
+$\lvert\ip{\vc{u}}{\vc{v}}\rvert\le\norm{\vc{u}}\,\norm{\vc{v}}$ and the scaling
+rule $\norm{\alpha\vc{w}}=\lvert\alpha\rvert\,\norm{\vc{w}}$, both for all
+vectors and scalars. Prove that
+\[
+  \norm{\proj{\vc{v}}{\vc{u}}}\le\norm{\vc{u}} .
+\]
+\end{prob}
+\vfill
+
+\newpage
+%------------------------------------------------------------------------------
+\begin{prob}[A subspace defined by dot products]
+Fix two vectors $\vc{u},\vc{v}\in\R^{2}$, and let
+\[
+  T=\bigl\{\,\vc{x}\in\R^{2} : \ip{\vc{u}}{\vc{x}}=\ip{\vc{v}}{\vc{x}}\,\bigr\}.
+\]
+\begin{parts}
+  \item Prove that $T$ is a subspace of $\R^{2}$: show that it is non-empty,
+        closed under addition, and closed under scalar multiplication. Use the
+        laws \textbf{D2} and \textbf{D3}.
+        \vfill
+  \item For $\vc{u}=[\,3,\,1\,]$ and $\vc{v}=[\,1,\,2\,]$, describe $T$ as a
+        set $\{(x,y) : \dots\}$ and give a basis of it.
+        \vfill
+\end{parts}
+\end{prob}
+
+\newpage
+%==============================================================================
+\section*{Where each question comes from}
+%==============================================================================
+Each question is modeled on the homework problems listed beside it. If one gives
+you trouble, rework those problems first. HW1 is Homework~1 and HW2 is
+Homework~2.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}l l @{\qquad\qquad} l l@{}}
+\toprule
+\textbf{Question} & \textbf{Homework problems} &
+\textbf{Question} & \textbf{Homework problems} \\
+\midrule
+A.1  & HW1 B.3            & C.1 & HW1 A.1--A.4, B.5 \\
+A.2  & HW1 D.2            & C.2 & HW1 C.2--C.7 \\
+A.3  & HW1 C.3            & C.3 & HW1 E.1, E.3; HW2 A.2, E.1 \\
+A.4  & HW2 A.4            & C.4 & HW2 C.1--C.3 \\
+A.5  & HW1 E.4; HW2 A.6   & C.5 & HW2 D.1, D.2, D.4 \\
+A.6  & HW2 B.1, E.7       & C.6 & HW2 F.1, F.2, F.4, F.6 \\
+A.7  & HW2 C.4            & D.1 & HW1 E.4; HW2 A.3 \\
+A.8  & HW2 D.1            & D.2 & HW2 B.1, B.2 \\
+A.9  & HW2 C.6            & D.3 & HW2 E.4 \\
+A.10 & HW2 F.6            & D.4 & HW2 F.5 \\
+\addlinespace
+B.1  & HW2 A.1            & E.1 & HW1 B.2 \\
+B.2  & HW1 C.2            & E.2 & HW1 C.4, D.1, D.4 \\
+B.3  & HW1 C.5            & E.3 & HW1 E.6; HW2 A.5 \\
+B.4  & HW1 E.3            & E.4 & HW1 E.2; HW2 B.4 \\
+B.5  & HW1 E.4            & E.5 & HW2 C.4, D.5 \\
+B.6  & HW2 C.2            &     & \\
+B.7  & HW2 E.6            &     & \\
+B.8  & HW2 F.4            &     & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}
+
+\smallskip
+\noindent{\small Questions about any problem here belong in the class Discord,
+where everyone can see the answer. Questions that are specific to your own work
+are better brought to office hours, Thursdays 3:00--4:00 PM in Kiely Hall 508.
+Please email ahead.}
+
+\end{document}
