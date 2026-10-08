@@ -12,7 +12,7 @@ import numpy as np
 
 
 # --------------------------------------------------------------------------
-# Part 1 -- k-nearest neighbours
+# Choice 1 -- k-nearest neighbours
 # --------------------------------------------------------------------------
 
 def lecture_knn_example():
@@ -57,7 +57,7 @@ def songs():
 
 
 # --------------------------------------------------------------------------
-# Part 2 -- k-means
+# Choice 2 -- k-means
 # --------------------------------------------------------------------------
 
 def lecture_kmeans_example():
@@ -94,7 +94,7 @@ def city():
 
 def city_bad_start():
     """Four initial centres for the city data: three downtown, one at the
-    university.  Task 2.5 shows what Lloyd's algorithm makes of it."""
+    university.  Step 2.5 shows what Lloyd's algorithm makes of it."""
     return np.array([[2.0, 2.2], [2.0, 1.8], [2.9, 2.7], [6.0, 2.5]])
 
 
@@ -108,16 +108,10 @@ def random_start(X, k, rng):
 
 
 # --------------------------------------------------------------------------
-# Part 3 -- gradient descent
+# Choice 3 -- gradient descent
 # --------------------------------------------------------------------------
 
 def marble_starts():
-    """Five starting points for Task 3.3."""
+    """Five starting points for Step 3.3."""
     return [np.array(p) for p in
             [(0.5, 0.5), (2.5, -4.0), (5.0, 1.0), (-3.0, 3.0), (-2.0, -4.0)]]
-
-
-def census_starts():
-    """500 random starting points in the square [-6, 6] x [-6, 6], Task 3.5."""
-    rng = np.random.default_rng(231)
-    return rng.uniform(-6.0, 6.0, size=(500, 2))

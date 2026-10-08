@@ -54,11 +54,11 @@
 %  FILES.  starter/ is what students receive: project1.py (TRACK and the stubs
 %  for all three choices; the only file they edit), data.py (seeded data), viz.py
 %  (plots and animations), runproject1.py (the grading script: prints labelled
-%  output per task, saves figures, never opens a window, and survives
-%  unfinished or crashing tasks), play.py (the live animations).  NumPy +
+%  output per step, saves figures, never opens a window, and survives
+%  unfinished or crashing steps), play.py (the live animations).  NumPy +
 %  matplotlib only.  A complete reference solution lives OUTSIDE the
 %  repository; every number quoted below was produced by it, and re-checked
-%  against the one-choice runproject1.py on 2026-10-01.  The numbers do not depend on
+%  against the one-choice runproject1.py on 2026-10-08.  The numbers do not depend on
 %  sort stability or on how the distance is vectorized -- checked.
 %
 %  THINGS TO SET BEFORE HANDING THIS OUT:
@@ -95,7 +95,7 @@
   \thm@preskip=14pt plus 4pt minus 3pt
   \thm@postskip=\thm@preskip}
 \makeatother
-\newtheorem{task}{Task}[section]
+\newtheorem{step}{Step}[section]
 
 \lstdefinestyle{term}{
   basicstyle=\ttfamily\small,
@@ -203,7 +203,7 @@ lecture notes cited beside each box say more about \emph{why} each one works.
   \item Pick whichever choice interests you. The three are graded the same way
         and are worth the same.
   \item Read these opening pages, then go straight to your choice. Each choice
-        is self-contained: its story, its algorithm, its tasks, and, at its
+        is self-contained: its story, its algorithm, its steps, and, at its
         end, the questions for its report.
   \item Name your choice in \file{project1.py} by setting \texttt{TRACK} to
         \texttt{"knn"}, \texttt{"kmeans"} or \texttt{"descent"}. \file{runproject1.py}
@@ -225,7 +225,7 @@ whole folder into your own repository. It holds five files:
   all three choices, each with a docstring saying exactly what it takes and
   returns. You set \texttt{TRACK} and write your choice's functions. The only
   file you change. \\
-\file{runproject1.py} & run     & Runs your choice's tasks in order, prints
+\file{runproject1.py} & run     & Runs your choice's steps in order, prints
   labelled results, saves figures in \file{figures/}. This is what the grader
   runs. \\
 \file{play.py}        & run     & The live animations for Choices 2 and 3. For
@@ -259,8 +259,8 @@ write the algorithm, not to call it.
 Your choice is graded out of $100$.
 
 \textbf{Code, 55 points.} The grader runs \file{runproject1.py} exactly as you
-submitted it and reads its output, task by task. \file{runproject1.py} labels every result
-for you (\texttt{Output of task 2.4 :}), so there is nothing to label in the
+submitted it and reads its output, step by step. \file{runproject1.py} labels every result
+for you (\texttt{Output of step 2.4 :}), so there is nothing to label in the
 code. The points per function are:
 
 \begin{center}
@@ -311,10 +311,10 @@ before writing anything:
 python runproject1.py
 \end{lstlisting}
 
-\noindent It names your choice, and every task in it prints \texttt{not
+\noindent It names your choice, and every step in it prints \texttt{not
 implemented yet}. That is the starting line. (If \texttt{TRACK} is not set,
-\file{runproject1.py} runs all three choices and reminds you to set it.) Work through your tasks
-in order, and run \file{runproject1.py} after each function you write: the task you just
+\file{runproject1.py} runs all three choices and reminds you to set it.) Work through your steps
+in order, and run \file{runproject1.py} after each function you write: the step you just
 finished will start printing results, and each \textbf{Checkpoint} below tells
 you what the correct result is. A function that crashes is reported as
 \texttt{ERROR} with the message, and the rest still runs.
@@ -357,15 +357,15 @@ $d_2(\vc{x},\vc{y})=\sqrt{\sum_i(x_i-y_i)^{2}}$,
 $d_\infty(\vc{x},\vc{y})=\max_i\lvert x_i-y_i\rvert$.
 \end{callout}
 
-\begin{task}[\texttt{distance}]
+\begin{step}[\texttt{distance}]
 Write \texttt{distance(x, y, p=2)} for $p=1$, $2$ and \texttt{np.inf}, using
 \texttt{np.abs}, \texttt{np.sum}, \texttt{np.max} and \texttt{np.sqrt} ---
 not \texttt{np.linalg.norm}.
 \checkpoint{\file{runproject1.py} prints the three distances from $[1,1]$ to $[4,5]$: $7$,
 $5$ and $4$.}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{knn\_predict}]
+\begin{step}[\texttt{knn\_predict}]
 Write \texttt{knn\_predict(X\_train, y\_train, q, k, p=2)}, following the box.
 \texttt{X\_train} holds one training point per row, so \texttt{X\_train[i]} is
 the $i$-th point and \texttt{y\_train[i]} its label.
@@ -376,18 +376,18 @@ convenient way to count votes.}
 \checkpoint{\file{runproject1.py} runs the worked example of computational unit \S6.5,
 eight points and the query $[5,5]$. It should print \texttt{A} for $k=1$ and
 \texttt{B} for $k=3$ and $k=5$. Your report explains why they disagree (R1).}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{accuracy}]
+\begin{step}[\texttt{accuracy}]
 Write \texttt{accuracy(X\_train, y\_train, X\_test, y\_test, k, p=2)}: predict
 every test song with \texttt{knn\_predict} and return the fraction predicted
 correctly. \file{runproject1.py} reports it for $k=1,3,5,9,15$ on the raw song data.
 \checkpoint{Every accuracy lands between $0.41$ and $0.49$. Guessing at random
 would score $0.33$. Something is badly wrong, and it is not your code: see
-Task 1.4.}
-\end{task}
+Step 1.4.}
+\end{step}
 
-\begin{task}[\texttt{standardize}]
+\begin{step}[\texttt{standardize}]
 Look at the numbers. A duration is a few hundred seconds, and two songs'
 durations routinely differ by $50$. An energy is between $0$ and $1$, so two
 songs' energies differ by at most $1$. In $d_2$ the duration gap is squared
@@ -406,28 +406,28 @@ arrays, rescales every row at once.}
 \checkpoint{\file{runproject1.py} prints the scaled training means ($0$) and standard
 deviations ($1$), then the accuracies again. They should all be close to
 $0.9$.}
-\end{task}
+\end{step}
 
-\begin{task}[Look at the pictures --- nothing to write]
+\begin{step}[Look at the pictures --- nothing to write]
 \file{runproject1.py} now compares the three metrics at $k=9$ and saves three
 \emph{decision-region} pictures: every point of the plane coloured by the genre
 your classifier would give a song there. Open them in \file{figures/}:
 \file{knn\_raw\_k15.png}, \file{knn\_scaled\_k1.png} and
 \file{knn\_scaled\_k15.png}. You will use \file{knn\_raw\_k15.png} in R2.
-\end{task}
+\end{step}
 
 \subsection*{The report for Choice 1}
 
 \begin{enumerate}[label=\textbf{R\arabic*.},leftmargin=2.6em,itemsep=6pt,topsep=4pt]
-  \item \textbf{The worked example (Task 1.2).} For the query $[5,5]$, give the
+  \item \textbf{The worked example (Step 1.2).} For the query $[5,5]$, give the
         Euclidean distance to each of the eight training points, and list the
         $1$, $3$ and $5$ nearest neighbours with their labels. Use them to
         explain why $k=1$ predicts \texttt{A} while $k=3$ and $k=5$ predict
         \texttt{B}.
-  \item \textbf{Scaling (Tasks 1.3--1.4).} Give the raw and scaled accuracies
+  \item \textbf{Scaling (Steps 1.3--1.4).} Give the raw and scaled accuracies
         as a table. Explain why scaling helped so much, using the actual
         spreads of the two features (\file{runproject1.py} prints the raw training
-        standard deviations in Task 1.4). Then look at
+        standard deviations in Step 1.4). Then look at
         \file{knn\_raw\_k15.png}: why are its boundaries almost vertical
         lines?
 \end{enumerate}
@@ -435,7 +435,7 @@ your classifier would give a song there. Open them in \file{figures/}:
 \noindent\textbf{Limits.} Write a short paragraph on the limits of $k$-NN: one
 thing it cannot do, or does badly, that you saw in this project, and one more
 that you did not see here but would expect on real data. Computational unit
-\S8, ``What goes wrong'', is a good place to look.
+\S8, ``Choosing $k$, and what goes wrong'', is a good place to look.
 
 \clearpage
 %==============================================================================
@@ -473,30 +473,30 @@ Neither step can increase $J$, and that is why the algorithm stops
 be the best one (\S14.1).
 \end{callout}
 
-\begin{task}[\texttt{assign}]
+\begin{step}[\texttt{assign}]
 Write \texttt{assign(X, centres)}, returning an integer array of labels:
 \texttt{labels[i]} is the index of the centre nearest to \texttt{X[i]}.
 \checkpoint{\file{runproject1.py} runs the six-point example of computational unit
 \S12.5, with its deliberately bad start $\bmu_1=[1,1]$, $\bmu_2=[2,1]$. The
 first assignment is \texttt{[0 1 0 1 1 1]}.}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{update}]
+\begin{step}[\texttt{update}]
 Write \texttt{update(X, labels, centres)}, returning a \emph{new} array of
 centres, each the mean of its cluster.
 \hint{\texttt{X[labels == j]} picks out the rows of \texttt{X} labelled
 \texttt{j}.}
 \checkpoint{After the first update the centres are $[1,\ 1.5]$ and
 $[6.75,\ 6.5]$.}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{wcss}]
+\begin{step}[\texttt{wcss}]
 Write \texttt{wcss(X, labels, centres)}, returning $J$.
 \checkpoint{$J=284$ at the start of the example, and $J=72.25$ after the first
 update.}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{kmeans}]
+\begin{step}[\texttt{kmeans}]
 Write \texttt{kmeans(X, init\_centres, max\_iter=100)}: alternate
 \texttt{update} and \texttt{assign} until the labels stop changing. Return the
 centres, the labels, and \texttt{history}, the list of $J$ values recorded after
@@ -505,10 +505,10 @@ each update.
 centres $[\tfrac43,\tfrac43]$ and $[\tfrac{25}{3},\tfrac{25}{3}]$, and
 history $[72.25,\ 2.6667]$. On the city, \file{runproject1.py} checks that $J$ never
 increased and draws the four clusters; the final $J$ is about $442$.}
-\end{task}
+\end{step}
 
-\begin{task}[Executing $k$-means]
-With your four functions written, run \file{runproject1.py} again. Task 2.5
+\begin{step}[Executing $k$-means]
+With your four functions written, run \file{runproject1.py} again. Step 2.5
 runs your \texttt{kmeans} on the city three more ways:
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
   \item from a bad start, with three trucks downtown and one at the
@@ -530,16 +530,16 @@ of $k$ at which the elbow plot bends. Your report (R1 and R2) asks about all
 three.
 \watch{\texttt{python play.py} animates the bad start and then a random start,
 one assignment and one update at a time.}
-\end{task}
+\end{step}
 
 \subsection*{The report for Choice 2}
 
 \begin{enumerate}[label=\textbf{R\arabic*.},leftmargin=2.6em,itemsep=6pt,topsep=4pt]
-  \item \textbf{Bad starts and restarts (Task 2.5).} Include
+  \item \textbf{Bad starts and restarts (Step 2.5).} Include
         \file{kmeans\_city\_bad\_start.png} and describe what went wrong
         there. How many of the ten random starts ended the same way? What does
         keeping the best of ten starts buy you, and what does it cost?
-  \item \textbf{The elbow (Task 2.5).} Include \file{kmeans\_elbow.png}. How
+  \item \textbf{The elbow (Step 2.5).} Include \file{kmeans\_elbow.png}. How
         many trucks does the data suggest, and why not simply take the $k$
         with the smallest $J$?
 \end{enumerate}
@@ -587,7 +587,7 @@ decides how far to go: too small and the marble crawls, too large and it
 overshoots (computational unit \S25.4).
 \end{callout}
 
-\begin{task}[\texttt{grad\_f}]
+\begin{step}[\texttt{grad\_f}]
 Compute $\partial f/\partial x$ and $\partial f/\partial y$ by hand (vector
 calculus unit \S6.3: hold the other variable constant). Write your derivation
 in the report (R1), then code \texttt{grad\_f(p)} to return
@@ -596,16 +596,16 @@ $\grad f=[\,\partial f/\partial x,\ \partial f/\partial y\,]$ as a NumPy array.
 with a numerical one (built from the limit definition) at $50$ random points;
 the largest disagreement should be around $10^{-9}$. If it is anywhere near
 $1$, a partial derivative is wrong.}
-\end{task}
+\end{step}
 
-\begin{task}[\texttt{gradient\_descent}]
+\begin{step}[\texttt{gradient\_descent}]
 Write
 \begin{center}
 \texttt{gradient\_descent(grad, x0, lr, tol=1e-6, max\_iter=1000)}
 \end{center}
 following the box, taking at most \texttt{max\_iter} steps. Return
 \texttt{path}, the list of every point visited starting with \texttt{x0}, and
-\texttt{converged}, which is \texttt{True} if the test in step 2 passed.
+\texttt{converged}, which is \texttt{True} if the box's test $\norm{\vc{g}}<\tau$ passed.
 \heads{Build each new point as a new array, as \texttt{x = x - lr * g} does,
 or append a \emph{copy} of it to the path. Updating one array in place with
 \texttt{x -= lr * g} would leave every entry of your path pointing at the same,
@@ -616,33 +616,33 @@ $[0.8,1.6]$, $[0.64,1.28]$, $[0.512,1.024]$, and converges after $69$ steps.
 With $\eta=1$ it bounces between $[1,2]$ and $[-1,-2]$ forever, and after the
 cap of $20$ steps it is back at $[1,2]$ with \texttt{converged} \texttt{False}
 --- the row $\eta=1$ of the table in \S25.4.}
-\end{task}
+\end{step}
 
-\begin{task}[Five marbles --- nothing to write]
+\begin{step}[Five marbles --- nothing to write]
 \file{runproject1.py} drops five marbles with $\eta=0.3$ and reports where each one
 settled, how deep its valley is, and how many steps it took.
 \checkpoint{The first marble, dropped at $(0.5,0.5)$, settles at about
 $(-1.353,\ 0)$ with $f\approx-0.830$ after $39$ steps.}
 \watch{\texttt{python play.py marbles} shows all five rolling at once, on the
 3-D surface and on the contour map.}
-\end{task}
+\end{step}
 
-\begin{task}[Learning rates --- nothing to write]
+\begin{step}[Learning rates --- nothing to write]
 From the single start $(3,\ 1.5)$ \file{runproject1.py} tries $\eta=0.01$, $0.1$, $0.5$,
 $1$, $1.5$ and $2$, and reports which runs converged and how fast. Then it
 drops one marble at $(-4,\ 4.6)$ twice, with $\eta=0.1$ and with $\eta=1.5$.
 \watch{\texttt{python play.py rates} races those last two marbles.}
-\end{task}
+\end{step}
 
 \subsection*{The report for Choice 3}
 
 \begin{enumerate}[label=\textbf{R\arabic*.},leftmargin=2.6em,itemsep=6pt,topsep=4pt]
-  \item \textbf{The gradient (Task 3.1).} Show your derivation of
+  \item \textbf{The gradient (Step 3.1).} Show your derivation of
         $\partial f/\partial x$ and $\partial f/\partial y$, naming the rule
         you use at each step. Then evaluate your gradient at $(0,0)$ by hand,
         and quote the largest disagreement with the numerical gradient that
         \file{runproject1.py} found.
-  \item \textbf{Marbles and learning rates (Tasks 3.3--3.4).} Which marble
+  \item \textbf{Marbles and learning rates (Steps 3.3--3.4).} Which marble
         found the deepest valley? Two marbles took about ten times as many
         steps as the others: look at the contour map near where they stopped
         and explain what is different about those valleys. Make a table of the
@@ -654,7 +654,7 @@ drops one marble at $(-4,\ 4.6)$ twice, with $\eta=0.1$ and with $\eta=1.5$.
 \noindent\textbf{Limits.} Write a short paragraph on the limits of gradient
 descent: one thing it cannot do, or does badly, that you saw in this project,
 and one more that you did not see here but would expect on real problems.
-Computational unit \S26.2, ``What goes wrong'', is a good place to look.
+Computational unit \S26.2, ``What it does not promise'', is a good place to look.
 
 %==============================================================================
 \section*{Optional and ungraded}

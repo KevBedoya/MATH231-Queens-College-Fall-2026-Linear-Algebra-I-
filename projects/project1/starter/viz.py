@@ -35,7 +35,7 @@ def _finish(fig, filename):
 
 
 # --------------------------------------------------------------------------
-# Part 1 -- k-nearest neighbours
+# Choice 1 -- k-nearest neighbours
 # --------------------------------------------------------------------------
 
 def plot_decision_regions(predict, X_train, y_train, title="", filename=None,
@@ -74,7 +74,7 @@ def plot_decision_regions(predict, X_train, y_train, title="", filename=None,
 
 
 # --------------------------------------------------------------------------
-# Part 2 -- k-means
+# Choice 2 -- k-means
 # --------------------------------------------------------------------------
 
 def _draw_clusters(ax, X, labels, centres, title):
@@ -138,7 +138,7 @@ def plot_elbow(ks, Js, filename=None):
 
 
 # --------------------------------------------------------------------------
-# Part 3 -- gradient descent
+# Choice 3 -- gradient descent
 # --------------------------------------------------------------------------
 
 def _grid(f, window, n):
@@ -230,25 +230,4 @@ def watch_descent(f, paths, window=6.0, pause=0.03, max_frames=160,
         _pause(fig, pause)
         if save_frames is not None:
             fig.savefig(save_frames.format(n), dpi=80)
-    _finish(fig, filename)
-
-
-def plot_basins(f, starts, valley_of_start, valleys, window=6.0,
-                filename=None):
-    """Colour each starting point by the valley its marble ended in."""
-    fig, ax = plt.subplots(figsize=(6.4, 6.0))
-    X2, Y2, Z2 = _grid(f, window, 160)
-    ax.contour(X2, Y2, Z2, levels=30, colors="k", linewidths=0.25)
-    for v, floor in enumerate(valleys):
-        pts = starts[np.array(valley_of_start) == v]
-        ax.scatter(pts[:, 0], pts[:, 1], s=10, color=COLOURS[v % 10],
-                   alpha=0.8)
-        ax.scatter([floor[0]], [floor[1]], s=220, marker="*",
-                   color=COLOURS[v % 10], edgecolor="k", zorder=3)
-        ax.annotate(f"{f(floor):.2f}", (floor[0], floor[1]),
-                    textcoords="offset points", xytext=(6, 6), fontsize=8)
-    ax.set_aspect("equal")
-    ax.set_xlim(-window, window)
-    ax.set_ylim(-window, window)
-    ax.set_title("Where each starting point drains to")
     _finish(fig, filename)

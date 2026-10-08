@@ -3,12 +3,12 @@ play.py -- watch your algorithms work, live.
 
 PROVIDED.  Run it once your functions work:
 
-    python play.py            the animations for the part TRACK names
-    python play.py kmeans     only the k-means animations     (Part 2)
-    python play.py marbles    only the five marbles           (Part 3)
-    python play.py rates      only the learning-rate race     (Part 3)
+    python play.py            the animations for the choice TRACK names
+    python play.py kmeans     only the k-means animations     (Choice 2)
+    python play.py marbles    only the five marbles           (Choice 3)
+    python play.py rates      only the learning-rate race     (Choice 3)
 
-Part 1 has no animation: its pictures are the decision regions that
+Choice 1 has no animation: its pictures are the decision regions that
 runproject1.py saves in figures/.
 
 Each animation plays in its own window.  Close the window to move on to the
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     track = str(getattr(p1, "TRACK", "")).strip().lower()
     chosen = sys.argv[1:] or by_track.get(track, list(shows))
     if not chosen:
-        print("Part 1 has no animation: open the decision-region pictures "
+        print("Choice 1 has no animation: open the decision-region pictures "
               "that runproject1.py saved in figures/.")
     for name in chosen:
         if name not in shows:
