@@ -14,6 +14,9 @@ with a table listing the homework problems every question is modeled on, so you
 know where to look when one gives you trouble. They are practice, not a
 statement about the format, the length, or the questions of the actual midterm.
 
+Midterm 1 covers the material through **Thursday, October 1** — see
+*Covered in class so far* below.
+
 ## Homework out now
 
 - [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
@@ -49,6 +52,9 @@ section.
 | Tue, Sep 22 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §16–§18.4 | the standard basis of $\mathbb{R}^2$; linear combinations, span, and basis; coordinates; dimension; other bases, and pairs that fail to span; ending on the definition of linear independence and dependence |
 | Thu, Sep 24 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §18.4–§20 | independent vectors span the plane; what a dependent pair is a basis for; subspaces; stepping up to $\mathbb{R}^3$. Finishes Part 4 |
 | Thu, Sep 24 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §21–§24.2 | orthogonal nonzero vectors are linearly independent, first in $\mathbb{R}^2$ and then in $\mathbb{R}^3$; the Pythagorean identity, proved; the standard basis in three dimensions; $\mathbb{R}^n$ and its standard basis, with every definition restated in $n$ dimensions (formulas stated, not derived) |
+| Tue, Sep 29 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §24.2–§24.4 | computations with vectors in $\mathbb{R}^n$; the axioms of a vector space (the eight laws of Part 1, §8.4), which hold in $\mathbb{R}^n$ unchanged; every definition restated in $n$ dimensions |
+| Thu, Oct 1 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §24.5 | what is lost in $n$ dimensions, and what is not. Finishes Part 5 and the vector unit |
+| Thu, Oct 1 | Review of the vector unit: [Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) and [Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | Part 4 §16–§18; Part 5 §21.6, §24.1 | basis, and linear independence and dependence, and how they relate to solving linear systems; the possible outcomes when solving a linear system, read through $2\times2$ systems as the equations of two lines in the plane: one solution (the lines cross), no solution (they are parallel), or infinitely many (they are the same line); the standard basis of $\mathbb{R}^n$; $n$ mutually orthogonal nonzero vectors span $\mathbb{R}^n$, and against them a linear system is easy to solve, since every point is the sum of its projections onto the orthogonal vectors. **Marks the cutoff for Midterm 1** |
 
 ## About this course
 
