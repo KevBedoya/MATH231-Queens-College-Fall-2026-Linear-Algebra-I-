@@ -14,6 +14,9 @@ with a table listing the homework problems every question is modeled on, so you
 know where to look when one gives you trouble. They are practice, not a
 statement about the format, the length, or the questions of the actual midterm.
 
+Midterm 1 covers the material through **Thursday, October 1** — see
+*Covered in class so far* below.
+
 ## Homework out now
 
 - [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
@@ -49,6 +52,11 @@ section.
 | Tue, Sep 22 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §16–§18.4 | the standard basis of $\mathbb{R}^2$; linear combinations, span, and basis; coordinates; dimension; other bases, and pairs that fail to span; ending on the definition of linear independence and dependence |
 | Thu, Sep 24 | [Vector Unit, Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) | §18.4–§20 | independent vectors span the plane; what a dependent pair is a basis for; subspaces; stepping up to $\mathbb{R}^3$. Finishes Part 4 |
 | Thu, Sep 24 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §21–§24.2 | orthogonal nonzero vectors are linearly independent, first in $\mathbb{R}^2$ and then in $\mathbb{R}^3$; the Pythagorean identity, proved; the standard basis in three dimensions; $\mathbb{R}^n$ and its standard basis, with every definition restated in $n$ dimensions (formulas stated, not derived) |
+| Tue, Sep 29 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §24.2–§24.4 | computations with vectors in $\mathbb{R}^n$; the axioms of a vector space (the eight laws of Part 1, §8.4), which hold in $\mathbb{R}^n$ unchanged; every definition restated in $n$ dimensions |
+| Thu, Oct 1 | [Vector Unit, Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | §24.5 | what is lost in $n$ dimensions, and what is not. Finishes Part 5 and the vector unit |
+| Thu, Oct 1 | Review of the vector unit: [Part 4](lectures/vector-unit/MATH231_vectors_4_basis_and_span.pdf) and [Part 5](lectures/vector-unit/MATH231_vectors_5_orthogonality_and_subspaces.pdf) | Part 4 §16–§18; Part 5 §21.6, §24.1 | basis, and linear independence and dependence, and how they relate to solving linear systems; the possible outcomes when solving a linear system, read through $2\times2$ systems as the equations of two lines in the plane: one solution (the lines cross), no solution (they are parallel), or infinitely many (they are the same line); the standard basis of $\mathbb{R}^n$; $n$ mutually orthogonal nonzero vectors span $\mathbb{R}^n$, and against them a linear system is easy to solve, since every point is the sum of its projections onto the orthogonal vectors. **Marks the cutoff for Midterm 1** |
+| Tue, Oct 6 | [Matrix Unit, Part 1](lectures/matrix-unit/MATH231_matrices_1_linear_systems_and_matrix_notation.pdf) | §3–§5, §8.2 | starts the matrix unit: a matrix as a rectangular grid of numbers; reading an entry $a_{ij}$ by its row and column; the dimensions $m\times n$, rows by columns; matrix structures: diagonal, lower and upper triangular, sparse and dense; adding and subtracting matrices, entry by entry, which needs the two to have the same shape; reading a matrix as a stack of row vectors or as a row of column vectors; ending on the requirement for matrix multiplication: the number of columns of the first matrix must equal the number of rows of the second |
+| Thu, Oct 8 | [Matrix Unit, Part 1](lectures/matrix-unit/MATH231_matrices_1_linear_systems_and_matrix_notation.pdf) | §2.3, §2.5, §4.2, §6.1–§6.3, §7, §8.1–§8.3, §8.5, §9.1 | matrix multiplication across different sizes, $(m\times p)(p\times n)\to m\times n$; matrix–vector products; the trace of a square matrix, the sum of its diagonal entries; the transpose of a matrix and of a vector; the squared 2-norm as $\mathbf{v}^\top\mathbf{v}$; inner and outer products, $\mathbf{u}^\top\mathbf{v}$ and $\mathbf{u}\mathbf{v}^\top$; the main diagonal of a general matrix, and how many entries it has ($\min(m,n)$ for an $m\times n$ matrix); the matrix–vector product read two ways: as the dot product of each row of the matrix with the vector, or as a linear combination of the columns of the matrix |
 
 ## About this course
 
