@@ -1,0 +1,683 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  HOMEWORK 3 -- Matrices and Matrix Multiplication
+%
+%  STATUS: final.  Started 2026-10-12, approved and distributed 2026-10-25.
+%  Due Sunday, November 8, 2026, 11:59 PM.
+%
+%  SCOPE.  This file covers:
+%     lectures/matrix-unit/MATH231_matrices_1_linear_systems_and_matrix_notation
+%                                        (S2.3, S2.5, S3-S9; lectured Oct 6, 8)
+%
+%  MATERIAL NOT IN THE LECTURES, defined inside the problem that uses it:
+%   - skew-symmetric matrices (B.3).
+%
+%  WRITTEN ONLY.  There is no programming part.  Any NumPy companion belongs in
+%  a separate, optional "Extra Credit 2" assignment, which would refer to this
+%  assignment's problems by number.
+%
+%  NUMBERING.  As in Homeworks 1 and 2: parts are lettered, problems numbered
+%  by part.  Bare section numbers refer to the MATRIX unit, whose numbering
+%  restarts at S1.  References into the vector unit always say so.
+%
+%  DELIBERATE OMISSIONS, so that nothing here outruns the lectures:
+%   - No Gaussian elimination, no solving of systems beyond reading off
+%     coefficients by the column reading (D.3(b)).
+%   - No inverses, no determinants.
+%
+%  CUT AT THE INSTRUCTOR'S REVIEW, 2026-10-25:
+%   - the trace problem (was D.6), deleted;
+%   - Part E (permutation matrices), deleted;
+%   - Parts F (moving shapes with matrices), G (the projection matrix) and
+%     H (the Hessian), moved to plan/future_homework/ as catalog Problems
+%     4-14.
+%
+%  NOT INCLUDED: the three problems held back from Homework 2 in
+%  plan/future_homework/ (the gradient as an object; the directional
+%  derivative; gradient descent and linear approximation).
+%
+%  NO ANSWER KEY, by design, as in Homeworks 1 and 2.
+%
+%  The submission path in the "What to submit" callout is homework/hw3/ in
+%  the student repo.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only).
+%==============================================================================
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily\color{RoyalBlue}}
+                      {Part \thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{16pt}{7pt}
+
+\renewcommand{\thesection}{\Alph{section}}
+
+% Keeps long inline formulas from pushing a line into the margin.
+\setlength{\emergencystretch}{3em}
+
+% The problem heading is a line of its own, so that part (a) -- or the opening
+% sentence -- always starts below it.  (An amsthm theorem cannot promise this: a
+% list that opens the body runs its first item onto the heading line.)  The
+% extra air above and below keeps consecutive questions reading as separate
+% blocks rather than one continuous column of text.
+\makeatletter
+\newcounter{prob}[section]
+\renewcommand{\theprob}{\thesection.\arabic{prob}}
+\newenvironment{prob}[1][]
+  {\par\addvspace{20pt plus 6pt minus 4pt}%
+   \needspace{4\baselineskip}%
+   \refstepcounter{prob}%
+   \noindent\textbf{Problem~\theprob}%
+   \if\relax\detokenize{#1}\relax\else\ (#1)\fi\textbf{.}%
+   \par\nobreak\@afterindentfalse\@afterheading}
+  {\par\addvspace{20pt plus 6pt minus 4pt}}
+\makeatother
+
+\newcommand{\heads}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{BrickRed}{\textbf{Watch out.}}\ #1}\par\smallskip}
+\newcommand{\hint}[1]{\par\smallskip\noindent
+  {\small\sffamily\textcolor{RoyalBlue}{\textbf{Hint.}}\ #1}\par\smallskip}
+
+% shaded call-out box.  The body is collected into a savebox first, because
+% \colorbox needs its whole argument at once.
+\definecolor{softbg}{HTML}{F2F6FA}
+\newsavebox{\qcbox}
+\newenvironment{callout}[1]
+  {\par\medskip\needspace{5\baselineskip}%
+   \begin{lrbox}{\qcbox}%
+   \begin{minipage}{\dimexpr\textwidth-2\fboxsep-4pt}%
+   \setlength{\parskip}{0.4em}%
+   \textbf{\sffamily\color{RoyalBlue}#1}\par}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}\colorbox{softbg}{\usebox{\qcbox}}\end{center}\medskip}
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}          % matrices: bold upper case
+\newcommand{\T}{^{\mathsf{T}}}            % transpose
+\newcommand{\uv}[1]{\hat{\vc{#1}}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+\DeclareMathOperator{\diagop}{diag}
+\DeclareMathOperator{\tr}{tr}
+\newcommand{\grad}{\nabla}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[3]{\frac{\partial^{2} #1}{\partial #2\,\partial #3}}
+
+%--------------------------------------------------------- fill this in ------
+\newcommand{\duedate}{Sunday, November 8, 2026, 11:59 PM}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Homework 3 \textbullet\ Matrices and Matrix
+        Multiplication}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{Due:} \duedate.
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{7.2cm}@{}}
+\toprule
+\textbf{Lecture} & \textbf{Sections} & \textbf{Topics} \\
+\midrule
+Matrix Unit, Part 1 & \S2.3, \S2.5, \S3--\S9 &
+  matrices, entries and dimensions; shapes and patterns; adding and scaling;
+  the transpose and symmetric matrices; inner and outer products; matrix
+  multiplication; matrix--vector products by rows and by columns; the
+  trace \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Grading.} Every problem is worth the same number of points.
+
+\medskip
+\noindent\textbf{Section numbers.} A bare section number such as \S8.4 refers
+to the matrix unit, \emph{Linear Systems and Matrix Notation}, whose numbering
+restarts at $1$. References into the vector unit say so.
+
+\medskip
+\noindent\textbf{On the proof problems} (A.4(b), B.1(e), B.2(d), B.3(a), (b),
+(d), C.2(a), (c), (d), D.3(c), D.4(d), and D.5(c)). None of them requires a
+clever idea. What they require is that you write down what you are assuming, work
+entry by entry or from the stated laws, justify each equality by naming the
+fact that licenses it, and end with a sentence saying what you have shown. A
+chain of equalities with no words is not a proof; neither is a paragraph of
+words with no computation. To show two matrices are equal, show that they have
+the same shape and that their $(i,j)$ entries agree for every $i$ and $j$.
+
+\medskip
+\noindent\textbf{Collaboration} is encouraged --- work at a board together, argue
+about the problems. What you submit must be written by you, in your own words.
+
+\begin{callout}{What to submit}
+Push your written work for Parts A--D to your own MATH 231 GitHub repository,
+as a single PDF named \texttt{hw3.pdf} in a folder named \texttt{homework/hw3/}.
+Handwritten and scanned or photographed is completely fine, as long as it is
+legible and the pages are in order.
+
+\textbf{PDF is the only accepted format.} A \texttt{.docx}, a \texttt{.jpg}, a
+\texttt{.png}, a \texttt{.heic}, or a link to a file hosted somewhere else will
+not be graded. Phone scanning apps export PDF directly, and every word processor
+can ``Save as PDF''.
+
+\textbf{Type Parts A--D up instead and you earn $+5$ points of extra credit on
+this assignment.} Any typesetting system counts --- \LaTeX, Word's equation
+editor, or anything else that produces readable mathematics --- and the extra
+credit is for the whole of Parts A--D, not for typing up some of it. The file
+you submit must still be a PDF. Sketches may be drawn by hand and scanned into
+the PDF.
+
+If you have not set up the repository yet, Setup Guide 1 (\S\,``Create your
+folders'' and \S\,``Save your work and send it to GitHub'') is the walkthrough.
+Only pushed work can be graded.
+\end{callout}
+
+\begin{callout}{Label every answer}
+Label each answer with the number of the problem it answers --- \texttt{A.3(d)},
+\texttt{C.2(b)}, \texttt{D.2(e)} --- and put your answers \textbf{in the same
+order as they appear in this assignment}. A grader who cannot tell which
+question a piece of work belongs to cannot award it credit, and that is the most
+common way a correct answer loses points.
+
+\textbf{You do not have to copy the question out.} This applies to handwritten
+and typed submissions alike: the label alone is enough. Write \texttt{A.3(d)},
+then your work. Do not reproduce the wording of the problem.
+\end{callout}
+
+%==============================================================================
+\section{Matrices, entries, and patterns}
+%==============================================================================
+\emph{Matrix Unit, \S3--\S4.} An $m\times n$ matrix has $m$ rows and $n$
+columns, and its entry in row $i$ and column $j$ is $a_{ij}$ --- row first,
+column second (\S3.1). $\R^{m\times n}$ is the set of all $m\times n$ matrices
+with real entries (\S3.2). A $1\times n$ matrix is a \textbf{row vector} and an
+$m\times1$ matrix a \textbf{column vector} (\S3.4). The \textbf{main diagonal}
+of a square matrix is $a_{11},a_{22},\dots,a_{nn}$, and the patterns of \S4 ---
+square, rectangular, diagonal, identity, upper and lower triangular, banded and
+tridiagonal, sparse and dense --- are summarized in the table of \S4.7.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Reading a matrix]
+Let
+\[
+  \mt{A}=\begin{bmatrix} 2&-1&0&5\\ 3&4&-2&1\\ 0&7&6&-3 \end{bmatrix},
+  \qquad
+  \mt{B}=\begin{bmatrix} 1&0\\ -4&9\\ 2&2\\ 8&-5 \end{bmatrix},
+  \qquad
+  \vc{c}=\begin{bmatrix} 3\\ -1\\ 4 \end{bmatrix},
+  \qquad
+  \vc{d}=\begin{bmatrix} 6&0&-2&1&5 \end{bmatrix}.
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Give the dimensions of each, the set $\R^{m\times n}$ it belongs to, and
+        its number of entries.
+  \item Read off $a_{23}$, $a_{32}$, $a_{14}$, $b_{41}$, $b_{22}$, $c_{31}$ and
+        $d_{15}$.
+  \item Which of the addresses $a_{41}$, $b_{23}$, $c_{13}$ and $d_{51}$ exist?
+        For each one that does not, say why not.
+  \item Write row $2$ of $\mt{A}$ as a row vector and column $3$ of $\mt{A}$ as
+        a column vector.
+  \item Read $\mt{A}$ by rows and by columns, as in \S3.5: how many row vectors
+        does it stack, and in which $\R^{k}$ does each one lie? How many column
+        vectors, and in which $\R^{k}$?
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Building a matrix from a rule]
+Write out each matrix entry by entry.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\mt{A}\in\R^{3\times4}$ with $a_{ij}=i-j$.
+  \item $\mt{B}\in\R^{4\times4}$ with $b_{ij}=\min(i,j)$.
+  \item $\mt{C}\in\R^{4\times4}$ with $c_{ij}=(-1)^{i+j}$.
+  \item $\mt{D}\in\R^{4\times4}$ with $d_{ij}=1$ if $\lvert i-j\rvert=1$, and
+        $d_{ij}=0$ otherwise.
+  \item $\mt{E}\in\R^{4\times4}$ with $e_{ij}=ij$ if $i\le j$, and $e_{ij}=0$
+        if $i>j$.
+  \item $\mt{F}\in\R^{2\times5}$ with $f_{ij}=10i+j$. What do you notice about
+        each entry and its address?
+  \item For each of $\mt{B}$, $\mt{C}$, $\mt{D}$ and $\mt{E}$, list every
+        pattern from the table of \S4.7 that it has, leaving out sparse and
+        dense, and count its nonzero entries.
+  \item Give a rule for $a_{ij}$ that produces the identity $\mt{I}_n$, and one
+        that produces the $n\times n$ upper triangular matrix whose entries on
+        and above the diagonal are all $1$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Naming the pattern]
+For each matrix, list every word that applies to it from: \emph{square,
+rectangular, diagonal, identity, upper triangular, lower triangular,
+tridiagonal}. Recall that \S4 defines diagonal, identity and triangular
+matrices only among square matrices, and that a matrix is tridiagonal when
+$a_{ij}=0$ whenever $\lvert i-j\rvert>1$.
+\[
+  \text{(a) }\begin{bmatrix}0&0&0\\0&0&0\\0&0&0\end{bmatrix}
+  \qquad
+  \text{(b) }\begin{bmatrix}2&0\\0&2\end{bmatrix}
+  \qquad
+  \text{(c) }\begin{bmatrix}1&0&0\\0&1&0\end{bmatrix}
+  \qquad
+  \text{(d) }\begin{bmatrix}4&0&0\\1&0&0\\2&3&0\end{bmatrix}
+\]
+\[
+  \text{(e) }\begin{bmatrix}0&0&1\\0&1&0\\1&0&0\end{bmatrix}
+  \qquad
+  \text{(f) }\begin{bmatrix}1&2&0&0\\3&4&5&0\\0&6&7&8\\0&0&9&1\end{bmatrix}
+  \qquad
+  \text{(g) }\begin{bmatrix}5\end{bmatrix}
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \setcounter{enumi}{7}
+  \item True or false? Justify each answer from the definitions in \S4, and give
+        a counterexample for each false statement.
+        \begin{enumerate}[label=(\roman*),leftmargin=2.2em,itemsep=3pt,topsep=3pt]
+          \item Every diagonal matrix is upper triangular.
+          \item Every identity matrix is tridiagonal.
+          \item An upper triangular matrix whose diagonal entries are all $0$ is
+                the zero matrix.
+          \item If $\mt{A}$ is lower triangular, then so is $c\mt{A}$ for every
+                scalar $c$.
+        \end{enumerate}
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[The diagonal of any matrix, and counting entries]
+The main diagonal makes sense for a rectangular matrix too: for
+$\mt{A}\in\R^{m\times n}$ it consists of the entries $a_{11},a_{22},a_{33},\dots$,
+continuing for as long as both row $i$ and column $i$ exist.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item List the main diagonal of each matrix:
+        \[
+          \begin{bmatrix}1&2&3&4&5\\6&7&8&9&10\end{bmatrix},
+          \qquad
+          \begin{bmatrix}1&2&3\\4&5&6\\7&8&9\\10&11&12\end{bmatrix},
+          \qquad
+          \begin{bmatrix}3&1&4&1&5&9\end{bmatrix},
+          \qquad
+          \begin{bmatrix}2\\7\\1\\8\end{bmatrix}.
+        \]
+  \item Show that an $m\times n$ matrix has exactly $\min(m,n)$ entries on its
+        main diagonal.
+  \item In an $n\times n$ matrix, count the entries that lie on the main
+        diagonal, strictly above it, strictly below it, and on or above it.
+        Give each count as a formula in $n$, and check your formulas against a
+        drawing of a $4\times4$ grid.
+        \hint{The entries strictly above the diagonal in row $i$ are those in
+        columns $i+1,\dots,n$. Add up over the rows, and use the sum formula for
+        $1+2+\cdots+k$.}
+  \item The \emph{largest} number of entries that can be nonzero in an
+        $n\times n$ matrix that is diagonal is $n$. Find the corresponding
+        largest number for an upper triangular matrix and for a tridiagonal
+        matrix.
+  \item For a tridiagonal $n\times n$ matrix, compute the fraction of its $n^{2}$
+        entries that can be nonzero, for $n=4$, $n=10$ and $n=1000$. What
+        happens to this fraction as $n\to\infty$?
+  \item A $1000\times1000$ matrix has $4000$ nonzero entries. What fraction of
+        its entries are zero? Storing the full grid takes one number per entry.
+        Storing only the nonzero entries takes three numbers per nonzero entry:
+        its row, its column, and its value. How many numbers does each way take?
+        By the working test of \S4.6, is this matrix sparse?
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Adding, scaling, and the transpose}
+%==============================================================================
+\emph{Matrix Unit, \S5--\S6.} Matrices of the same shape are added and
+subtracted entry by entry, $(\mt{A}\pm\mt{B})_{ij}=a_{ij}\pm b_{ij}$, and
+scaled entry by entry, $(c\mt{A})_{ij}=ca_{ij}$. The laws of addition and
+scaling are \textbf{A1}--\textbf{A4} and \textbf{S1}--\textbf{S4}, introduced in
+\S5.4 (``The algebraic laws''). The transpose of $\mt{A}\in\R^{m\times n}$ is
+$\mt{A}\T\in\R^{n\times m}$ with $(\mt{A}\T)_{ij}=a_{ji}$ (\S6.1), and its laws
+are
+\[
+  \textbf{T1}\ \ (\mt{A}\T)\T=\mt{A},
+  \qquad
+  \textbf{T2}\ \ (\mt{A}+\mt{B})\T=\mt{A}\T+\mt{B}\T,
+  \qquad
+  \textbf{T3}\ \ (c\mt{A})\T=c\,\mt{A}\T
+\]
+(\S6.4). A matrix is \textbf{symmetric} if $\mt{A}\T=\mt{A}$ (\S6.5).
+
+%------------------------------------------------------------------------------
+\begin{prob}[Matrix arithmetic]
+Let
+\[
+  \mt{A}=\begin{bmatrix}1&-2&0\\3&4&-1\end{bmatrix},
+  \qquad
+  \mt{B}=\begin{bmatrix}2&0&5\\-1&3&2\end{bmatrix},
+  \qquad
+  \mt{C}=\begin{bmatrix}1&4\\-2&0\\3&1\end{bmatrix}.
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\mt{A}+\mt{B}$, $\mt{A}-\mt{B}$, $-\mt{B}$ and
+        $3\mt{A}-2\mt{B}$.
+  \item Which of $\mt{A}+\mt{C}$, $\mt{A}+\mt{C}\T$, $\mt{A}\T+\mt{C}$ and
+        $\mt{B}-\mt{C}\T$ are defined? Compute each one that is, and for each one
+        that is not, say why.
+  \item Compute $\mt{A}\T$, $\mt{B}\T$, $(\mt{A}+\mt{B})\T$ and
+        $\mt{A}\T+\mt{B}\T$, and confirm \textbf{T2} for this pair.
+  \item Find the matrix $\mt{X}$ with $3\mt{X}-\mt{B}=\mt{X}+\mt{A}$. Solve for
+        $\mt{X}$ first, naming the law from \S5.4 used at each step, and only
+        then substitute.
+  \item Find scalars $\alpha$ and $\beta$ with
+        \[
+          \alpha\begin{bmatrix}1&0\\0&1\end{bmatrix}
+          +\beta\begin{bmatrix}0&1\\1&0\end{bmatrix}
+          =\begin{bmatrix}3&-2\\-2&3\end{bmatrix}.
+        \]
+        Then show that $\begin{bmatrix}1&2\\3&4\end{bmatrix}$ cannot be written
+        in this form for any $\alpha$ and $\beta$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Transposes and symmetric matrices]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Write down the transpose of each matrix, with its shape:
+        \[
+          \begin{bmatrix}1&2&3&4\end{bmatrix},
+          \qquad
+          \begin{bmatrix}5\\-1\\2\end{bmatrix},
+          \qquad
+          \begin{bmatrix}0&1\\2&3\\4&5\end{bmatrix},
+          \qquad
+          \begin{bmatrix}1&2&3\\2&5&4\\3&4&6\end{bmatrix}.
+        \]
+        Which of the four is symmetric?
+  \item Find every $x$, $y$ and $z$ for which
+        $\begin{bmatrix}1&x&3\\4&2&y\\z&-5&0\end{bmatrix}$ is symmetric.
+  \item Fill in the entries marked $\ast$ so that the matrix is symmetric:
+        $\begin{bmatrix}2&\ast&\ast\\7&-1&\ast\\0&3&4\end{bmatrix}$.
+  \item Prove that if $\mt{A}$ and $\mt{B}$ are symmetric $n\times n$ matrices
+        and $c$ is a scalar, then $\mt{A}+\mt{B}$ and $c\mt{A}$ are symmetric.
+        Name the law from \S6.4 used at each step.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Splitting a square matrix into symmetric and skew-symmetric parts]
+A square matrix $\mt{K}$ is \textbf{skew-symmetric} if $\mt{K}\T=-\mt{K}$, that
+is, if $k_{ji}=-k_{ij}$ for every $i$ and $j$. In (a), (b) and (d), work from the
+definitions and the laws \textbf{T1}--\textbf{T3}, \textbf{A1}--\textbf{A4} and
+\textbf{S1}--\textbf{S4}, naming each one you use.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Prove that every diagonal entry of a skew-symmetric matrix is $0$.
+  \item Prove that for every square matrix $\mt{A}$, the matrix
+        $\mt{A}+\mt{A}\T$ is symmetric and the matrix $\mt{A}-\mt{A}\T$ is
+        skew-symmetric.
+  \item It follows that every square matrix is the sum of a symmetric matrix and
+        a skew-symmetric one:
+        \[
+          \mt{A}
+          =\underbrace{\tfrac12\bigl(\mt{A}+\mt{A}\T\bigr)}_{\text{symmetric}}
+          +\underbrace{\tfrac12\bigl(\mt{A}-\mt{A}\T\bigr)}_{\text{skew-symmetric}} .
+        \]
+        Compute both parts for
+        $\mt{A}=\begin{bmatrix}1&4&-2\\0&3&5\\6&-1&2\end{bmatrix}$, and check
+        that they add up to $\mt{A}$.
+  \item Prove that the only matrix that is both symmetric and skew-symmetric is
+        the zero matrix.
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Inner and outer products}
+%==============================================================================
+\emph{Matrix Unit, \S7.} From \S6.3 on, a vector $\vc{v}\in\R^{n}$ is a column,
+an $n\times1$ matrix, and $\vc{v}\T$ is the same vector written as a row. The
+bracket notation $[\,v_1,\dots,v_n\,]$ is still used inline, and means the
+column. For $\vc{u},\vc{v}\in\R^{n}$ the \textbf{inner product}
+$\vc{u}\T\vc{v}=\sum_{k=1}^{n}u_kv_k$ is the dot product, a $1\times1$ matrix
+read as a scalar (\S7.1). For $\vc{u}\in\R^{m}$ and $\vc{v}\in\R^{n}$ the
+\textbf{outer product} $\vc{u}\vc{v}\T$ is the $m\times n$ matrix whose $(i,j)$
+entry is $u_iv_j$ (\S7.2). And $\vc{v}\T\vc{v}=\norm{\vc{v}}^{2}$ (\S7.3).
+
+%------------------------------------------------------------------------------
+\begin{prob}[Computing inner and outer products]
+Let $\vc{u}=[\,1,\,-2,\,3\,]$, $\vc{v}=[\,4,\,0,\,-1\,]$ and
+$\vc{w}=[\,2,\,5\,]$. Before computing each product, state its shape.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item $\vc{u}\T\vc{v}$, $\vc{v}\T\vc{u}$, $\vc{u}\T\vc{u}$ and
+        $\vc{v}\T\vc{v}$. Use the last two to find $\norm{\vc{u}}$ and
+        $\norm{\vc{v}}$.
+  \item $\vc{u}\vc{v}\T$ and $\vc{v}\vc{u}\T$. Check that
+        $(\vc{u}\vc{v}\T)\T=\vc{v}\vc{u}\T$.
+  \item $\vc{u}\vc{w}\T$ and $\vc{w}\vc{u}\T$. Is $\vc{u}\T\vc{w}$ defined?
+  \item Use $\norm{\vc{x}}=\sqrt{\vc{x}\T\vc{x}}$ to compute the norms of
+        $[\,2,\,-1,\,2,\,4\,]\in\R^{4}$ and of the all-ones vector
+        $\one\in\R^{9}$.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[What an outer product looks like]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $\vc{u}\in\R^{m}$ and $\vc{v}\in\R^{n}$. Prove that row $i$ of
+        $\vc{u}\vc{v}\T$ is $u_i\vc{v}\T$, and that column $j$ of
+        $\vc{u}\vc{v}\T$ is $v_j\vc{u}$. So every row is a multiple of the same
+        row vector, and every column is a multiple of the same column vector.
+  \item Each matrix below is an outer product $\vc{u}\vc{v}\T$. Find a pair
+        $\vc{u}$, $\vc{v}$ for each, and check it by multiplying out.
+        \[
+          \begin{bmatrix}2&4&6\\3&6&9\end{bmatrix},
+          \qquad
+          \begin{bmatrix}1&-1\\-2&2\\3&-3\end{bmatrix},
+          \qquad
+          \begin{bmatrix}0&0&0\\5&10&-5\\-1&-2&1\end{bmatrix},
+          \qquad
+          \begin{bmatrix}6&-4&2&8\end{bmatrix}.
+        \]
+        Is the pair unique? If not, describe every other pair that works for the
+        first matrix.
+  \item Prove that $\begin{bmatrix}1&2\\3&4\end{bmatrix}$ is \emph{not} an outer
+        product $\vc{u}\vc{v}\T$ of any two vectors $\vc{u},\vc{v}\in\R^{2}$.
+  \item Prove that $\tr(\vc{u}\vc{v}\T)=\vc{v}\T\vc{u}$ for all
+        $\vc{u},\vc{v}\in\R^{n}$, where the \textbf{trace} of a square matrix is
+        the sum of its diagonal entries (\S9.1). Check it on $\vc{u}$ and
+        $\vc{v}$ from Problem C.1.
+  \item Write $\begin{bmatrix}1&2\\3&4\end{bmatrix}$ as the sum of two outer
+        products.
+        \hint{Try $\vc{e}_1$ and $\vc{e}_2$ as the column vectors.}
+\end{enumerate}
+\end{prob}
+
+%==============================================================================
+\section{Matrix multiplication}
+%==============================================================================
+\emph{Matrix Unit, \S2.3, \S2.5 and \S8.} For $\mt{A}\in\R^{m\times p}$ and
+$\mt{B}\in\R^{p\times n}$, the product $\mt{A}\mt{B}\in\R^{m\times n}$ has
+$(i,j)$ entry
+\[
+  (\mt{A}\mt{B})_{ij}=\sum_{k=1}^{p}a_{ik}b_{kj},
+\]
+the dot product of row $i$ of $\mt{A}$ with column $j$ of $\mt{B}$ (\S8.1). It
+is defined exactly when the number of columns of $\mt{A}$ equals the number of
+rows of $\mt{B}$ (\S8.2). The laws are \textbf{M1}--\textbf{M6} of \S8.4
+(``The algebraic laws''): associativity, the two distributive laws, scalars
+moving freely, $\mt{I}\mt{A}=\mt{A}\mt{I}=\mt{A}$, and
+$(\mt{A}\mt{B})\T=\mt{B}\T\mt{A}\T$. There is no commutative law. A
+matrix--vector product $\mt{A}\vc{x}$ is the case $n=1$ (\S8.5), and it can be
+read two ways (\S2.5): by rows, its $i$-th entry is the dot product of row $i$
+of $\mt{A}$ with $\vc{x}$; by columns, it is the linear combination
+$x_1\vc{a}_1+\cdots+x_p\vc{a}_p$ of the columns $\vc{a}_1,\dots,\vc{a}_p$ of
+$\mt{A}$. (\S2.5 states this for a square matrix; the proof given there works
+unchanged for any $\mt{A}\in\R^{m\times p}$.) Write $\vc{e}_i$ for
+the standard basis vector with a $1$ in slot $i$ and $0$ elsewhere.
+
+%------------------------------------------------------------------------------
+\begin{prob}[Shapes first]
+Let $\mt{A}\in\R^{2\times3}$, $\mt{B}\in\R^{3\times3}$, $\mt{C}\in\R^{3\times1}$,
+$\mt{D}\in\R^{1\times2}$ and $\mt{E}\in\R^{2\times2}$. For each product, say
+whether it is defined, and if it is, give its shape. Set your answers out as a
+table.
+\[
+  \mt{A}\mt{B},\ \ \mt{B}\mt{A},\ \ \mt{A}\mt{C},\ \ \mt{C}\mt{A},\ \
+  \mt{B}\mt{C},\ \ \mt{C}\mt{B},\ \ \mt{D}\mt{A},\ \ \mt{A}\mt{D},\ \
+  \mt{D}\mt{E},\ \ \mt{E}\mt{D},\ \ \mt{E}\mt{A},\ \ \mt{A}\mt{E},
+\]
+\[
+  \mt{C}\T\mt{B},\ \ \mt{C}\mt{C}\T,\ \ \mt{C}\T\mt{C},\ \ \mt{A}\T\mt{E},\ \
+  \mt{A}\mt{A}\T,\ \ \mt{A}\T\mt{A},\ \ \mt{D}\mt{A}\mt{C},\ \
+  \mt{E}\mt{A}\mt{B}\mt{C}.
+\]
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Multiplying matrices]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $\mt{E}=\begin{bmatrix}2&-1\\3&4\end{bmatrix}$ and
+        $\mt{F}=\begin{bmatrix}1&5\\-2&0\end{bmatrix}$. Compute $\mt{E}\mt{F}$
+        and $\mt{F}\mt{E}$. Are they equal?
+  \item Let $\mt{A}=\begin{bmatrix}1&0&2\\-1&3&1\end{bmatrix}$ and
+        $\mt{B}=\begin{bmatrix}3&1\\2&1\\1&0\end{bmatrix}$. Compute
+        $\mt{A}\mt{B}$ and $\mt{B}\mt{A}$.
+  \item Let $\mt{G}=\begin{bmatrix}1&2&0\\0&1&-1\\3&0&2\end{bmatrix}$ and
+        $\mt{K}=\begin{bmatrix}2&0&1\\1&-1&0\\0&3&1\end{bmatrix}$. Compute
+        $\mt{G}\mt{K}$ and $\mt{K}\mt{G}$.
+  \item With $\mt{A}$ and $\mt{B}$ from (b), compute $\mt{B}\T\mt{A}\T$ and
+        confirm \textbf{M6}. Then compute $\mt{A}\T\mt{B}\T$, and say which
+        matrix from (b) it is the transpose of.
+  \item Compute
+        $\begin{bmatrix}1&2&3\end{bmatrix}\begin{bmatrix}4\\5\\6\end{bmatrix}$
+        and
+        $\begin{bmatrix}4\\5\\6\end{bmatrix}\begin{bmatrix}1&2&3\end{bmatrix}$,
+        and name each as an inner or an outer product.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Matrix--vector products, two ways]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute each product twice, by rows and by columns, and check that the
+        two answers agree:
+        \[
+          \begin{bmatrix}2&-1&0\\1&3&2\end{bmatrix}
+          \begin{bmatrix}3\\1\\-2\end{bmatrix},
+          \qquad
+          \begin{bmatrix}1&4\\-2&0\\3&1\end{bmatrix}
+          \begin{bmatrix}2\\-1\end{bmatrix},
+          \qquad
+          \begin{bmatrix}1&2&3\\4&5&6\\7&8&9\end{bmatrix}
+          \begin{bmatrix}1\\-2\\1\end{bmatrix}.
+        \]
+        The third product is the zero vector. Write out what the column reading
+        then says about the three columns of that matrix. Are the columns
+        linearly independent? (Use the definition in the table of the vector
+        unit's \S24.2.)
+  \item Let $\mt{A}=\begin{bmatrix}1&0&2\\3&-1&1\\0&4&5\end{bmatrix}$, with
+        columns $\vc{a}_1,\vc{a}_2,\vc{a}_3$. Use the column reading, and no
+        equation solving, to find a vector $\vc{x}$ with each property:
+        $\mt{A}\vc{x}=\vc{a}_2$; \ $\mt{A}\vc{x}=3\vc{a}_1-\vc{a}_3$; \
+        $\mt{A}\vc{x}=\vc{a}_1+\vc{a}_2+\vc{a}_3$. Check the second one by
+        multiplying by rows.
+  \item Let $\mt{A}\in\R^{m\times n}$. Prove that $\mt{A}\vc{e}_j$ is column $j$
+        of $\mt{A}$, and that $\vc{e}_i\T\mt{A}\vc{e}_j=a_{ij}$. (Here
+        $\vc{e}_j\in\R^{n}$ and $\vc{e}_i\in\R^{m}$.) Use the second fact to read
+        off $\vc{e}_2\T\mt{A}\vc{e}_3$ for the $\mt{A}$ of (b).
+  \item Find the $2\times2$ matrix $\mt{M}$ with
+        $\mt{M}\begin{bmatrix}1\\0\end{bmatrix}=\begin{bmatrix}3\\-1\end{bmatrix}$
+        and
+        $\mt{M}\begin{bmatrix}0\\1\end{bmatrix}=\begin{bmatrix}2\\5\end{bmatrix}$.
+        Then compute $\mt{M}\begin{bmatrix}4\\-2\end{bmatrix}$ by the column
+        reading.
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Matrix arithmetic is not number arithmetic]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Let $\mt{A}=\begin{bmatrix}1&2\\2&4\end{bmatrix}$ and
+        $\mt{B}=\begin{bmatrix}2&-4\\-1&2\end{bmatrix}$. Compute $\mt{A}\mt{B}$
+        and $\mt{B}\mt{A}$. For real numbers, $ab=0$ forces $a=0$ or $b=0$. What
+        does (a) show about matrices?
+  \item Let $\mt{N}=\begin{bmatrix}0&1\\0&0\end{bmatrix}$ and
+        $\mt{N}_3=\begin{bmatrix}0&1&0\\0&0&1\\0&0&0\end{bmatrix}$. Compute
+        $\mt{N}^{2}$, then $\mt{N}_3^{2}$ and $\mt{N}_3^{3}$. (Here
+        $\mt{A}^{2}=\mt{A}\mt{A}$ and $\mt{A}^{3}=\mt{A}\mt{A}\mt{A}$.)
+  \item Use (a) to give matrices with $\mt{A}\mt{B}=\mt{A}\mt{C}$, $\mt{A}\neq\mt{0}$
+        and $\mt{B}\neq\mt{C}$. So a nonzero matrix cannot in general be
+        cancelled.
+  \item Let $\mt{A}$ and $\mt{B}$ be $n\times n$. Prove that
+        \[
+          (\mt{A}+\mt{B})^{2}=\mt{A}^{2}+\mt{A}\mt{B}+\mt{B}\mt{A}+\mt{B}^{2},
+        \]
+        naming the law of \S8.4 used at each step, and deduce that
+        $(\mt{A}+\mt{B})^{2}=\mt{A}^{2}+2\mt{A}\mt{B}+\mt{B}^{2}$ holds if and
+        only if $\mt{A}\mt{B}=\mt{B}\mt{A}$. Then compute both sides of the
+        second formula for $\mt{E}$ and $\mt{F}$ from Problem D.2(a).
+\end{enumerate}
+\end{prob}
+
+%------------------------------------------------------------------------------
+\begin{prob}[Products of patterned matrices]
+For numbers $d_1,d_2,\dots,d_n$, the notation $\diagop(d_1,d_2,\dots,d_n)$
+means the $n\times n$ diagonal matrix (\S4.2) whose diagonal entries are
+$d_1,d_2,\dots,d_n$, in that order, and whose other entries are all $0$:
+\[
+  \diagop(d_1,d_2,\dots,d_n)=
+  \begin{bmatrix}
+    d_1    & 0      & \cdots & 0\\
+    0      & d_2    & \cdots & 0\\
+    \vdots & \vdots & \ddots & \vdots\\
+    0      & 0      & \cdots & d_n
+  \end{bmatrix}.
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.6em,itemsep=7pt,topsep=6pt]
+  \item Compute $\diagop(2,-1,3)\,\diagop(4,5,-2)$ and
+        $\diagop(4,5,-2)\,\diagop(2,-1,3)$.
+  \item Let $\mt{D}=\diagop(2,-1,3)$ and
+        $\mt{A}=\begin{bmatrix}1&2&3\\4&5&6\\7&8&9\end{bmatrix}$. Compute
+        $\mt{D}\mt{A}$ and $\mt{A}\mt{D}$. In each product, what happened to the
+        rows or columns of $\mt{A}$?
+  \item Let $\mt{U}=\begin{bmatrix}1&2&3\\0&4&5\\0&0&6\end{bmatrix}$ and
+        $\mt{V}=\begin{bmatrix}2&0&1\\0&1&-1\\0&0&3\end{bmatrix}$. Compute
+        $\mt{U}\mt{V}$, and observe that it is upper triangular and that its
+        diagonal entries are the products $u_{ii}v_{ii}$. Then prove both facts
+        for any two upper triangular $n\times n$ matrices.
+        \hint{For $i>j$, look at each term $u_{ik}v_{kj}$ of
+        $(\mt{U}\mt{V})_{ij}=\sum_{k}u_{ik}v_{kj}$. If $k<i$, which factor is
+        zero? If $k\ge i$, which factor is zero?}
+  \item Let $\mt{S}=\begin{bmatrix}1&1\\0&1\end{bmatrix}$. Compute $\mt{S}^{2}$,
+        $\mt{S}^{3}$ and $\mt{S}^{4}$, guess a formula for $\mt{S}^{n}$, and
+        check that your formula satisfies $\mt{S}\,\mt{S}^{n}=\mt{S}^{n+1}$.
+  \item Give a formula for $\diagop(2,3)^{n}$.
+\end{enumerate}
+\end{prob}
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\smallskip
+\noindent{\small Questions about any problem here belong in the class Discord,
+where everyone can see the answer. Questions that are specific to your own work
+--- ``is my proof of D.5(c) valid?'' --- are better brought to office hours,
+Thursdays 3:00--4:00 PM in Kiely Hall 508. Please email ahead.}
+
+\end{document}

@@ -19,6 +19,8 @@ Midterm 1 covers the material through **Thursday, October 1** — see
 
 ## Homework out now
 
+- [**Homework 3 — Matrices and Matrix Multiplication**](homework/MATH231_homework_3.pdf)
+  — due **Sunday, November 8, 2026, 11:59 PM**
 - [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
   — due date to be announced on the class Discord
 - [**Extra Credit 1 — NumPy for Homework 2**](homework/MATH231_extra_credit_1.pdf)
