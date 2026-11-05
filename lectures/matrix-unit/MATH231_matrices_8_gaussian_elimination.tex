@@ -1,0 +1,754 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MATRIX UNIT, PART 8 -- Solving Linear Systems: Elimination
+%
+%  Section numbering runs CONTINUOUSLY across the parts of the matrix unit;
+%  see Part 2's header for the full map.  This part is Sections 40-45, hence
+%  \setcounter{section}{39}.
+%
+%  STATUS: complete.  Sections 40-45.  Written from the plan in
+%  plan/MATH231_remaining_units_plan.tex (2026-10-25).
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%
+%  WHAT THE INSTRUCTOR SPECIFIED, AND WHERE IT IS.
+%   - n x n systems, Gaussian elimination, back/forward substitution
+%     (Sec. 41-42); Gauss-Jordan elimination (Sec. 43); row-echelon form
+%     (Sec. 42.5) and reduced row-echelon form (Sec. 43.1); elementary row
+%     operations (Sec. 40); homogeneous systems (Sec. 44); overdetermined and
+%     underdetermined systems (Sec. 45).
+%
+%  DEBTS COLLECTED.
+%   - Part 1's closing Looking-ahead (end of Sec. 9) promised Gaussian
+%     elimination, and Sec. 4.4 hinted that it makes the matrix triangular.
+%     Sec. 42.2 solves Part 1's own 3x3 system (Sec. 1.6), recovering
+%     alpha = [1, 2, 3].
+%   - D5 (plan): the second, computational proof of rank-nullity by counting
+%     pivot and free columns is Sec. 43.4.
+%   - D6/D10 (plan; the determinant law D10 of Sec. 38): "rank n => det != 0"
+%     is completed in Sec. 42.6 by elimination.
+%
+%  PSEUDOCODE uses the algo environment copied from computational unit
+%  Part 4, so the two units' algorithms look the same.
+%
+%  OPERATION COUNTS are given in round terms (n^2, (2/3) n^3) with a short
+%  justification, without the FLOP bookkeeping of computational unit Part 1.
+%
+%  THE LINE-FIT DATA of Sec. 45.1 -- (1,1), (2,2), (3,2) -- is reused in
+%  Part 9 (Sec. 49.4) and Part 11 (Sec. 58.2).  Keep them in step.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\setlength{\emergencystretch}{3em}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}[1][the vector unit]{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From #1.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\colsp}[1]{\operatorname{col}[#1]}
+\newcommand{\nullsp}[1]{\operatorname{null}[#1]}
+\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\diagop}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\nullity}{nullity}
+% an augmented matrix [A | b]: \begin{aug}{ccc|c} ... \end{aug}
+\newenvironment{aug}[1]{\left[\begin{array}{#1}}{\end{array}\right]}
+
+%--------------------------------------------------------------- pseudocode --
+\newcommand{\kw}[1]{\textsf{\bfseries #1}}
+\newcommand{\ind}{\hspace*{1.3em}}
+\newcommand{\indd}{\hspace*{2.6em}}
+\newcounter{algoline}
+\newenvironment{algo}[2]{%
+  \par\medskip\needspace{8\baselineskip}%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \hrule height 0.9pt \vspace{3pt}%
+  \noindent{\sffamily\bfseries #1}\par\vspace{2pt}%
+  \noindent{\small #2}\par\vspace{3pt}%
+  \hrule height 0.4pt \vspace{5pt}%
+  \begin{list}{\textbf{\arabic{algoline}:}}%
+    {\usecounter{algoline}\setlength{\leftmargin}{2.3em}%
+     \setlength{\labelwidth}{1.8em}\setlength{\labelsep}{0.5em}%
+     \setlength{\itemsep}{2pt}\setlength{\topsep}{0pt}%
+     \setlength{\parsep}{0pt}}%
+}{%
+  \end{list}\vspace{5pt}\hrule height 0.9pt%
+  \end{minipage}\end{center}\medskip%
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Matrix Unit, Part 8 \textbullet\ Solving Linear
+        Systems: Elimination}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{39}  % this part opens at Section 40; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This is Part 8 of the matrix unit,
+Sections 40--45. Section numbers run continuously through the unit (Part 2's
+opening table lists them all).
+
+\medskip
+\noindent\textbf{Assumed.} Linear systems and $\mt{A}\vc{x}=\vc{b}$ (Part 1);
+triangular matrices (\S4.4); column space, null space, rank and rank--nullity
+(\S10--\S12, \S31--\S32); the determinant and its laws D1--D10 (\S38--\S39).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} Perform the three
+elementary row operations and write each as a matrix; solve triangular systems
+by back and forward substitution; reduce a matrix to row-echelon form by Gaussian
+elimination and solve the system; continue to reduced row-echelon form by
+Gauss--Jordan elimination; read off the rank, the pivot and free variables, a
+basis of the null space, and every solution; decide from the reduced form whether
+a system has no solution, one, or infinitely many; compute a determinant by
+elimination; and describe what to expect of over- and underdetermined systems.
+
+\bigskip
+\noindent Part 1 wrote a linear system as $\mt{V}\vc{x}=\vc{u}$, solved a
+$2\times2$ example by substitution, and noted that substitution is not a method
+that survives twenty equations. It promised a procedure that works on the matrix
+directly, applies to any size, and ends either with the answer or with a definite
+report that there is none. Since then, Parts 2--7 have explained what the
+possible answers are. This part supplies the procedure.
+
+%==============================================================================
+\section{Elementary row operations}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The augmented matrix}
+%------------------------------------------------------------------------------
+The system $\mt{A}\vc{x}=\vc{b}$ is completely described by the coefficients and
+the right-hand side. Writing $\vc{b}$ as an extra column, separated by a bar, gives
+the \textbf{augmented matrix} $[\,\mt{A}\mid\vc{b}\,]$. Each row is one equation:
+\[
+  \begin{aligned}
+    x_1+2x_2\phantom{{}+x_3}&=5\\
+    x_2+x_3&=5\\
+    x_1\phantom{{}+2x_2}+x_3&=4
+  \end{aligned}
+  \qquad\longleftrightarrow\qquad
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\1&0&1&4\end{aug}.
+\]
+This is the system of Part 1 \S1.6, whose solution was constructed to be
+$\vc{x}=[\,1,2,3\,]$. Solving it, by a method, is \S42's first job.
+
+%------------------------------------------------------------------------------
+\subsection{Three operations}
+%------------------------------------------------------------------------------
+\begin{defn}[Elementary row operations]
+The three \textbf{elementary row operations} on a matrix are:
+\begin{enumerate}[label=\textbf{(E\arabic*)},leftmargin=3em,itemsep=2pt]
+  \item \textbf{swap} two rows;
+  \item \textbf{scale} a row by a nonzero number;
+  \item \textbf{replace} a row by itself plus a multiple of another row.
+\end{enumerate}
+\end{defn}
+
+\noindent On the augmented matrix these are things one does to equations without
+thinking: list them in a different order, multiply one through by a nonzero
+number, add a multiple of one equation to another.
+
+%------------------------------------------------------------------------------
+\subsection{They do not change the solutions}
+%------------------------------------------------------------------------------
+\begin{thm}
+\label{thm:rowops}
+If $[\,\mt{A}'\mid\vc{b}'\,]$ is obtained from $[\,\mt{A}\mid\vc{b}\,]$ by an
+elementary row operation, the systems $\mt{A}\vc{x}=\vc{b}$ and
+$\mt{A}'\vc{x}=\vc{b}'$ have exactly the same solutions.
+\end{thm}
+
+\begin{proof}
+Every equation of the new system is a combination of equations of the old one,
+so any solution of the old system satisfies the new one. And every operation can
+be undone by an operation of the same kind: swap the same rows back; scale by the
+reciprocal; subtract the multiple that was added. So the old system is also
+obtained from the new one, and any solution of the new system satisfies the old
+one.
+\end{proof}
+
+%------------------------------------------------------------------------------
+\subsection{Each operation is a matrix}
+%------------------------------------------------------------------------------
+Doing a row operation to $\mt{A}$ is the same as multiplying $\mt{A}$ on the
+left by the matrix $\mt{E}$ obtained by doing that operation to $\mt{I}$.
+Row $i$ of $\mt{E}\mt{A}$ is (row $i$ of $\mt{E}$) times $\mt{A}$, a combination
+of the rows of $\mt{A}$ with coefficients from row $i$ of $\mt{E}$. In $\R^{3\times3}$:
+\[
+  \underbrace{\begin{bmatrix}0&1&0\\1&0&0\\0&0&1\end{bmatrix}}_{\text{swap rows 1, 2}},
+  \qquad
+  \underbrace{\begin{bmatrix}1&0&0\\0&c&0\\0&0&1\end{bmatrix}}_{\text{scale row 2 by }c},
+  \qquad
+  \underbrace{\begin{bmatrix}1&0&0\\0&1&0\\k&0&1\end{bmatrix}}_{\text{add }k\text{ row 1 to row 3}}.
+\]
+These are \textbf{elementary matrices}. They are old friends from Part 3: a swap
+is a reflection (it exchanges two coordinates), a scaling is a non-uniform
+scaling, and a replacement is a shear. Their determinants are $-1$, $c$ and $1$,
+which are the laws D5, D4 and D8 of \S38. For example, with $k=-1$,
+\[
+  \begin{bmatrix}1&0&0\\0&1&0\\-1&0&1\end{bmatrix}
+  \begin{bmatrix}1&2&0\\0&1&1\\1&0&1\end{bmatrix}
+  =\begin{bmatrix}1&2&0\\0&1&1\\0&-2&1\end{bmatrix},
+\]
+which is ``subtract row 1 from row 3''.
+
+%==============================================================================
+\section{Triangular systems}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Back substitution}
+%------------------------------------------------------------------------------
+A triangular system is the easy case, and the goal of elimination is to reach
+one. If $\mt{U}$ is upper triangular, the last equation of $\mt{U}\vc{x}=\vc{c}$
+involves only $x_n$; the one above it, only $x_{n-1}$ and $x_n$; and so on. Solve
+from the bottom up.
+
+\begin{ex}
+\label{ex:back}
+\[
+  \begin{aug}{ccc|c}2&1&-1&3\\0&3&2&7\\0&0&4&8\end{aug}
+  \qquad
+  \begin{aligned}
+    x_3&=8/4=2,\\
+    x_2&=(7-2x_3)/3=(7-4)/3=1,\\
+    x_1&=(3-x_2+x_3)/2=(3-1+2)/2=2.
+  \end{aligned}
+\]
+Check in the first equation: $2(2)+1-2=3$. \checkmark
+\end{ex}
+
+\noindent In general, once $x_{i+1},\dots,x_n$ are known, equation $i$ gives
+\[
+  x_i=\frac{1}{u_{ii}}\Bigl(c_i-\sum_{j=i+1}^{n}u_{ij}x_j\Bigr).
+\]
+
+\begin{algo}{Back substitution}{%
+  \textbf{Input:} an upper triangular $\mt{U}\in\R^{n\times n}$ with every
+  $u_{ii}\neq0$, and $\vc{c}\in\R^{n}$.\quad
+  \textbf{Output:} the solution $\vc{x}$ of $\mt{U}\vc{x}=\vc{c}$.}
+\item \kw{for} $i = n, n-1,\dots,1$:
+\item \ind $s \;\gets\; c_i$
+\item \ind \kw{for} $j = i+1,\dots,n$:
+\item \indd $s \;\gets\; s-u_{ij}\,x_j$
+        \hfill\textit{\small remove the unknowns already found}
+\item \ind $x_i \;\gets\; s\,/\,u_{ii}$
+\item \kw{return} $\vc{x}$
+\end{algo}
+
+%------------------------------------------------------------------------------
+\subsection{Forward substitution}
+%------------------------------------------------------------------------------
+For a lower triangular $\mt{L}$, the first equation involves only $x_1$, so solve
+from the top down:
+$x_i=\frac{1}{l_{ii}}\bigl(c_i-\sum_{j<i}l_{ij}x_j\bigr)$ for $i=1,\dots,n$.
+
+\begin{ex}
+\[
+  \begin{aug}{ccc|c}1&0&0&1\\2&1&0&4\\-1&3&2&7\end{aug}
+  \qquad
+  x_1=1,\quad x_2=4-2(1)=2,\quad x_3=\bigl(7+1-3(2)\bigr)/2=1 .
+\]
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{When it works, and what it costs}
+%------------------------------------------------------------------------------
+Substitution divides by every diagonal entry, so it needs them all nonzero. For a
+triangular matrix that is exactly the condition $\det\mt{U}=u_{11}\cdots u_{nn}\neq0$
+(\S39.1). If some $u_{ii}=0$, the system has either no solution or infinitely
+many, and \S43 shows how to tell which.
+
+Row $i$ costs about $n-i$ multiplications and as many subtractions, so the whole
+substitution costs about $1+2+\cdots+n\approx\frac{n^{2}}{2}$ of each, roughly
+$n^{2}$ operations. For $n=1000$ that is a million operations, a few
+milliseconds of computing time. Triangular systems are cheap.
+
+%==============================================================================
+\section{Gaussian elimination and row-echelon form}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The idea}
+%------------------------------------------------------------------------------
+Use row operations, which do not change the solutions, to turn $[\,\mt{A}\mid\vc{b}\,]$
+into $[\,\mt{U}\mid\vc{c}\,]$ with $\mt{U}$ upper triangular, then back
+substitute. Part 1 \S4.4 hinted at this when it introduced triangular matrices.
+The method works one column at a time: use the diagonal entry of the column, the
+\textbf{pivot}, to clear every entry below it to zero.
+
+%------------------------------------------------------------------------------
+\subsection{Part 1's system, solved}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:part1}
+Start from the augmented matrix of \S40.1.
+
+\emph{Column 1.} The pivot is the $1$ in row 1. Row 2 already has a $0$ there.
+Row 3 has a $1$, so subtract row 1 from row 3:
+\[
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\1&0&1&4\end{aug}
+  \;\xrightarrow{R_3\gets R_3-R_1}\;
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\0&-2&1&-1\end{aug}.
+\]
+\emph{Column 2.} The pivot is the $1$ in row 2. Clear the $-2$ below it by adding
+twice row 2 to row 3:
+\[
+  \;\xrightarrow{R_3\gets R_3+2R_2}\;
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\0&0&3&9\end{aug}.
+\]
+Upper triangular. Back substitute: $x_3=9/3=3$, $x_2=5-x_3=2$,
+$x_1=5-2x_2=1$. So $\vc{x}=[\,1,2,3\,]$, the coordinates Part 1 \S1.6 built the
+example from, now \emph{found} rather than known in advance.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The algorithm}
+%------------------------------------------------------------------------------
+For an $n\times n$ system, the multiplier that clears entry $(i,k)$ is
+$m_{ik}=a_{ik}/a_{kk}$, the entry divided by the pivot above it.
+
+\begin{algo}{Gaussian elimination (forward phase)}{%
+  \textbf{Input:} the augmented matrix $[\,\mt{A}\mid\vc{b}\,]$ with
+  $\mt{A}\in\R^{n\times n}$.\quad
+  \textbf{Output:} $[\,\mt{U}\mid\vc{c}\,]$ with $\mt{U}$ upper triangular and the
+  same solutions.}
+\item \kw{for} $k = 1,\dots,n-1$:
+        \hfill\textit{\small work on column $k$}
+\item \ind \kw{if} $a_{kk}=0$:
+\item \indd \kw{if} a lower row has a nonzero entry in column $k$: swap it
+        with row $k$
+\item \indd \kw{else}: \kw{continue}
+        \hfill\textit{\small no pivot in this column}
+\item \ind \kw{for} $i = k+1,\dots,n$:
+\item \indd $m \;\gets\; a_{ik}\,/\,a_{kk}$
+\item \indd row $i$ $\;\gets\;$ row $i$ $-\;m\cdot$ row $k$
+        \hfill\textit{\small now $a_{ik}=0$}
+\item \kw{return} $[\,\mt{U}\mid\vc{c}\,]$
+\end{algo}
+
+\noindent Then back substitution finishes the job, if every diagonal entry of
+$\mt{U}$ is nonzero. Counting operations: clearing column $k$ updates $n-k$ rows
+of about $n-k$ entries each, about $2(n-k)^{2}$ operations, and summing over $k$
+gives about $\frac23n^{3}$. Elimination is the expensive part. For $n=1000$ it is
+under a billion operations, which a laptop does in about a second.
+
+%------------------------------------------------------------------------------
+\subsection{Zero pivots, and small ones}
+%------------------------------------------------------------------------------
+\begin{ex}
+$\begin{aug}{cc|c}0&1&2\\1&1&3\end{aug}$: the first pivot position holds a $0$, and
+nothing can be divided by it. Line 3 swaps the rows:
+$\begin{aug}{cc|c}1&1&3\\0&1&2\end{aug}$, already triangular, so $x_2=2$ and
+$x_1=1$.
+\end{ex}
+
+\begin{rmk}
+On a computer, a pivot that is merely \emph{small} is nearly as bad as a zero
+one: dividing by it magnifies every rounding error in its row. So practical codes
+swap at every column, bringing up whichever entry at or below the diagonal is
+largest in absolute value. This is \emph{partial pivoting}, and it is how the
+algorithm is actually run.
+\end{rmk}
+
+%------------------------------------------------------------------------------
+\subsection{Row-echelon form}
+%------------------------------------------------------------------------------
+Elimination works on any matrix, square or not, singular or not, if it is allowed
+to move right whenever a column has no pivot. What it produces has a definite
+shape.
+
+\begin{defn}[Row-echelon form]
+A matrix is in \textbf{row-echelon form} if
+\begin{enumerate}[label=(\arabic*),leftmargin=2em,itemsep=2pt]
+  \item any rows of all zeros are at the bottom, and
+  \item the first nonzero entry of each nonzero row (its \textbf{pivot}) lies
+        strictly to the right of the pivot of the row above.
+\end{enumerate}
+The columns that contain pivots are the \textbf{pivot columns}.
+\end{defn}
+
+\noindent The name is a picture: the pivots descend in steps, like an echelon of
+troops. ($\ast$ marks any number; boxes mark pivots.)
+\[
+  \begin{bmatrix}\boxed{2}&\ast&\ast&\ast\\0&\boxed{1}&\ast&\ast\\0&0&0&\boxed{5}\\0&0&0&0\end{bmatrix}
+  \text{ is in row-echelon form;}
+  \qquad
+  \begin{bmatrix}1&2\\3&4\end{bmatrix},\ \begin{bmatrix}0&1\\1&0\end{bmatrix}
+  \text{ are not.}
+\]
+For a square matrix, row-echelon form is upper triangular.
+
+%------------------------------------------------------------------------------
+\subsection{The determinant, by elimination}
+%------------------------------------------------------------------------------
+For a square $\mt{A}$, elimination uses only swaps (each changes the sign of
+the determinant, D5) and replacements (no change, D8), and ends at an upper
+triangular $\mt{U}$ whose determinant is the product of its diagonal (\S39.1). So
+\[
+  \boxed{\;\det\mt{A}=(-1)^{s}\,u_{11}u_{22}\cdots u_{nn},\;}
+\]
+where $s$ is the number of swaps. In Example~\ref{ex:part1} there were no swaps
+and the diagonal was $1,1,3$, so $\det\mt{A}=3$. A cofactor expansion agrees:
+$1(1-0)-2(0-1)+0=3$. At about $\frac23n^{3}$ operations, this is how
+determinants are computed in practice, not by the $n!$ of cofactors.
+
+This also completes law D10 of \S38. Row operations do not change solutions, so
+$\nullsp{\mt{A}}=\nullsp{\mt{U}}$. If every $u_{ii}\neq0$, back substitution on
+$\mt{U}\vc{x}=\vc{0}$ gives only $\vc{x}=\vc{0}$. If some $u_{kk}=0$ (take the
+first), the first $k$ columns of $\mt{U}$ have nonzero entries only in the first
+$k-1$ rows, and $k$ vectors confined to $k-1$ coordinates are dependent. So
+\[
+  \nullsp{\mt{A}}=\{\vc{0}\}
+  \iff \text{every }u_{ii}\neq0
+  \iff \det\mt{A}\neq0,
+\]
+and with rank--nullity, $\rank\mt{A}=n\iff\det\mt{A}\neq0$.
+
+%==============================================================================
+\section{Gauss--Jordan elimination and reduced row-echelon form}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Going further}
+%------------------------------------------------------------------------------
+Gaussian elimination stops at triangular and hands over to back substitution.
+\textbf{Gauss--Jordan elimination} keeps going with row operations instead: it
+scales every pivot to $1$ and clears the entries \emph{above} each pivot as well
+as below.
+
+\begin{defn}[Reduced row-echelon form]
+A matrix is in \textbf{reduced row-echelon form} (RREF) if it is in row-echelon
+form, every pivot equals $1$, and every pivot is the only nonzero entry in its
+column.
+\end{defn}
+
+\noindent Every matrix can be brought to reduced row-echelon form, and (we state
+without proof) the result does not depend on which row operations were used: a
+matrix has exactly one RREF.
+
+%------------------------------------------------------------------------------
+\subsection{A square system}
+%------------------------------------------------------------------------------
+\begin{ex}
+Continue Example~\ref{ex:part1} from its triangular form:
+\[
+  \begin{aligned}
+  &\begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\0&0&3&9\end{aug}
+  \xrightarrow{R_3\gets\frac13R_3}
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&1&5\\0&0&1&3\end{aug}\\[4pt]
+  &\qquad\xrightarrow{R_2\gets R_2-R_3}
+  \begin{aug}{ccc|c}1&2&0&5\\0&1&0&2\\0&0&1&3\end{aug}
+  \xrightarrow{R_1\gets R_1-2R_2}
+  \begin{aug}{ccc|c}1&0&0&1\\0&1&0&2\\0&0&1&3\end{aug}.
+  \end{aligned}
+\]
+The left block is now $\mt{I}$, and the system reads $x_1=1$, $x_2=2$, $x_3=3$
+directly.
+\end{ex}
+
+\noindent For a square system with a unique solution, Gauss--Jordan ends at
+$[\,\mt{I}\mid\vc{x}\,]$. Its real advantage shows when the solution is
+\emph{not} unique.
+
+%------------------------------------------------------------------------------
+\subsection{Pivot variables and free variables}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:free}
+Three equations, four unknowns:
+\[
+  \begin{aug}{cccc|c}1&2&0&1&1\\2&4&1&4&4\\3&6&1&5&5\end{aug}
+  \xrightarrow[R_3\gets R_3-3R_1]{R_2\gets R_2-2R_1}
+  \begin{aug}{cccc|c}1&2&0&1&1\\0&0&1&2&2\\0&0&1&2&2\end{aug}
+  \xrightarrow{R_3\gets R_3-R_2}
+  \begin{aug}{cccc|c}1&2&0&1&1\\0&0&1&2&2\\0&0&0&0&0\end{aug}.
+\]
+Column 2 had no pivot (after column 1 was cleared, its entries below row 1 were
+all $0$), so the second pivot is in column 3. The result is already in reduced
+row-echelon form, and it says
+\[
+  x_1+2x_2+x_4=1,\qquad x_3+2x_4=2,\qquad 0=0 .
+\]
+The pivot columns are $1$ and $3$; their unknowns $x_1,x_3$ are \textbf{pivot
+variables}. The others, $x_2$ and $x_4$, are \textbf{free variables}: nothing
+constrains them. Set $x_2=s$ and $x_4=t$, and solve for the pivot variables:
+$x_1=1-2s-t$, $x_3=2-2t$. Every solution is
+\[
+  \vc{x}=
+  \underbrace{\begin{bmatrix}1\\0\\2\\0\end{bmatrix}}_{\vc{x}_p}
+  +s\begin{bmatrix}-2\\1\\0\\0\end{bmatrix}
+  +t\begin{bmatrix}-1\\0\\-2\\1\end{bmatrix}.
+\]
+This is the shape promised in \S31.6: one solution $\vc{x}_p$ (take $s=t=0$) plus
+the null space. Check: $\mt{A}\vc{x}_p=[\,1,\ 2+2,\ 3+2\,]=[\,1,4,5\,]$, and each
+of the two other vectors is sent to $\vc{0}$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Reading off rank, nullity and bases}
+%------------------------------------------------------------------------------
+Row operations do not change which combinations of the columns are zero, because
+$\mt{A}\vc{x}=\vc{0}$ and $\mt{R}\vc{x}=\vc{0}$ have the same solutions when $\mt{R}$ is
+the RREF of $\mt{A}$. In $\mt{R}$, the pivot columns are distinct standard basis
+vectors, so they are independent, and each non-pivot column is a combination of the
+pivot columns to its left (its entries are the coefficients). The same relations
+hold among the columns of $\mt{A}$. Hence:
+
+\begin{thm}
+\label{thm:pivots}
+For any matrix $\mt{A}$, with $\mt{R}$ its reduced row-echelon form:
+\begin{enumerate}[label=(\alph*),leftmargin=2em,itemsep=2pt]
+  \item the columns of $\mt{A}$ in the pivot positions form a basis of
+        $\colsp{\mt{A}}$, so $\rank\mt{A}$ is the number of pivots;
+  \item setting one free variable to $1$ and the others to $0$, for each free
+        variable in turn, gives a basis of $\nullsp{\mt{A}}$, so
+        $\nullity\mt{A}$ is the number of free variables.
+\end{enumerate}
+\end{thm}
+
+\noindent For (b), the vectors are independent because each has a $1$ in its own
+free position, where all the others have $0$.
+
+Every column is either a pivot column or a free column, so
+\[
+  \underbrace{\#\text{pivots}}_{\rank}+\underbrace{\#\text{free}}_{\nullity}=n .
+\]
+This is the rank--nullity theorem of \S32 again, now proved by counting columns.
+In Example~\ref{ex:free}, $\rank=2$ (a basis of the column space is
+$[\,1,2,3\,]$ and $[\,0,1,1\,]$, columns $1$ and $3$ of $\mt{A}$), $\nullity=2$,
+and $n=4$.
+
+%==============================================================================
+\section{Homogeneous systems}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Always consistent}
+%------------------------------------------------------------------------------
+A homogeneous system $\mt{A}\vc{x}=\vc{0}$ always has the \textbf{trivial
+solution} $\vc{x}=\vc{0}$. Its augmented column is zero and stays zero under every
+row operation, so in practice one just reduces $\mt{A}$. The only question is
+whether there are \textbf{nontrivial} solutions as well, and by
+Theorem~\ref{thm:pivots} the answer is a count:
+\[
+  \text{nontrivial solutions exist}
+  \iff \text{there is a free variable}
+  \iff \nullity\mt{A}>0
+  \iff \rank\mt{A}<n .
+\]
+
+\begin{thm}
+A homogeneous system with more unknowns than equations ($m<n$) always has
+nontrivial solutions.
+\end{thm}
+
+\begin{proof}
+There is at most one pivot per row, so at most $m<n$ pivots, and at least one
+column is free.
+\end{proof}
+
+%------------------------------------------------------------------------------
+\subsection{An example}
+%------------------------------------------------------------------------------
+\begin{ex}
+$x+y+z=0$ and $x-y=0$:
+\[
+  \begin{bmatrix}1&1&1\\1&-1&0\end{bmatrix}
+  \xrightarrow{R_2\gets R_2-R_1}
+  \begin{bmatrix}1&1&1\\0&-2&-1\end{bmatrix}
+  \xrightarrow{R_2\gets-\frac12R_2}
+  \begin{bmatrix}1&1&1\\0&1&\frac12\end{bmatrix}
+  \xrightarrow{R_1\gets R_1-R_2}
+  \begin{bmatrix}1&0&\frac12\\0&1&\frac12\end{bmatrix}.
+\]
+$z$ is free; $x=-\frac12z$ and $y=-\frac12z$. With $z=2t$, the solutions are
+$t[\,-1,-1,2\,]$, a line in $\R^{3}$. Check: $-1-1+2=0$ and $-1+1=0$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{When a system is consistent}
+%------------------------------------------------------------------------------
+For a general $\vc{b}$, elimination on $[\,\mt{A}\mid\vc{b}\,]$ settles everything.
+A system is \textbf{consistent} if it has at least one solution.
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt]
+  \item If the row-echelon form has a row $[\,0\ \cdots\ 0\mid c\,]$ with
+        $c\neq0$, that row says $0=c$, and there is \textbf{no solution}.
+        Otherwise the system is consistent.
+  \item Consistent with no free variable: \textbf{exactly one} solution.
+  \item Consistent with a free variable: \textbf{infinitely many}.
+\end{itemize}
+A row $[\,0\ \cdots\ 0\mid c\,]$ with $c\neq0$ means the last column of
+$[\,\mt{A}\mid\vc{b}\,]$ is a pivot column. Equivalently, appending $\vc{b}$
+raised the rank, or $\vc{b}\notin\colsp{\mt{A}}$:
+\[
+  \mt{A}\vc{x}=\vc{b}\text{ is consistent}
+  \iff\rank[\,\mt{A}\mid\vc{b}\,]=\rank\mt{A}
+  \iff\vc{b}\in\colsp{\mt{A}} .
+\]
+
+\begin{ex}
+\S2.6 P5, one last time:
+$\begin{aug}{cc|c}1&2&3\\2&4&1\end{aug}\xrightarrow{R_2\gets R_2-2R_1}\begin{aug}{cc|c}1&2&3\\0&0&-5\end{aug}$.
+The second row says $0=-5$: no solution, found by the algorithm without any
+picture.
+\end{ex}
+
+%==============================================================================
+\section{Overdetermined and underdetermined systems}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{More equations than unknowns}
+%------------------------------------------------------------------------------
+A system with $m>n$ is \textbf{overdetermined}. Its column space has dimension at
+most $n<m$, a thin subspace of $\R^{m}$, and a randomly chosen $\vc{b}$ almost
+never lies in it. Overdetermined systems are usually inconsistent, and they are
+what measured data produce.
+
+\begin{ex}
+\label{ex:linefit}
+Find a line $y=c_0+c_1t$ through the three data points $(1,1)$, $(2,2)$,
+$(3,2)$. Each point gives one equation in the two unknowns $c_0,c_1$:
+\[
+  \begin{aug}{cc|c}1&1&1\\1&2&2\\1&3&2\end{aug}
+  \xrightarrow[R_3\gets R_3-R_1]{R_2\gets R_2-R_1}
+  \begin{aug}{cc|c}1&1&1\\0&1&1\\0&2&1\end{aug}
+  \xrightarrow{R_3\gets R_3-2R_2}
+  \begin{aug}{cc|c}1&1&1\\0&1&1\\0&0&-1\end{aug}.
+\]
+The last row says $0=-1$. No line passes through all three points, which is
+obvious once they are plotted. Yet there is clearly a line that passes
+\emph{close} to all three. Finding it is the subject of Part 9, which uses these
+same three points.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Fewer equations than unknowns}
+%------------------------------------------------------------------------------
+A system with $m<n$ is \textbf{underdetermined}. By \S44.1 the null space is
+nonzero, with nullity at least $n-m$, so if the system is consistent it has
+infinitely many solutions.
+
+\begin{ex}
+$x_1+x_2+x_3=3$: one equation, three unknowns, a whole plane of solutions,
+$[\,3,0,0\,]+s[\,-1,1,0\,]+t[\,-1,0,1\,]$. Among them, $[\,3,0,0\,]$ has length
+$3$ and $[\,1,1,1\,]$ has length $\sqrt3$. Is there a best one? A natural choice is
+the \emph{shortest}, and \S54 shows it is $[\,1,1,1\,]$, the solution lying
+along the row $[\,1,1,1\,]$ itself.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Summary}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}p{3.6cm} p{4.6cm} p{6.4cm}@{}}
+\toprule
+\textbf{Shape} & \textbf{Typical behaviour} & \textbf{What decides it} \\
+\midrule
+square, $\rank=n$ & exactly one solution, for every $\vc{b}$ & $\det\mt{A}\neq0$ \\
+square, $\rank<n$ & none, or infinitely many & whether $\vc{b}\in\colsp{\mt{A}}$ \\
+overdetermined, $m>n$ & usually none & whether $\vc{b}\in\colsp{\mt{A}}$; else least squares (Part 9) \\
+underdetermined, $m<n$ & none, or infinitely many & if consistent, choose the shortest (\S54) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{Practice}
+%------------------------------------------------------------------------------
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.6em,itemsep=5pt]
+  \item Solve by Gaussian elimination and back substitution:
+        $x+y+z=6$, $2x+3y+z=11$, $x-y+2z=5$. Read off the determinant of the
+        coefficient matrix from the pivots.
+  \item Bring $\begin{aug}{ccc|c}1&2&1&3\\2&4&3&7\end{aug}$ to reduced row-echelon
+        form and write every solution as $\vc{x}_p$ plus the null space. Give the
+        rank and nullity.
+  \item Is $x+y=2$, $x-y=0$, $2x+y=3$ consistent? If so, how many solutions?
+  \item Write the elementary matrix that adds $5$ times row 1 to row 3 of a
+        $3\times3$ matrix, and the elementary matrix that undoes it.
+  \item Compute $\det\begin{bmatrix}0&2&1\\1&1&1\\2&0&3\end{bmatrix}$ by
+        elimination, and check by cofactors.
+  \item Without computing, how many free variables at least does a homogeneous
+        system of $3$ equations in $5$ unknowns have?
+\end{enumerate}
+
+\subsubsection*{Answers}
+
+\noindent\textbf{P1.} $R_2-2R_1$: $[\,0,1,-1\mid-1\,]$; $R_3-R_1$:
+$[\,0,-2,1\mid-1\,]$; $R_3+2R_2$: $[\,0,0,-1\mid-3\,]$. So $z=3$, $y=-1+3=2$,
+$x=6-2-3=1$. No swaps and pivots $1,1,-1$, so $\det=-1$.
+
+\smallskip
+\noindent\textbf{P2.} $R_2-2R_1$: $[\,0,0,1\mid1\,]$; $R_1-R_2$:
+$[\,1,2,0\mid2\,]$. RREF
+$\begin{aug}{ccc|c}1&2&0&2\\0&0&1&1\end{aug}$; $x_2=s$ free, $x_1=2-2s$, $x_3=1$.
+$\vc{x}=[\,2,0,1\,]+s[\,-2,1,0\,]$. Rank $2$, nullity $1$.
+
+\smallskip
+\noindent\textbf{P3.} $R_2-R_1$: $[\,0,-2\mid-2\,]$; $R_3-2R_1$:
+$[\,0,-1\mid-1\,]$; $R_3-\frac12R_2$: $[\,0,0\mid0\,]$. Consistent, no free
+variable: exactly one solution, $y=1$, $x=1$. An overdetermined system
+\emph{can} be consistent; this one happens to be.
+
+\smallskip
+\noindent\textbf{P4.} $\begin{bmatrix}1&0&0\\0&1&0\\5&0&1\end{bmatrix}$, undone by
+$\begin{bmatrix}1&0&0\\0&1&0\\-5&0&1\end{bmatrix}$.
+
+\smallskip
+\noindent\textbf{P5.} Swap $R_1,R_2$: $\begin{bmatrix}1&1&1\\0&2&1\\2&0&3\end{bmatrix}$;
+$R_3-2R_1$: $[\,0,-2,1\,]$; $R_3+R_2$: $[\,0,0,2\,]$. Pivots $1,2,2$, one swap:
+$\det=-4$. Cofactors along row 1: $0-2(3-2)+1(0-2)=-4$. \checkmark
+
+\smallskip
+\noindent\textbf{P6.} At most $3$ pivots among $5$ columns, so at least $2$ free
+variables.
+
+\lookahead Example~\ref{ex:linefit} ended with no solution and an obvious best
+approximate one. Part 9 makes ``best'' precise: the $\vc{x}$ that makes
+$\mt{A}\vc{x}$ as close as possible to $\vc{b}$. It finds that $\vc{x}$ by solving a
+different, always-consistent square system, using the elimination of this part.
+
+\end{document}
