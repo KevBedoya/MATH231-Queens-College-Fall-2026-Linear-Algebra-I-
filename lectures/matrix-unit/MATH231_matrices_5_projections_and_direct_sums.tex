@@ -24,6 +24,13 @@
 %     its restatement for v in Sec. 28.3.
 %   - The direct sum, intuitively, from span{u} and span{v} with u, v
 %     orthogonal, using P and its complement: Sec. 29.1-29.3.
+%   - The Householder reflector, derived in R^2 as in class (Nov 3, 2026):
+%     reflect u onto the x-axis across the line through the average
+%     (centroid) m = (u + ||u|| e_1)/2, which gives H = 2vv' - I_2 with
+%     v = m/||m||: Sec. 28.5-28.6.  Sec. 28.7 adds the properties, the
+%     first-column check, the negative-x-axis exception, and the usual form
+%     I - 2ww' (the form Part 11 Sec. 58.4 cites).  Kept inside Sec. 28 at
+%     the instructor's choice, so no later section number moves.
 %
 %  NOTATION (plan N3).  The complementary projection is written I - P_u.
 %  The letter Q is reserved for orthogonal matrices and the QR factorization
@@ -130,7 +137,8 @@ matrix that projects onto a given line and use it; say what idempotent means and
 check whether a matrix is a projection; distinguish an orthogonal projection
 from a slanted one; build the complementary projection and identify it in
 $\R^{2}$ as the projection onto the perpendicular line; build a reflection from
-a projection; and split a vector into its pieces along a direct sum.
+a projection; build the Householder reflector that sends a vector onto the
+$x$-axis; and split a vector into its pieces along a direct sum.
 
 %==============================================================================
 \section{The projection matrix onto a line}
@@ -365,7 +373,7 @@ Part 9, where the best approximate solution of an unsolvable system turns out to
 be an orthogonal projection.
 
 %==============================================================================
-\section{The complementary projection}
+\section{The complementary projection and reflections}
 %==============================================================================
 
 %------------------------------------------------------------------------------
@@ -475,6 +483,195 @@ It is symmetric, and $(2\mt{P}-\mt{I})^{2}=4\mt{P}^{2}-4\mt{P}+\mt{I}=\mt{I}$,
 so it is its own transpose and squares to $\mt{I}$. Then
 $(2\mt{P}-\mt{I})\T(2\mt{P}-\mt{I})=\mt{I}$, and it is an orthogonal matrix
 (\S20.6): reflecting twice puts everything back, and lengths are kept.
+
+%------------------------------------------------------------------------------
+\subsection{Reflecting a vector onto the \texorpdfstring{$x$}{x}-axis}
+%------------------------------------------------------------------------------
+Here is a job for a reflection. Given a nonzero vector $\vc{u}\in\R^{2}$, find
+a reflection that sends $\vc{u}$ onto the positive $x$-axis.
+
+\medskip
+\noindent\textbf{Where $\vc{u}$ must land.} A reflection keeps lengths
+(\S28.4), so the image of $\vc{u}$ has length $\norm{\vc{u}}$. The only point
+of the positive $x$-axis at that distance from the origin is
+\[
+  \norm{\vc{u}}\,\vc{e}_1=[\,\norm{\vc{u}},\,0\,].
+\]
+
+\noindent\textbf{Where the mirror must be.} A mirror line sits halfway between
+a point and its reflection. So the midpoint of $\vc{u}$ and its image, which is
+the \emph{average} (or centroid) of the two vectors,
+\[
+  \vc{m}=\frac{\vc{u}+\norm{\vc{u}}\,\vc{e}_1}{2},
+\]
+lies on the mirror. The mirror is a line through the origin, so it is
+$\spanop\{\vc{m}\}$, as long as $\vc{m}\neq\vc{0}$ (\S28.7 handles the one
+exception). There is a second way to see it. The vectors $\vc{u}$ and
+$\norm{\vc{u}}\vc{e}_1$ have the same length, so the parallelogram they span is
+a rhombus. Its diagonal $\vc{u}+\norm{\vc{u}}\vc{e}_1$ cuts the angle between
+them in half, so the mirror is the line that bisects that angle.
+
+\medskip
+\noindent\textbf{A check.} The segment from $\vc{u}$ to its image should cross
+the mirror at a right angle. It does, because the two vectors have the same
+length:
+\[
+  (\vc{u}-\norm{\vc{u}}\vc{e}_1)\cdot(\vc{u}+\norm{\vc{u}}\vc{e}_1)
+  =\vc{u}\cdot\vc{u}-\norm{\vc{u}}^{2}\,\vc{e}_1\cdot\vc{e}_1
+  =\norm{\vc{u}}^{2}-\norm{\vc{u}}^{2}=0 .
+\]
+The picture is for $\vc{u}=[\,3,4\,]$, with $\norm{\vc{u}}=5$ and
+$\vc{m}=\frac12\bigl([\,3,4\,]+[\,5,0\,]\bigr)=[\,4,2\,]$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \draw[step=1cm,gray!22,very thin] (-0.5,-0.5) grid (6,4.5);
+  \draw[axisline] (-0.5,0) -- (6.2,0);
+  \draw[axisline] (0,-0.5) -- (0,4.7);
+  \draw[ForestGreen,thick] (-0.5,-0.25) -- (6,3)
+       node[right,font=\scriptsize]{mirror: $\spanop\{\vc{m}\}$};
+  \draw[dashed,thick,gray] (3,4) -- (5,0);
+  \draw (4.179,2.089) -- (4.268,1.911) -- (4.089,1.821);
+  \draw[vecarr,BrickRed] (0,0) -- (3,4);
+  \node[left,font=\small,BrickRed] at (2.95,4) {$\vc{u}=[3,4]$};
+  \draw[vecarr,RoyalBlue] (0,0) -- (5,0);
+  \node[below,font=\small,RoyalBlue] at (5,-0.05) {$\norm{\vc{u}}\vc{e}_1=[5,0]$};
+  \draw[vecarr,ForestGreen] (0,0) -- (4,2);
+  \node[below right,font=\small,ForestGreen] at (2.4,1.2) {$\vc{m}=[4,2]$};
+\end{tikzpicture}
+\end{center}
+
+%------------------------------------------------------------------------------
+\subsection{The Householder reflector}
+%------------------------------------------------------------------------------
+Now build the reflection across $\spanop\{\vc{m}\}$ with \S28.4. Scale $\vc{m}$
+to the unit vector $\vc{v}=\vc{m}/\norm{\vc{m}}$. Then
+$\mt{P}_{\vc{m}}=\vc{v}\vc{v}\T$ (\S26.2), and the reflection is
+$2\mt{P}_{\vc{m}}-\mt{I}$.
+
+\needspace{12\baselineskip}
+\begin{defn}[Householder reflector]
+Let $\vc{u}\in\R^{2}$ be a nonzero vector that does not point along the negative
+$x$-axis. Let
+\[
+  \vc{m}=\frac{\vc{u}+\norm{\vc{u}}\,\vc{e}_1}{2}
+  \qquad\text{and}\qquad
+  \vc{v}=\frac{\vc{m}}{\norm{\vc{m}}} .
+\]
+The \textbf{Householder reflector} for $\vc{u}$ is
+\[
+  \boxed{\;\mt{H}=2\vc{v}\vc{v}\T-\mt{I}_{2}\;},
+\]
+the reflection across the line spanned by the average of $\vc{u}$ and
+$\norm{\vc{u}}\vc{e}_1$. Here $\mt{I}_{2}$ is the $2\times2$ identity.
+\end{defn}
+
+\begin{thm}
+\label{thm:householder}
+The Householder reflector sends $\vc{u}$ onto the positive $x$-axis:
+$\mt{H}\vc{u}=\norm{\vc{u}}\,\vc{e}_1$.
+\end{thm}
+
+\begin{proof}
+The key fact is that the projection of $\vc{u}$ onto the line through $\vc{m}$
+is $\vc{m}$ itself. Write $r=\norm{\vc{u}}$, and $u_1=\vc{e}_1\cdot\vc{u}$ for the
+first entry of $\vc{u}$. Then
+\[
+  \vc{m}\cdot\vc{u}
+  =\tfrac12\bigl(\vc{u}\cdot\vc{u}+r\,\vc{e}_1\cdot\vc{u}\bigr)
+  =\tfrac12\bigl(r^{2}+ru_1\bigr),
+\]
+\[
+  \vc{m}\cdot\vc{m}
+  =\tfrac14\bigl(\vc{u}\cdot\vc{u}+2r\,\vc{e}_1\cdot\vc{u}
+     +r^{2}\,\vc{e}_1\cdot\vc{e}_1\bigr)
+  =\tfrac14\bigl(2r^{2}+2ru_1\bigr)
+  =\tfrac12\bigl(r^{2}+ru_1\bigr).
+\]
+The two are equal, so
+$\mt{P}_{\vc{m}}\vc{u}=\frac{\vc{m}\cdot\vc{u}}{\vc{m}\cdot\vc{m}}\,\vc{m}=\vc{m}$.
+Therefore
+\[
+  \mt{H}\vc{u}=2\mt{P}_{\vc{m}}\vc{u}-\vc{u}
+  =2\vc{m}-\vc{u}
+  =(\vc{u}+r\,\vc{e}_1)-\vc{u}
+  =r\,\vc{e}_1 .
+  \qedhere
+\]
+\end{proof}
+
+\noindent In the language of \S28.4, the piece of $\vc{u}$ along the mirror is
+$\vc{m}$, and the perpendicular piece is
+$\vc{u}-\vc{m}=\frac12(\vc{u}-\norm{\vc{u}}\vc{e}_1)$. The reflection keeps the
+first piece and reverses the second, which gives
+$\vc{m}-(\vc{u}-\vc{m})=2\vc{m}-\vc{u}$.
+
+\begin{ex}
+\label{ex:householder}
+Take $\vc{u}=[\,3,4\,]$, as in the picture of \S28.5. There
+$\vc{m}=[\,4,2\,]$, so $\norm{\vc{m}}=\sqrt{20}$ and
+$\vc{v}=\frac{1}{\sqrt{20}}[\,4,2\,]=\frac{1}{\sqrt5}[\,2,1\,]$. Then
+$\vc{v}\vc{v}\T=\frac15\begin{bmatrix}4&2\\2&1\end{bmatrix}$, the projection
+onto the line through $[\,2,1\,]$ from Example~\ref{ex:proj}(c), and
+\[
+  \mt{H}=\frac25\begin{bmatrix}4&2\\2&1\end{bmatrix}
+        -\begin{bmatrix}1&0\\0&1\end{bmatrix}
+  =\frac15\begin{bmatrix}3&4\\4&-3\end{bmatrix},
+  \qquad
+  \mt{H}\vc{u}=\frac15\,[\,9+16,\ 12-12\,]=[\,5,0\,] . \quad\checkmark
+\]
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Properties, and the usual form}
+%------------------------------------------------------------------------------
+\textbf{It is a reflection.} $\mt{H}$ is built as in \S28.4, so it is
+symmetric, $\mt{H}^{2}=\mt{I}$, and it is orthogonal. Its determinant is $-1$:
+in Example~\ref{ex:householder}, $\frac{1}{25}(-9-16)=-1$.
+
+\medskip
+\noindent\textbf{Its first column is $\vc{u}$, scaled to length $1$.} Apply
+$\mt{H}$ to both sides of $\mt{H}\vc{u}=\norm{\vc{u}}\vc{e}_1$. Since
+$\mt{H}^{2}=\mt{I}$, this gives $\vc{u}=\norm{\vc{u}}\,\mt{H}\vc{e}_1$, so
+$\mt{H}\vc{e}_1=\vc{u}/\norm{\vc{u}}$. Every $2\times2$ orthogonal matrix with
+determinant $-1$ has the form $\begin{bmatrix}a&c\\c&-a\end{bmatrix}$ (\S21.2),
+so in the plane
+\[
+  \mt{H}=\frac{1}{\norm{\vc{u}}}\begin{bmatrix}u_1&u_2\\u_2&-u_1\end{bmatrix}.
+\]
+This is a quick check on a computation. In Example~\ref{ex:householder} it reads
+$\frac15\begin{bmatrix}3&4\\4&-3\end{bmatrix}$. It is not a replacement for the
+construction, since it works only in the plane.
+
+\medskip
+\noindent\textbf{The exception.} If $\vc{u}$ points along the negative
+$x$-axis, then $\vc{u}=-\norm{\vc{u}}\vc{e}_1$ and the average $\vc{m}$ is
+$\vc{0}$, so there is no line to reflect across. No construction is needed:
+the reflection across the $y$-axis, $\diagop(-1,1)$, sends $\vc{u}$ to
+$\norm{\vc{u}}\vc{e}_1$.
+
+\medskip
+\noindent\textbf{The usual form.} Software, and most books, write a Householder
+reflector as $\mt{I}-2\vc{w}\vc{w}\T$ with $\vc{w}$ a unit vector. In the plane
+this is the same matrix. Take $\vc{w}$ to be a unit vector perpendicular to
+$\vc{v}$. Theorem~\ref{thm:complement} gives
+$\vc{v}\vc{v}\T+\vc{w}\vc{w}\T=\mt{I}$, so
+\[
+  2\vc{v}\vc{v}\T-\mt{I}
+  =2(\mt{I}-\vc{w}\vc{w}\T)-\mt{I}
+  =\mt{I}-2\vc{w}\vc{w}\T .
+\]
+By the check in \S28.5, $\vc{w}$ points along $\vc{u}-\norm{\vc{u}}\vc{e}_1$, the
+segment from the image to $\vc{u}$. So $\mt{I}-2\vc{w}\vc{w}\T$ reads ``reflect
+across the line perpendicular to $\vc{w}$''. That description carries over to
+$\R^{n}$: there the vectors perpendicular to $\vc{w}$ form an
+$(n-1)$-dimensional subspace (a plane, in $\R^{3}$), and
+$\mt{I}-2\vc{w}\vc{w}\T$ reflects across it. The reflectors are named for Alston
+Householder, who introduced them for this purpose in 1958.
+
+\lookahead Part 11 uses a sequence of Householder reflectors to compute the
+$QR$ decomposition. Each one turns a column into a multiple of $\vc{e}_1$,
+which zeros out every entry below the first, and keeps lengths exactly.
 
 %==============================================================================
 \section{The direct sum}
@@ -635,6 +832,9 @@ $[\,3,3,3\,]+[\,-2,-1,3\,]$, its average and its centered part.
         and reflect $[\,1,0\,]$.
   \item Show that if $\mt{P}$ is a projection then $\mt{P}^{k}=\mt{P}$ for every
         $k\ge1$.
+  \item Find the Householder reflector $\mt{H}$ for $\vc{u}=[\,-3,4\,]$. Check
+        that $\mt{H}\vc{u}=[\,5,0\,]$ and that the first column of $\mt{H}$ is
+        $\vc{u}/\norm{\vc{u}}$. Compare with P5.
 \end{enumerate}
 
 \subsubsection*{Answers}
@@ -670,6 +870,22 @@ $\begin{bmatrix}a&c\\c&-a\end{bmatrix}$, as \S21 requires.)
 
 \smallskip
 \noindent\textbf{P6.} By induction: $\mt{P}^{k+1}=\mt{P}^{k}\mt{P}=\mt{P}\mt{P}=\mt{P}$.
+
+\smallskip
+\noindent\textbf{P7.} $\norm{\vc{u}}=5$, so
+$\vc{m}=\frac12\bigl([\,-3,4\,]+[\,5,0\,]\bigr)=[\,1,2\,]$ and
+$\vc{v}=\frac{1}{\sqrt5}[\,1,2\,]$. Then
+\[
+  \mt{H}=\frac25\begin{bmatrix}1&2\\2&4\end{bmatrix}-\mt{I}
+  =\begin{bmatrix}-\frac35&\frac45\\[2pt]\frac45&\frac35\end{bmatrix},
+  \qquad
+  \mt{H}\vc{u}=\Bigl[\,\frac{9+16}{5},\ \frac{-12+12}{5}\,\Bigr]=[\,5,0\,].
+\]
+The first
+column is $[\,-\frac35,\frac45\,]=\vc{u}/5$. \checkmark\ It is the matrix of P5:
+the mirror is the line through $[\,1,2\,]$, and P5's
+$[\,1,0\,]\mapsto[\,-\frac35,\frac45\,]$ is the first-column fact,
+$\mt{H}\vc{e}_1=\vc{u}/\norm{\vc{u}}$.
 
 \lookahead Part 6 takes the two subspaces that a projection splits the space
 into, $\colsp{\mt{P}}$ and what $\mt{P}$ crushes, and asks the same questions of
