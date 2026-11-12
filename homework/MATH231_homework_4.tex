@@ -2,8 +2,12 @@
 %  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
 %  HOMEWORK 4 -- Transformations, Determinants, Systems and Least Squares
 %
-%  STATUS: draft for the instructor's review.  Started 2026-11-05.
-%  Due date not set yet (\duedate below).
+%  STATUS: started 2026-11-05.  Due Sunday, November 29, 2026, 11:59 PM
+%  (set by the instructor 2026-11-12).
+%  Revised 2026-11-12: Part G (Gram-Schmidt and QR, S55-S58) removed, since
+%  Part 11 will not be lectured before Midterm 2 (2026-11-24).  Its two
+%  problems, with the part preamble, are now Problems 15-16 of the catalog in
+%  plan/future_homework/ (gitignored).
 %  Revised 2026-11-11 at the instructor's request:
 %   - ROWS AND COLUMNS.  Students mixed up row and column vectors on HW3.
 %     Convention now: x in R^n is a column; a bracket written across the line,
@@ -20,7 +24,7 @@
 %     lecture has no notes file, so A.4 defines everything it uses.  It went
 %     into Part A (not a new Part H) to keep the limit of 7 parts.
 %
-%  SCOPE.  This file covers the matrix unit, Parts 3-11:
+%  SCOPE.  This file covers the matrix unit, Parts 3-10:
 %     MATH231_matrices_3_matrices_that_move_the_plane          (S15-S21)
 %     MATH231_matrices_4_area_and_rotation                     (S22-S25)
 %     MATH231_matrices_5_projections_and_direct_sums           (S26-S29)
@@ -29,15 +33,15 @@
 %     MATH231_matrices_8_gaussian_elimination                  (S40-S45)
 %     MATH231_matrices_9_least_squares                         (S46-S49)
 %     MATH231_matrices_10_the_inverse_and_the_pseudoinverse    (S50-S54)
-%     MATH231_matrices_11_gram_schmidt_and_qr                  (S55-S58)
 %  As of 2026-11-05 only Parts 1-5 had been lectured (through the Householder
-%  reflector, Nov 3).  If topics are dropped from Parts 6-11, delete the
+%  reflector, Nov 3).  If topics are dropped from Parts 6-10, delete the
 %  matching problems; the cross-references are listed below.
 %
-%  LIMITS SET BY THE INSTRUCTOR: at most 7 parts (A-G) and at most 12 pages.
+%  LIMITS SET BY THE INSTRUCTOR: at most 7 parts and at most 12 pages.  Since
+%  Part G was removed it has 6 parts, A-F.
 %  Every problem also has at most 7 lettered sub-parts, (a)-(g).
 %
-%  LAYOUT.  Seven parts, one per topic, in lecture order:
+%  LAYOUT.  Six parts, one per topic, in lecture order:
 %     A  Matrices that move the plane      S15-S21, S24-S25
 %        + linear and affine maps (A.4)    lecture only, no notes file
 %     B  Projections, reflections, direct sums   S26-S29
@@ -45,14 +49,12 @@
 %     D  The null space and rank-nullity   S30-S34
 %     E  Elimination and the inverse       S40-S45, S50-S53
 %     F  Least squares and the pseudo-inverse    S46-S49, S54
-%     G  Gram-Schmidt and QR               S55-S58
 %
 %  CROSS-REFERENCES BETWEEN PROBLEMS (update them if a problem is cut):
 %   - B.1(d) points at the matrices of A.1.
 %   - B.3(b) uses the formula of B.1(c).
 %   - C.1(c) uses R_{pi/3} from Part A's preamble.
 %   - F.2(a) checks its identity on F.1.
-%   - G.2(b)'s hint points at D.2(b); G.2(d) uses G.1.
 %   - A.4(c) uses V_S from Part A's preamble; A.4(e) and (f) use the T of
 %     A.4(c); A.4(e) uses the 3x3 block form of S17.4; A.4(f) uses R_{pi/4}.
 %
@@ -173,7 +175,7 @@
 \newenvironment{aug}[1]{\left[\begin{array}{#1}}{\end{array}\right]}
 
 %--------------------------------------------------------- fill this in ------
-\newcommand{\duedate}{to be announced}
+\newcommand{\duedate}{Sunday, November 29, 2026, 11:59 PM}
 
 \title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
        {\large\sffamily Homework 4 \textbullet\ Transformations, Determinants,
@@ -192,7 +194,7 @@
 \medskip
 \begin{center}
 \small
-\renewcommand{\arraystretch}{1.18}
+\renewcommand{\arraystretch}{1.08}
 \begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{12cm}@{}}
 \toprule
 \textbf{Matrix Unit} & \textbf{Sections} & \textbf{Topics} \\
@@ -205,7 +207,6 @@ Part 7 & \S35--\S39 & cofactors; the Laplace expansion; principal minors; the la
 Part 8 & \S40--\S45 & row operations; Gaussian and Gauss--Jordan elimination; consistency \\
 Part 9 & \S46--\S49 & least squares; the normal equations; fitting a line \\
 Part 10 & \S50--\S54 & Cramer's rule; the inverse; the adjugate; the pseudo-inverse \\
-Part 11 & \S55--\S58 & Gram--Schmidt; the $QR$ decomposition; $QR$ and least squares \\
 Lecture & --- & linear maps and operators; $C^{\infty}(\R)$; affine maps and their matrix $[\,\mt{A}:\vc{b}\,]$ \\
 \bottomrule
 \end{tabular}
@@ -213,14 +214,14 @@ Lecture & --- & linear maps and operators; $C^{\infty}(\R)$; affine maps and the
 
 \noindent\textbf{Grading.} Every problem is worth the same number of points.
 
-\medskip
+\smallskip
 \noindent\textbf{Section numbers and notation.} A bare section number such as
 \S28.4 refers to the matrix unit, whose numbering runs straight through
 Parts 1--11. $\vc{e}_i$ is the standard basis vector with a $1$ in slot $i$.
 For a matrix $\mt{A}$, $\colsp{\mt{A}}$, $\rowsp{\mt{A}}$ and $\nullsp{\mt{A}}$
 are its column space, row space and null space.
 
-\medskip
+\smallskip
 \noindent\textbf{Rows and columns.} A vector $\vc{x}\in\R^{n}$ is a
 \emph{column}, an $n\times1$ matrix. A \emph{row} vector is a $1\times n$
 matrix, an element of $\R^{1\times n}$. A bracket written across the line is a
@@ -232,20 +233,20 @@ is a column, and $\vc{u}\T\vc{v}$ is a number while $\vc{u}\vc{v}\T$ is a
 matrix. Keep the two apart in your answers too: a column written across the
 line needs its $\T$.
 
-\medskip
+\smallskip
 \noindent\textbf{On the proof problems} (A.1(e), A.3(a), (b), A.4(a), (b), (d)--(f),
-B.2(a)--(c), B.3(b), C.3(b), (c), D.2(a)--(c), E.3(d), (e), F.2(a), and G.2(a)--(c)). None
+B.2(a)--(c), B.3(b), C.3(b), (c), D.2(a)--(c), E.3(d), (e), and F.2(a)). None
 of them requires a clever idea. Write down what you are assuming, justify each
 step by naming the definition, law or theorem that licenses it, and end with a
 sentence saying what you have shown. A chain of equalities with no words is not
 a proof; neither is a paragraph of words with no computation.
 
-\medskip
+\smallskip
 \noindent\textbf{Collaboration} is encouraged --- work at a board together, argue
 about the problems. What you submit must be written by you, in your own words.
 
 \begin{callout}{What to submit}
-Push your written work for Parts A--G to your own MATH 231 GitHub repository,
+Push your written work for Parts A--F to your own MATH 231 GitHub repository,
 as a single PDF named \texttt{hw4.pdf} in a folder named \texttt{homework/hw4/}.
 Handwritten and scanned or photographed is completely fine, as long as it is
 legible and the pages are in order.
@@ -254,10 +255,10 @@ legible and the pages are in order.
 \texttt{.png}, a \texttt{.heic}, or a link to a file hosted somewhere else will
 not be graded.
 
-\textbf{Type Parts A--G up instead and you earn $+5$ points of extra credit on
+\textbf{Type Parts A--F up instead and you earn $+5$ points of extra credit on
 this assignment.} Any typesetting system counts --- \LaTeX, Word's equation
 editor, or anything else that produces readable mathematics --- and the extra
-credit is for the whole of Parts A--G, not for typing up some of it. Sketches
+credit is for the whole of Parts A--F, not for typing up some of it. Sketches
 may be drawn by hand and scanned into the PDF.
 \end{callout}
 
@@ -918,69 +919,6 @@ The four data points are $(0,1)$, $(1,3)$, $(2,4)$ and $(3,4)$.
         equations have infinitely many solutions, and find them all. Show that
         $\mt{A}^{+}\vc{b}$ is one of them, and that it is shorter than the
         least-squares solution $[\,2,0\,]\T$.
-\end{parts}
-\end{prob}
-
-%==============================================================================
-\section{Gram--Schmidt and \texorpdfstring{$QR$}{QR}}
-%==============================================================================
-\emph{Matrix Unit, \S55--\S58.} Gram--Schmidt turns independent columns
-$\vc{a}_1,\dots,\vc{a}_n$ of $\mt{A}$ into orthonormal vectors by
-\[
-  \vc{w}_k=\vc{a}_k-\sum_{j=1}^{k-1}(\vc{q}_j\T\vc{a}_k)\,\vc{q}_j,
-  \qquad
-  \vc{q}_k=\frac{\vc{w}_k}{\norm{\vc{w}_k}}
-  \qquad(\S55.2).
-\]
-Keeping the numbers $r_{jk}=\vc{q}_j\T\vc{a}_k$ for $j<k$ and
-$r_{kk}=\norm{\vc{w}_k}$ gives the \textbf{$QR$ decomposition}
-$\mt{A}=\mt{Q}\mt{R}$: $\mt{Q}=[\,\vc{q}_1\ \cdots\ \vc{q}_n\,]$ has orthonormal
-columns, so $\mt{Q}\T\mt{Q}=\mt{I}_n$, and $\mt{R}$ is upper triangular with
-entries $r_{jk}$ and positive diagonal (\S56). Then
-$\colsp{\mt{Q}}=\colsp{\mt{A}}$ (\S57), and the least-squares solution of
-$\mt{A}\vc{x}=\vc{b}$ solves the triangular system $\mt{R}\xh=\mt{Q}\T\vc{b}$
-(\S58.1).
-
-%------------------------------------------------------------------------------
-\begin{prob}[A $QR$ decomposition, and least squares with it]
-Let
-\[
-  \mt{A}=\begin{bmatrix}1&1\\2&0\\2&4\end{bmatrix}.
-\]
-\begin{parts}
-  \item Run Gram--Schmidt on the columns of $\mt{A}$: find $r_{11}$,
-        $\vc{q}_1$, $r_{12}$, $\vc{w}_2$, $r_{22}$ and $\vc{q}_2$.
-  \item Write down $\mt{Q}$ and $\mt{R}$, and check that
-        $\mt{Q}\T\mt{Q}=\mt{I}_2$ and $\mt{Q}\mt{R}=\mt{A}$.
-  \item Let $\vc{b}=[\,3,3,0\,]\T$. Find the least-squares solution of
-        $\mt{A}\vc{x}=\vc{b}$ by solving $\mt{R}\xh=\mt{Q}\T\vc{b}$ by back
-        substitution. Check your answer against the normal equations.
-  \item Find the $QR$ decomposition of the square matrix
-        $\mt{C}=\left[\begin{smallmatrix}3&-1\\4&7\end{smallmatrix}\right]$.
-        Its $\mt{Q}$ is a rotation $\mt{R}_\theta$: give $\cos\theta$ and
-        $\sin\theta$. Check that $\det\mt{C}=\det\mt{Q}\,\det\mt{R}$.
-\end{parts}
-\end{prob}
-
-%------------------------------------------------------------------------------
-\begin{prob}[What $\mt{Q}$ does]
-In (a) and (b), $\mt{Q}\in\R^{m\times n}$ is any matrix with
-$\mt{Q}\T\mt{Q}=\mt{I}_n$.
-\begin{parts}
-  \item Prove that $(\mt{Q}\vc{x})\T(\mt{Q}\vc{y})=\vc{x}\T\vc{y}$ for all
-        $\vc{x},\vc{y}\in\R^{n}$, and deduce that
-        $\norm{\mt{Q}\vc{x}}=\norm{\vc{x}}$.
-  \item Prove that $\mt{Q}\mt{Q}\T$ is an orthogonal projection matrix. Then
-        prove that if $m>n$, then $\mt{Q}\mt{Q}\T\neq\mt{I}_m$.
-        \hint{D.2(b) bounds the rank of a product.}
-  \item Let $\mt{A}\in\R^{m\times n}$ have independent columns, with $QR$
-        decomposition $\mt{A}=\mt{Q}\mt{R}$. Explain why $\mt{R}$ is
-        invertible, and prove that
-        $\mt{A}(\mt{A}\T\mt{A})^{-1}\mt{A}\T=\mt{Q}\mt{Q}\T$, naming the laws of
-        \S53.1 you use.
-  \item For the $\mt{Q}$ of Problem G.1, compute $\mt{Q}\mt{Q}\T$, and check that
-        $\mt{Q}\mt{Q}\T\vc{b}=\mt{A}\xh$ for the $\vc{b}$ and $\xh$ of
-        G.1(c).
 \end{parts}
 \end{prob}
 
