@@ -1,0 +1,658 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MATRIX UNIT, PART 7 -- The Determinant in General
+%
+%  Section numbering runs CONTINUOUSLY across the parts of the matrix unit;
+%  see Part 2's header for the full map.  This part is Sections 35-39, hence
+%  \setcounter{section}{34}.
+%
+%  STATUS: complete.  Sections 35-39.  Written from the plan in
+%  plan/MATH231_remaining_units_plan.tex (2026-10-25).
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%
+%  WHAT THE INSTRUCTOR SPECIFIED, AND WHERE IT IS.
+%   - Generalizing the determinant: Laplace expansion, cofactor expansions,
+%     minors (Sec. 35-36), principal minors (Sec. 37), general properties
+%     (Sec. 38), determinants of orthogonal, diagonal and triangular matrices
+%     with straightforward proofs (Sec. 39).
+%
+%  DECISIONS CARRIED FROM THE PLAN.
+%
+%   D6. WHAT IS PROVED.  The determinant is DEFINED by expansion along the
+%       first row (Def. 36.1).  STATED without proof, because a proof needs
+%       permutations: that expansion along any row or column gives the same
+%       number (Thm 36.2); that a row swap flips the sign (D5); the product
+%       rule for n > 2 (D9).  PROVED from those: det I = 1 (D1); det A' =
+%       det A (D2, by induction using Thm 36.2); zero row (D3); scaling a row
+%       and det(aA) = a^n det A (D4); two equal rows (D6, from D5); linearity
+%       in a row (D7); row replacement (D8); dependent columns give 0 (half of
+%       D10); triangular, diagonal, orthogonal (Sec. 39).  The other half of
+%       D10 (rank n => det != 0) is completed in Sec. 42.6 by elimination.
+%
+%   The property list is labelled D1-D10 INSIDE THE DOCUMENT (determinant
+%   laws), in the style of Part 1's M1-M6 and R1-R4.  These are unrelated to
+%   the plan's decision numbers D1-D12 cited in these header comments.
+%
+%   PRINCIPAL MINORS (Sec. 37) close with Sylvester's criterion for a
+%   symmetric 2x2, proved by completing the square, and a pointer to the
+%   eigen unit and the Hessian.  The n x n criterion is stated only.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\setlength{\emergencystretch}{3em}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}[1][the vector unit]{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From #1.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\nullsp}[1]{\operatorname{null}[#1]}
+\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\diagop}{diag}
+\DeclareMathOperator{\rank}{rank}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Matrix Unit, Part 7 \textbullet\ The Determinant
+        in General}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{34}  % this part opens at Section 35; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This is Part 7 of the matrix unit,
+Sections 35--39. Section numbers run continuously through the unit (Part 2's
+opening table lists them all).
+
+\medskip
+\noindent\textbf{Assumed.} The $2\times2$ determinant: its definition (\S14),
+its properties P1--P11 (\S22), and its meaning as an area (\S23). Rank and
+null space (\S12, \S31--\S32). Orthogonal matrices (\S20) and the rotations of
+$\R^{3}$ (\S25).
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} Compute minors and
+cofactors; compute the determinant of a $3\times3$ or $4\times4$ matrix by
+cofactor expansion, choosing a good row or column; find principal and leading
+principal minors; use the properties of the determinant to compute it without
+expanding; and prove that the determinant of a triangular matrix is the product
+of its diagonal and that an orthogonal matrix has determinant $\pm1$.
+
+\bigskip
+\noindent For a $2\times2$ matrix the number $ad-bc$ did three jobs. It measured
+how the matrix scales area, its sign recorded whether the plane was flipped, and
+it was nonzero exactly when the matrix had full rank. We want a number with the
+same three powers for an $n\times n$ matrix: a volume factor in $\R^{3}$, and the
+same test of rank in every dimension. It is built recursively, out of
+determinants one size smaller, with $ad-bc$ as the first step.
+
+%==============================================================================
+\section{Minors and cofactors}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Minors}
+%------------------------------------------------------------------------------
+\begin{defn}[Minor]
+Let $\mt{A}\in\R^{n\times n}$ with $n\ge2$. Deleting row $i$ and column $j$ of
+$\mt{A}$ leaves an $(n-1)\times(n-1)$ matrix, written $\mt{A}_{ij}$. Its
+determinant
+\[
+  M_{ij}=\det(\mt{A}_{ij})
+\]
+is the \textbf{$(i,j)$ minor} of $\mt{A}$.
+\end{defn}
+
+\noindent The definition is recursive: a minor of an $n\times n$ matrix is the
+determinant of a matrix one size smaller. For a $3\times3$ matrix the minors are
+$2\times2$ determinants, which we know how to compute.
+
+\begin{ex}
+\label{ex:minors}
+For
+$\mt{A}=\begin{bmatrix}1&2&3\\4&5&6\\7&8&10\end{bmatrix}$, the three minors along
+the first row are
+\[
+  M_{11}=\det\begin{bmatrix}5&6\\8&10\end{bmatrix}=2,\qquad
+  M_{12}=\det\begin{bmatrix}4&6\\7&10\end{bmatrix}=-2,\qquad
+  M_{13}=\det\begin{bmatrix}4&5\\7&8\end{bmatrix}=-3 .
+\]
+For $M_{12}$, row $1$ and column $2$ were crossed out, leaving the four entries
+$4,6,7,10$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Cofactors}
+%------------------------------------------------------------------------------
+\begin{defn}[Cofactor]
+The \textbf{$(i,j)$ cofactor} of $\mt{A}$ is the minor with a sign attached:
+\[
+  C_{ij}=(-1)^{i+j}M_{ij}.
+\]
+\end{defn}
+
+\noindent The sign $(-1)^{i+j}$ is $+$ when $i+j$ is even and $-$ when it is
+odd, which makes a checkerboard starting with $+$ in the top-left corner:
+\[
+  \begin{bmatrix}+&-&+&\cdots\\-&+&-&\cdots\\+&-&+&\cdots\\\vdots&\vdots&\vdots&\ddots\end{bmatrix}.
+\]
+In Example~\ref{ex:minors}, $C_{11}=+2$, $C_{12}=-(-2)=2$, $C_{13}=+(-3)=-3$.
+
+%------------------------------------------------------------------------------
+\subsection{The \texorpdfstring{$2\times2$}{2x2} case, seen again}
+%------------------------------------------------------------------------------
+Agree that the determinant of a $1\times1$ matrix $[\,a\,]$ is the number $a$
+itself. Then for $\mt{A}=\begin{bmatrix}a&b\\c&d\end{bmatrix}$, deleting row 1 and
+column 1 leaves $[\,d\,]$, and deleting row 1 and column 2 leaves $[\,c\,]$, so
+$C_{11}=d$ and $C_{12}=-c$, and
+\[
+  aC_{11}+bC_{12}=ad-bc=\det\mt{A}.
+\]
+The $2\times2$ formula already has the shape ``each entry of the first row,
+times its cofactor, added up''. That shape is the general definition.
+
+%==============================================================================
+\section{The Laplace expansion}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+\begin{defn}[Determinant]
+For $\mt{A}\in\R^{n\times n}$: if $n=1$, $\det[\,a\,]=a$. If $n\ge2$,
+\[
+  \boxed{\;\det\mt{A}=\sum_{j=1}^{n}a_{1j}C_{1j}
+  =a_{11}C_{11}+a_{12}C_{12}+\cdots+a_{1n}C_{1n}.\;}
+\]
+This is the \textbf{Laplace expansion}, or \textbf{cofactor expansion}, along the
+first row.
+\end{defn}
+
+\noindent Each cofactor is a determinant of size $n-1$, computed by the same rule,
+until the sizes reach $2\times2$ or $1\times1$.
+
+\begin{ex}
+For the matrix of Example~\ref{ex:minors},
+\[
+  \det\mt{A}=1\cdot C_{11}+2\cdot C_{12}+3\cdot C_{13}=1(2)+2(2)+3(-3)=-3 .
+\]
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The \texorpdfstring{$3\times3$}{3x3} formula}
+%------------------------------------------------------------------------------
+Written out for a general $3\times3$ matrix, the definition gives
+\[
+  \det\begin{bmatrix}a_{11}&a_{12}&a_{13}\\a_{21}&a_{22}&a_{23}\\a_{31}&a_{32}&a_{33}\end{bmatrix}
+  =a_{11}(a_{22}a_{33}-a_{23}a_{32})
+   -a_{12}(a_{21}a_{33}-a_{23}a_{31})
+   +a_{13}(a_{21}a_{32}-a_{22}a_{31}),
+\]
+a sum of six products. Each product takes exactly one entry from each row and
+one from each column. That is true in every size, and it is the starting point of
+the closed formula (with permutations) that more advanced courses use.
+
+%------------------------------------------------------------------------------
+\subsection{Any row, any column}
+%------------------------------------------------------------------------------
+The first row has no special status.
+
+\begin{thm}[Expansion along any row or column]
+\label{thm:anyrow}
+For $\mt{A}\in\R^{n\times n}$ and any fixed $i$ and $j$,
+\[
+  \det\mt{A}=\sum_{k=1}^{n}a_{ik}C_{ik}
+  \quad(\text{along row } i),
+  \qquad
+  \det\mt{A}=\sum_{k=1}^{n}a_{kj}C_{kj}
+  \quad(\text{down column } j).
+\]
+\end{thm}
+
+\noindent All $2n$ expansions give the same number. The proof needs the closed
+formula just mentioned and is beyond this course; we take the theorem as given.
+It can at least be checked.
+
+\begin{ex}
+Expand the same $\mt{A}$ down its first column. The cofactors needed are
+$C_{11}=2$,
+$C_{21}=-\det\begin{bmatrix}2&3\\8&10\end{bmatrix}=-(20-24)=4$ and
+$C_{31}=+\det\begin{bmatrix}2&3\\5&6\end{bmatrix}=12-15=-3$, so
+\[
+  \det\mt{A}=1(2)+4(4)+7(-3)=2+16-21=-3 . \quad\checkmark
+\]
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Choosing wisely}
+%------------------------------------------------------------------------------
+Every zero entry in the chosen row or column kills a whole term, cofactor and
+all. So expand along the row or column with the most zeros.
+
+\begin{ex}
+$\mt{B}=\begin{bmatrix}2&0&1\\3&0&4\\1&5&2\end{bmatrix}$. Column 2 has two zeros,
+so only $b_{32}=5$ contributes:
+\[
+  \det\mt{B}=5\,C_{32}=5\cdot(-1)^{3+2}\det\begin{bmatrix}2&1\\3&4\end{bmatrix}
+  =-5(8-3)=-25 .
+\]
+Along the first row instead:
+$2\det\begin{bmatrix}0&4\\5&2\end{bmatrix}-0+1\det\begin{bmatrix}3&0\\1&5\end{bmatrix}
+=2(-20)+15=-25$. Same answer, more work.
+\end{ex}
+
+\begin{ex}
+A $4\times4$ example, where the choice matters more:
+\[
+  \mt{C}=\begin{bmatrix}1&0&0&2\\0&3&0&0\\0&0&2&0\\1&0&0&1\end{bmatrix}.
+\]
+Row 2 has a single nonzero entry, $c_{22}=3$, with sign $(-1)^{2+2}=+$:
+\[
+  \det\mt{C}=3\det\begin{bmatrix}1&0&2\\0&2&0\\1&0&1\end{bmatrix}.
+\]
+The $3\times3$ determinant has a single nonzero entry in its middle row, $2$,
+again with sign $+$: it equals $2\det\begin{bmatrix}1&2\\1&1\end{bmatrix}=2(1-2)=-2$.
+So $\det\mt{C}=3(-2)=-6$.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{The cost}
+%------------------------------------------------------------------------------
+Expanding an $n\times n$ determinant creates $n$ determinants of size $n-1$,
+each of which creates $n-1$ of size $n-2$, and so on: about
+$n\cdot(n-1)\cdots2=n!$ products in all. For $n=10$ that is about $3.6$ million;
+for $n=20$, about $2.4\times10^{18}$, more than a fast computer can do in a
+year. Cofactor expansion is a definition and a tool for small or sparse
+matrices, not an algorithm for large ones. Part 8 computes determinants by
+elimination, with about $\tfrac23n^{3}$ operations: $5{,}000$-odd for $n=20$.
+
+%------------------------------------------------------------------------------
+\subsection{Volume}
+%------------------------------------------------------------------------------
+For a $3\times3$ matrix, $|\det\mt{A}|$ is the volume of the parallelepiped (the
+slanted box) with edges the three columns, and every volume is multiplied by
+$|\det\mt{A}|$ when $\mt{A}$ is applied. This is \S23 one dimension up; we state
+it without proof. The sign records orientation: positive if the columns, in
+order, are arranged like $\vc{e}_1,\vc{e}_2,\vc{e}_3$ (a right-handed
+arrangement), negative if like their mirror image. For a box with edges along
+the axes,
+$\det\diagop(a,b,c)=abc$, the familiar length times width times height
+(\S39.2).
+
+%==============================================================================
+\section{Principal minors}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The definition}
+%------------------------------------------------------------------------------
+A minor deletes one row and one column. A \emph{principal} minor keeps the rows
+and columns in matching sets.
+
+\begin{defn}[Principal and leading principal minors]
+Let $\mt{A}\in\R^{n\times n}$ and choose a set $S$ of indices from
+$\{1,\dots,n\}$. Keeping the rows \emph{and} the columns numbered by $S$ gives a
+\textbf{principal submatrix}; its determinant is a \textbf{principal minor}.
+When $S=\{1,2,\dots,k\}$, the submatrix is the top-left $k\times k$ corner, and
+its determinant $\Delta_k$ is the \textbf{$k$-th leading principal minor}.
+\end{defn}
+
+\noindent So $\Delta_1=a_{11}$, $\Delta_2=\det\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}$,
+and so on up to $\Delta_n=\det\mt{A}$. A principal submatrix always has its own
+diagonal on the diagonal of $\mt{A}$, which is the point of keeping the same
+indices.
+
+%------------------------------------------------------------------------------
+\subsection{An example}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:principal}
+$\mt{A}=\begin{bmatrix}2&1&0\\1&3&1\\0&1&4\end{bmatrix}$.
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt]
+  \item Size $1$ ($S=\{1\},\{2\},\{3\}$): the diagonal entries $2,3,4$.
+  \item Size $2$: $S=\{1,2\}$ gives $\det\begin{bmatrix}2&1\\1&3\end{bmatrix}=5$;
+        $S=\{1,3\}$ gives $\det\begin{bmatrix}2&0\\0&4\end{bmatrix}=8$;
+        $S=\{2,3\}$ gives $\det\begin{bmatrix}3&1\\1&4\end{bmatrix}=11$.
+  \item Size $3$: $\det\mt{A}=2(12-1)-1(4-0)+0=18$.
+\end{itemize}
+The leading principal minors are $\Delta_1=2$, $\Delta_2=5$, $\Delta_3=18$.
+\end{ex}
+
+\noindent Note that the size-$1$ principal minors add up to the trace (\S9). The
+size-$2$ ones and the size-$n$ one (the determinant) also have a meaning, which
+the next unit uncovers.
+
+%------------------------------------------------------------------------------
+\subsection{What they are for}
+%------------------------------------------------------------------------------
+A symmetric matrix $\mt{A}$ is called \textbf{positive definite} if
+$\vc{x}\T\mt{A}\vc{x}>0$ for every $\vc{x}\neq\vc{0}$. (The expression
+$\vc{x}\T\mt{A}\vc{x}$ appeared in \S20.) Such matrices are the matrix version of
+a positive number. They are the Hessians of functions shaped like a bowl, and
+they appear in least squares in Part 9. The leading principal minors detect them.
+
+\begin{thm}[Sylvester's criterion, $2\times2$]
+A symmetric $\mt{A}=\begin{bmatrix}a&b\\b&c\end{bmatrix}$ is positive definite if
+and only if $\Delta_1=a>0$ and $\Delta_2=ac-b^{2}>0$.
+\end{thm}
+
+\begin{proof}
+Here $\vc{x}\T\mt{A}\vc{x}=ax_1^{2}+2bx_1x_2+cx_2^{2}$. If $a>0$, complete the
+square:
+\[
+  ax_1^{2}+2bx_1x_2+cx_2^{2}
+  =a\Bigl(x_1+\frac{b}{a}x_2\Bigr)^{2}+\frac{ac-b^{2}}{a}\,x_2^{2}.
+\]
+If also $ac-b^{2}>0$, both terms are $\ge0$, and both are $0$ only if $x_2=0$ and
+then $x_1=0$. Conversely, if $\mt{A}$ is positive definite then $\vc{x}=\vc{e}_1$
+gives $a>0$, and $\vc{x}=[\,-b,a\,]$ makes the first term vanish and gives
+$a(ac-b^{2})>0$, so $ac-b^{2}>0$.
+\end{proof}
+
+\noindent For $n\times n$ the same holds: a symmetric matrix is positive
+definite exactly when all $n$ leading principal minors are positive. We state this
+without proof. Example~\ref{ex:principal}'s matrix ($2,5,18$) is positive
+definite. Applied to a Hessian (the vector calculus unit, \S15), this is the
+multivariable second-derivative test for a minimum.
+
+%==============================================================================
+\section{Properties of the determinant}
+%==============================================================================
+These are the laws that make the determinant computable without expanding, and
+they generalize \S22 property by property. They are labelled D1--D10, the way
+Part 1 labelled the laws of multiplication M1--M6. Throughout,
+$\mt{A},\mt{B}\in\R^{n\times n}$.
+
+%------------------------------------------------------------------------------
+\subsection{The laws}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l p{8.4cm} l@{}}
+\toprule
+ & \textbf{Law} & \textbf{Status} \\
+\midrule
+\textbf{D1} & $\det\mt{I}_n=1$ & proved \\
+\textbf{D2} & $\det\mt{A}\T=\det\mt{A}$ & proved, from Theorem~\ref{thm:anyrow} \\
+\textbf{D3} & a zero row gives $\det\mt{A}=0$ & proved \\
+\textbf{D4} & scaling one row by $\alpha$ scales $\det$ by $\alpha$; so $\det(\alpha\mt{A})=\alpha^{n}\det\mt{A}$ & proved \\
+\textbf{D5} & swapping two rows changes the sign & stated \\
+\textbf{D6} & two equal rows give $\det\mt{A}=0$ & proved, from D5 \\
+\textbf{D7} & $\det$ is linear in each row separately & proved \\
+\textbf{D8} & adding a multiple of one row to another leaves $\det$ unchanged & proved, from D6--D7 \\
+\textbf{D9} & $\det(\mt{A}\mt{B})=\det\mt{A}\,\det\mt{B}$ & stated ($n=2$ in \S22) \\
+\textbf{D10} & $\det\mt{A}\neq0\iff\rank\mt{A}=n\iff\nullsp{\mt{A}}=\{\vc{0}\}$ & half here, half in \S42.6 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent By D2, every law about rows is also a law about columns.
+
+%------------------------------------------------------------------------------
+\subsection{The proofs}
+%------------------------------------------------------------------------------
+\textbf{D1.} Expand $\mt{I}_n$ along its first row: the only nonzero term is
+$1\cdot\det\mt{I}_{n-1}$. Repeat down to $\det\mt{I}_1=1$.
+
+\textbf{D2.} By induction on $n$; for $n=1$ there is nothing to prove. Expand
+$\mt{A}\T$ along its first row. Its entries are $a_{11},a_{21},\dots,a_{n1}$,
+the first column of $\mt{A}$. Deleting row $1$ and column $j$ of $\mt{A}\T$
+leaves the transpose of $\mt{A}_{j1}$, whose determinant equals
+$\det\mt{A}_{j1}$ by the induction hypothesis. So the expansion of $\mt{A}\T$
+along row $1$ is term by term the expansion of $\mt{A}$ down column $1$, which is
+$\det\mt{A}$ by Theorem~\ref{thm:anyrow}.
+
+\textbf{D3.} Expand along the zero row: every term has a factor $0$.
+
+\textbf{D4.} Expand along the scaled row. Every term $a_{ik}C_{ik}$ becomes
+$(\alpha a_{ik})C_{ik}$, while the cofactors $C_{ik}$ are unchanged, because
+they never use row $i$. Scaling all $n$ rows multiplies by $\alpha$ $n$ times.
+So $\det(2\mt{I}_3)=8$: doubling every length in space multiplies every volume
+by $8$.
+
+\textbf{D5} is stated. On Example~\ref{ex:minors}'s matrix, swapping rows $1$
+and $2$ gives
+$\det\begin{bmatrix}4&5&6\\1&2&3\\7&8&10\end{bmatrix}=4(-4)-5(-11)+6(-6)=3=-(-3)$.
+
+\textbf{D6.} Swapping the two equal rows leaves $\mt{A}$ unchanged but, by D5,
+changes the sign of the determinant. So $\det\mt{A}=-\det\mt{A}$, and
+$\det\mt{A}=0$.
+
+\textbf{D7.} If row $i$ is $\alpha\vc{u}+\beta\vc{v}$, expand along row $i$: each
+term is $(\alpha u_k+\beta v_k)C_{ik}$, and the cofactors do not involve row $i$.
+Splitting the sum gives $\alpha$ times the determinant with row $i$ equal to
+$\vc{u}$ plus $\beta$ times the one with row $i$ equal to $\vc{v}$.
+
+\textbf{D8.} Replace row $i$ by $\vc{r}_i+k\vc{r}_j$ with $j\neq i$. By D7 the new
+determinant is $\det\mt{A}$ plus $k$ times the determinant of the matrix whose
+rows $i$ and $j$ are both $\vc{r}_j$, which is $0$ by D6.
+\[
+  \det\begin{bmatrix}1&2&3\\0&-3&-6\\7&8&10\end{bmatrix}
+  =1(-30+48)-2(0+42)+3(0+21)=-3,
+\]
+the determinant of Example~\ref{ex:minors}'s matrix after subtracting $4$ times
+row $1$ from row $2$. Unchanged.
+
+\textbf{D10, first half.} \emph{If the columns are dependent, $\det\mt{A}=0$.}
+Suppose column $k$ is a combination of the others,
+$\vc{a}_k=\sum_{j\neq k}c_j\vc{a}_j$. By D7 for columns, $\det\mt{A}$ is
+$\sum_{j\neq k}c_j$ times the determinant of the matrix with $\vc{a}_j$ written in
+column $k$. Each of those has two equal columns, so is $0$ by D6 for columns.
+Hence $\rank\mt{A}<n$ forces $\det\mt{A}=0$. The converse, that $\rank\mt{A}=n$
+forces $\det\mt{A}\neq0$, comes out of elimination in \S42.6.
+
+%------------------------------------------------------------------------------
+\subsection{What the row operations do}
+%------------------------------------------------------------------------------
+Three of the laws describe what happens to the determinant under the three
+simplest ways of changing rows:
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Operation on the rows} & \textbf{Effect on $\det$} \\
+\midrule
+swap two rows & multiply by $-1$ (D5) \\
+multiply one row by $\alpha\neq0$ & multiply by $\alpha$ (D4) \\
+add a multiple of one row to another & no change (D8) \\
+\bottomrule
+\end{tabular}
+\end{center}
+These are exactly the three operations of Gaussian elimination in Part 8. That
+is why elimination computes determinants cheaply.
+
+\begin{warn}[No law for sums]
+There is a law for products, D9, and none for sums: in general
+$\det(\mt{A}+\mt{B})\neq\det\mt{A}+\det\mt{B}$. Already
+$\det(\mt{I}_3+\mt{I}_3)=8$ while $\det\mt{I}_3+\det\mt{I}_3=2$.
+\end{warn}
+
+%==============================================================================
+\section{Determinants of special matrices}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Triangular matrices}
+%------------------------------------------------------------------------------
+\begin{thm}
+\label{thm:triangular}
+If $\mt{A}\in\R^{n\times n}$ is triangular (upper or lower), its determinant is
+the product of its diagonal entries:
+\[
+  \det\mt{A}=a_{11}a_{22}\cdots a_{nn}.
+\]
+\end{thm}
+
+\begin{proof}
+Lower triangular first, by induction on $n$; the case $n=1$ is the definition.
+Row $1$ of a lower triangular matrix is $[\,a_{11},0,\dots,0\,]$, so expanding
+along it leaves one term:
+\[
+  \det\mt{A}=a_{11}C_{11}=a_{11}\det\mt{A}_{11}.
+\]
+Deleting row $1$ and column $1$ of a lower triangular matrix leaves a lower
+triangular matrix of size $n-1$ with diagonal $a_{22},\dots,a_{nn}$, whose
+determinant is $a_{22}\cdots a_{nn}$ by the induction hypothesis. For an upper
+triangular $\mt{A}$, the transpose is lower triangular with the same diagonal, and
+D2 finishes the proof.
+\end{proof}
+
+\begin{ex}
+$\det\begin{bmatrix}2&5&-1\\0&3&7\\0&0&4\end{bmatrix}=2\cdot3\cdot4=24$. The entries
+above the diagonal play no role at all.
+\end{ex}
+
+\noindent In particular, a triangular matrix has determinant $0$ exactly when
+some diagonal entry is $0$. In Part 8 that becomes the condition under which a
+triangular system can be solved by back substitution.
+
+%------------------------------------------------------------------------------
+\subsection{Diagonal matrices}
+%------------------------------------------------------------------------------
+A diagonal matrix is triangular, so $\det\diagop(d_1,\dots,d_n)=d_1d_2\cdots d_n$.
+Geometrically, $\diagop(d_1,\dots,d_n)$ stretches the $k$-th axis by $d_k$, and a
+unit cube becomes a box with edges $|d_1|,\dots,|d_n|$: the volume factor is the
+product. With every $d_k=1$ this is D1 again.
+
+%------------------------------------------------------------------------------
+\subsection{Orthogonal matrices}
+%------------------------------------------------------------------------------
+\begin{thm}
+If $\mt{Q}\in\R^{n\times n}$ is orthogonal, then $\det\mt{Q}=\pm1$.
+\end{thm}
+
+\begin{proof}
+From $\mt{Q}\T\mt{Q}=\mt{I}$, by D9, D2 and D1,
+$(\det\mt{Q})^{2}=\det\mt{Q}\T\det\mt{Q}=\det(\mt{Q}\T\mt{Q})=\det\mt{I}=1$.
+\end{proof}
+
+\noindent An orthogonal matrix preserves lengths and angles (\S20), so it
+preserves volume, and the theorem confirms the factor is $1$; the sign records
+whether space is turned over. The rotations of \S25 have determinant $+1$:
+\[
+  \det\mt{R}_z(\theta)=\det\begin{bmatrix}\cos\theta&-\sin\theta&0\\\sin\theta&\cos\theta&0\\0&0&1\end{bmatrix}
+  =1\cdot\det\mt{R}_\theta=1,
+\]
+expanding along the third row. The same works for $\mt{R}_x$ (along the first
+row) and $\mt{R}_y$ (along the second). The swap of two coordinates,
+$\begin{bmatrix}0&1&0\\1&0&0\\0&0&1\end{bmatrix}$, is $\mt{I}_3$ with two rows
+exchanged, so by D5 and D1 its determinant is $-1$: a reflection across the plane
+$x=y$.
+
+\begin{warn}[The converse is false]
+$\det\mt{A}=\pm1$ does not make $\mt{A}$ orthogonal. The shear
+$\begin{bmatrix}1&1\\0&1\end{bmatrix}$ has determinant $1$ and changes lengths
+(\S21.4).
+\end{warn}
+
+%------------------------------------------------------------------------------
+\subsection{Projections}
+%------------------------------------------------------------------------------
+\begin{thm}
+If $\mt{P}^{2}=\mt{P}$ and $\mt{P}\neq\mt{I}$, then $\det\mt{P}=0$.
+\end{thm}
+
+\begin{proof}
+Since $\mt{P}\neq\mt{I}$, there is a vector $\vc{x}$ with
+$\vc{z}=(\mt{I}-\mt{P})\vc{x}\neq\vc{0}$. Then
+$\mt{P}\vc{z}=(\mt{P}-\mt{P}^{2})\vc{x}=\vc{0}$, so $\nullsp{\mt{P}}$ contains
+$\vc{z}\neq\vc{0}$. By Theorem~31.2 of Part 6 the columns of $\mt{P}$ are
+dependent, and by the first half of D10, $\det\mt{P}=0$.
+\end{proof}
+
+\noindent So a projection that is not the identity always loses volume
+entirely: it flattens space onto a lower-dimensional subspace.
+
+%------------------------------------------------------------------------------
+\subsection{Practice}
+%------------------------------------------------------------------------------
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.6em,itemsep=5pt]
+  \item Compute $\det\begin{bmatrix}2&-1&0\\1&3&2\\0&1&4\end{bmatrix}$ along the
+        first row, and again down the first column.
+  \item Compute the determinant of the upper triangular matrix with diagonal
+        $2,-1,3,\frac12$ (and anything above the diagonal).
+  \item $\mt{A}$ is $3\times3$ with $\det\mt{A}=5$. Find $\det(2\mt{A})$,
+        $\det(-\mt{A})$, $\det(\mt{A}\T\mt{A})$, and the determinant of the matrix
+        obtained by swapping two rows of $\mt{A}$.
+  \item Find the leading principal minors of
+        $\begin{bmatrix}4&2&0\\2&3&1\\0&1&2\end{bmatrix}$. Is it positive definite?
+  \item Explain without computing why
+        $\det\begin{bmatrix}1&2&3\\2&4&6\\1&0&1\end{bmatrix}=0$.
+  \item For which $k$ is
+        $\det\begin{bmatrix}1&1&1\\1&2&k\\1&4&k^{2}\end{bmatrix}=0$? Explain the
+        answer by looking at the columns.
+\end{enumerate}
+
+\subsubsection*{Answers}
+
+\noindent\textbf{P1.} Along row 1: $2(12-2)-(-1)(4-0)+0=20+4=24$. Down column 1:
+$2(12-2)-1\cdot\det\begin{bmatrix}-1&0\\1&4\end{bmatrix}+0=20-(-4)=24$.
+\checkmark
+
+\smallskip
+\noindent\textbf{P2.} $2\cdot(-1)\cdot3\cdot\frac12=-3$.
+
+\smallskip
+\noindent\textbf{P3.} $2^{3}\cdot5=40$; $(-1)^{3}\cdot5=-5$; $5\cdot5=25$;
+$-5$.
+
+\smallskip
+\noindent\textbf{P4.} $\Delta_1=4$, $\Delta_2=12-4=8$,
+$\Delta_3=4(6-1)-2(4-0)+0=12$. All positive, so it is positive definite.
+
+\smallskip
+\noindent\textbf{P5.} Row 2 is twice row 1. By D8, subtracting twice row 1 from
+row 2 does not change the determinant and produces a zero row, so by D3 the
+determinant is $0$.
+
+\smallskip
+\noindent\textbf{P6.} Along the first row:
+$(2k^{2}-4k)-(k^{2}-k)+(4-2)=k^{2}-3k+2=(k-1)(k-2)$, so $k=1$ or $k=2$. The
+columns are $[\,1,x,x^{2}\,]$ for $x=1,2,k$; when $k$ equals $1$ or $2$, two
+columns coincide.
+
+\lookahead Part 8 finally answers the question Part 1 left open: how to solve
+$\mt{A}\vc{x}=\vc{b}$. The method uses the three row operations of \S38.3 to
+make the matrix triangular, and as a by-product it computes the determinant
+with a few thousand operations instead of $n!$.
+
+\end{document}
