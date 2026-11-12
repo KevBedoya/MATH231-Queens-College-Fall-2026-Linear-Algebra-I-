@@ -19,6 +19,8 @@ Midterm 1 covers the material through **Thursday, October 1** — see
 
 ## Homework out now
 
+- [**Homework 4 — Transformations, Determinants, Systems and Least Squares**](homework/MATH231_homework_4.pdf)
+  — due **Sunday, November 29, 2026, 11:59 PM**
 - [**Homework 3 — Matrices and Matrix Multiplication**](homework/MATH231_homework_3.pdf)
   — due **Sunday, November 8, 2026, 11:59 PM**
 - [**Homework 2 — Norms, Bases, $\mathbb{R}^n$, and the Gradient**](homework/MATH231_homework_2.pdf)
