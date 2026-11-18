@@ -16,3 +16,12 @@ skills/
 # Catalog of problems held back for future homework. Untracked for now, so
 # nothing in it reaches students before it is assigned.
 plan/future_homework/
+
+# The actual Midterm 1 (not the practice exams). Untracked so it never reaches
+# GitHub before the exam is given.
+exams/midterm1/MATH231_midterm_1.*
+exams/midterm1/MATH231_midterm_1_solutions.*
+
+# Course logistics with student information (attendance sheets, rosters).
+# Never committed.
+logistics/
