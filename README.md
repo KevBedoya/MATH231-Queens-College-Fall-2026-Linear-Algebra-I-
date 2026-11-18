@@ -118,7 +118,7 @@ I know to expect you.
 | Component | Weight | Detail |
 |---|---|---|
 | Homework — 5 assignments | 20% | 4% each; written and distributed by the instructor |
-| Projects — 3 | 15% | 5% each; written and distributed by the instructor |
+| Projects — 2 | 15% | 7.5% each; written and distributed by the instructor |
 | Midterm 1 | 20% | |
 | Midterm 2 | 20% | |
 | Final exam | 25% | |
@@ -178,7 +178,7 @@ artifacts (`.aux`, `.log`, `.out`, …) are gitignored.
 
 - **`homework/`** — the 5 homework assignments, and the optional extra-credit
   assignments that accompany them
-- **`projects/`** — the 3 projects
+- **`projects/`** — the 2 projects
 - **`exams/`** — the two midterms and the final. `exams/midterm1/` holds the
   Midterm 1 practice exams and cheat sheet
 - **`demos/`** — in-lecture computational demos

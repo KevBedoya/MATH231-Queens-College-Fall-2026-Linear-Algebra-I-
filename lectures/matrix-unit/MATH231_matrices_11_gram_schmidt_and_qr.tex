@@ -1,0 +1,564 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  MATRIX UNIT, PART 11 -- Gram-Schmidt and the QR Decomposition
+%
+%  Section numbering runs CONTINUOUSLY across the parts of the matrix unit;
+%  see Part 2's header for the full map.  This part is Sections 55-58, hence
+%  \setcounter{section}{54}.
+%
+%  STATUS: complete.  Sections 55-58.  Written from the plan in
+%  plan/MATH231_remaining_units_plan.tex (2026-10-25).  This is the last
+%  part of the matrix unit, and the last topic for Midterm 2.
+%
+%  AUDIENCE: distributed to students.  No instructor-facing apparatus.
+%
+%  WHAT THE INSTRUCTOR SPECIFIED, AND WHERE IT IS.
+%   - The Gram-Schmidt algorithm/process: Sec. 55.
+%   - The QR decomposition: Sec. 56.
+%   - col[Q] = col[A]: Sec. 57.
+%   - Applying QR to least squares: Sec. 58.
+%
+%  DECISIONS CARRIED FROM THE PLAN.
+%
+%   D9. Gram-Schmidt is derived in full in computational unit Part 4
+%       (Sec. 16-19), which may or may not have been lectured.  Sec. 55 is
+%       written to stand on its own (the process, the pseudocode, why w_k is
+%       never zero, the worked example) but compactly, citing the
+%       computational unit for the derivation from the R^2 picture and for
+%       the dependent case.  If computational Part 4 is lectured first,
+%       Sec. 55 can be read as a recap.
+%
+%   DEBT COLLECTED.  Computational unit Sec. 20.3 closes: "the relationship
+%   between the input list and the output list ... is itself a factorisation
+%   of the matrix whose columns are the v_k.  Naming it requires matrix
+%   machinery we do not yet have.  We will return to Gram-Schmidt."
+%   Sec. 56.5 says this is that return.
+%
+%   NOTATION.  The computational unit writes the inputs v_1, ..., v_n; here
+%   they are the columns a_1, ..., a_n of A, and Sec. 55.1 says so.  The
+%   pseudocode is CLASSICAL Gram-Schmidt, as in the computational unit, and
+%   Sec. 58.4 points at the modified version (computational Sec. 20.3) and
+%   at Householder reflections, which are built in Sec. 28.5-28.7.
+%
+%   WORKED EXAMPLES reuse computational Sec. 18.3's vectors [1,1,0],
+%   [1,0,1], [0,1,1] (q's already known there) and the line-fit data of
+%   Sec. 49.4.
+%
+%  Compile with pdflatex or tectonic (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+%------------------------------------------------------------------ style ----
+\titleformat{\section}{\large\bfseries\sffamily}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\sffamily}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\setlength{\emergencystretch}{3em}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ex}{Example}[section]
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{warn}{A common confusion}
+
+\newcommand{\lookahead}{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{RoyalBlue}{Looking ahead.}}\ \ignorespaces}
+\newcommand{\lookback}[1][the vector unit]{\par\smallskip\noindent
+  \textbf{\sffamily\textcolor{ForestGreen}{From #1.}}\ \ignorespaces}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\colsp}[1]{\operatorname{col}[#1]}
+\newcommand{\xh}{\hat{\vc{x}}}
+\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\rank}{rank}
+
+%--------------------------------------------------------------- pseudocode --
+\newcommand{\kw}[1]{\textsf{\bfseries #1}}
+\newcommand{\ind}{\hspace*{1.3em}}
+\newcommand{\indd}{\hspace*{2.6em}}
+\newcounter{algoline}
+\newenvironment{algo}[2]{%
+  \par\medskip\needspace{8\baselineskip}%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \hrule height 0.9pt \vspace{3pt}%
+  \noindent{\sffamily\bfseries #1}\par\vspace{2pt}%
+  \noindent{\small #2}\par\vspace{3pt}%
+  \hrule height 0.4pt \vspace{5pt}%
+  \begin{list}{\textbf{\arabic{algoline}:}}%
+    {\usecounter{algoline}\setlength{\leftmargin}{2.3em}%
+     \setlength{\labelwidth}{1.8em}\setlength{\labelsep}{0.5em}%
+     \setlength{\itemsep}{2pt}\setlength{\topsep}{0pt}%
+     \setlength{\parsep}{0pt}}%
+}{%
+  \end{list}\vspace{5pt}\hrule height 0.9pt%
+  \end{minipage}\end{center}\medskip%
+}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily The Matrix Unit, Part 11 \textbullet\ Gram--Schmidt
+        and the $QR$ Decomposition}\\[2pt]
+       {\normalsize\sffamily Kiely Hall 326 \textbullet\
+        Instructor: Kevin Bedoya}}
+\author{}
+\date{}
+
+\begin{document}
+\setcounter{section}{54}  % this part opens at Section 55; see the header note
+\maketitle
+\vspace{-1.6cm}
+
+\noindent\textbf{About this document.} This is Part 11, the last part of the
+matrix unit: Sections 55--58. Section numbers run continuously through the unit
+(Part 2's opening table lists them all). References into the computational unit
+always name it.
+
+\medskip
+\noindent\textbf{Assumed.} Orthonormal vectors and orthogonal matrices (\S20);
+projections $\mt{P}_{\vc{u}}=\vc{u}\vc{u}\T/\vc{u}\T\vc{u}$ (\S26); the column
+space (\S10); triangular matrices, their determinants and inverses (\S39, \S53);
+back substitution (\S41); least squares and the pseudo-inverse (Part 9, \S54).
+The Gram--Schmidt process is derived in the computational unit, Part 4
+(\S16--\S19); \S55 below restates what is needed.
+
+\medskip
+\noindent\textbf{What you should be able to do afterwards.} Run the Gram--Schmidt
+process on a few vectors; rewrite its output as a factorization
+$\mt{A}=\mt{Q}\mt{R}$ and compute $\mt{R}$; prove that $\colsp{\mt{Q}}=\colsp{\mt{A}}$;
+solve a least-squares problem with $\mt{Q}$ and $\mt{R}$ by one back
+substitution; and say why this is preferred to the normal equations in practice.
+
+%==============================================================================
+\section{Gram--Schmidt, in matrix language}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The goal}
+%------------------------------------------------------------------------------
+Let $\mt{A}\in\R^{m\times n}$ have independent columns $\vc{a}_1,\dots,\vc{a}_n$
+(so $m\ge n$). The \textbf{Gram--Schmidt process} produces orthonormal vectors
+$\vc{q}_1,\dots,\vc{q}_n$ that span the same spaces, step by step:
+\[
+  \spanop\{\vc{q}_1,\dots,\vc{q}_k\}=\spanop\{\vc{a}_1,\dots,\vc{a}_k\}
+  \qquad\text{for every }k=1,\dots,n .
+\]
+\lookback[the computational unit] Part 4 built the process from a single move in
+$\R^{2}$, ``subtract the projection, keep what is orthogonal'', and named its
+inputs $\vc{v}_k$. Here they are the columns $\vc{a}_k$ of a matrix, because the
+point of this part is what the process says about that matrix.
+
+%------------------------------------------------------------------------------
+\subsection{The process}
+%------------------------------------------------------------------------------
+Take the columns in order. From each, subtract its projections onto the
+$\vc{q}$'s already built, then normalize what remains:
+\[
+  \vc{w}_k=\vc{a}_k-\sum_{j=1}^{k-1}(\vc{q}_j\T\vc{a}_k)\,\vc{q}_j,
+  \qquad
+  \vc{q}_k=\frac{\vc{w}_k}{\norm{\vc{w}_k}} .
+\]
+Each subtracted term is a projection: since $\vc{q}_j$ is a unit vector,
+$(\vc{q}_j\T\vc{a}_k)\vc{q}_j=\vc{q}_j\vc{q}_j\T\vc{a}_k=\mt{P}_{\vc{q}_j}\vc{a}_k$
+(\S26.2). Because the earlier $\vc{q}_j$ are orthonormal, $\vc{w}_k$ is orthogonal
+to each of them: for $i<k$,
+$\vc{q}_i\T\vc{w}_k=\vc{q}_i\T\vc{a}_k-\sum_j(\vc{q}_j\T\vc{a}_k)\,\vc{q}_i\T\vc{q}_j=\vc{q}_i\T\vc{a}_k-\vc{q}_i\T\vc{a}_k=0$.
+
+\textbf{$\vc{w}_k$ is never zero.} By construction $\vc{a}_k=\vc{w}_k+(\text{a
+combination of }\vc{q}_1,\dots,\vc{q}_{k-1})$, and those $\vc{q}$'s span the same
+space as $\vc{a}_1,\dots,\vc{a}_{k-1}$. If $\vc{w}_k$ were $\vc{0}$, $\vc{a}_k$
+would be a combination of the earlier columns, contradicting independence. So
+the division is always safe. What happens when the columns \emph{are} dependent
+is the computational unit's \S19.
+
+\begin{algo}{Gram--Schmidt (classical)}{%
+  \textbf{Input:} independent columns $\vc{a}_1,\dots,\vc{a}_n\in\R^{m}$.\quad
+  \textbf{Output:} orthonormal $\vc{q}_1,\dots,\vc{q}_n$, and the numbers
+  $r_{jk}$ of \S56.}
+\item \kw{for} $k = 1,\dots,n$:
+\item \ind $\vc{w} \;\gets\; \vc{a}_k$
+\item \ind \kw{for} $j = 1,\dots,k-1$:
+\item \indd $r_{jk} \;\gets\; \vc{q}_j\T\vc{a}_k$
+        \hfill\textit{\small the length of the shadow on $\vc{q}_j$}
+\item \indd $\vc{w} \;\gets\; \vc{w}-r_{jk}\,\vc{q}_j$
+        \hfill\textit{\small remove it}
+\item \ind $r_{kk} \;\gets\; \norm{\vc{w}}$
+\item \ind $\vc{q}_k \;\gets\; \vc{w}\,/\,r_{kk}$
+\item \kw{return} $\vc{q}_1,\dots,\vc{q}_n$ and all $r_{jk}$
+\end{algo}
+
+\noindent The only change from the computational unit's pseudocode is that the
+numbers the process computes along the way, the shadow lengths $r_{jk}$ and the
+lengths $r_{kk}$, are now \emph{kept}. They are the second factor of the
+factorization in \S56.
+
+%------------------------------------------------------------------------------
+\subsection{A worked example}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:gs}
+The computational unit's \S18.3 example, as the columns of a matrix:
+\[
+  \mt{A}=\begin{bmatrix}1&1&0\\1&0&1\\0&1&1\end{bmatrix},
+  \qquad
+  \vc{a}_1=[\,1,1,0\,],\ \vc{a}_2=[\,1,0,1\,],\ \vc{a}_3=[\,0,1,1\,].
+\]
+\emph{$k=1$.} $r_{11}=\norm{\vc{a}_1}=\sqrt2$ and $\vc{q}_1=\frac{1}{\sqrt2}[\,1,1,0\,]$.
+
+\emph{$k=2$.} $r_{12}=\vc{q}_1\T\vc{a}_2=\frac{1}{\sqrt2}$, and
+$\vc{w}_2=[\,1,0,1\,]-\frac{1}{\sqrt2}\cdot\frac{1}{\sqrt2}[\,1,1,0\,]=[\,\frac12,-\frac12,1\,]$,
+with $r_{22}=\norm{\vc{w}_2}=\sqrt{\frac32}=\frac{\sqrt6}{2}$. So
+$\vc{q}_2=\frac{1}{\sqrt6}[\,1,-1,2\,]$.
+
+\emph{$k=3$.} $r_{13}=\vc{q}_1\T\vc{a}_3=\frac{1}{\sqrt2}$ and
+$r_{23}=\vc{q}_2\T\vc{a}_3=\frac{-1+2}{\sqrt6}=\frac{1}{\sqrt6}$, so
+\[
+  \vc{w}_3=[\,0,1,1\,]-\tfrac12[\,1,1,0\,]-\tfrac16[\,1,-1,2\,]
+  =\bigl[\,-\tfrac23,\ \tfrac23,\ \tfrac23\,\bigr],
+\]
+with $r_{33}=\norm{\vc{w}_3}=\frac{2}{\sqrt3}$ and $\vc{q}_3=\frac{1}{\sqrt3}[\,-1,1,1\,]$.
+These are the vectors the computational unit found.
+\end{ex}
+
+%==============================================================================
+\section{The \texorpdfstring{$QR$}{QR} decomposition}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Running the process backwards}
+%------------------------------------------------------------------------------
+The process says how to get each $\vc{q}_k$ from the $\vc{a}$'s. Solve it the other
+way, for $\vc{a}_k$. From $\vc{w}_k=r_{kk}\vc{q}_k$ and the definition of
+$\vc{w}_k$,
+\[
+  \vc{a}_k=r_{1k}\vc{q}_1+r_{2k}\vc{q}_2+\cdots+r_{k-1,k}\vc{q}_{k-1}+r_{kk}\vc{q}_k
+  =\sum_{j=1}^{k}r_{jk}\,\vc{q}_j .
+\]
+Column $k$ of $\mt{A}$ is a combination of the first $k$ $\vc{q}$'s only. By the
+column reading (\S2.5), a combination of $\vc{q}_1,\dots,\vc{q}_n$ with weights
+$r_{1k},\dots,r_{nk}$ is the matrix $\mt{Q}=[\,\vc{q}_1\ \cdots\ \vc{q}_n\,]$ times
+the vector of weights. So if we set $r_{jk}=0$ for $j>k$ and collect the weights
+as the columns of a matrix $\mt{R}$, then
+\[
+  \mt{A}=\mt{Q}\mt{R},
+  \qquad
+  \mt{R}=\begin{bmatrix}r_{11}&r_{12}&\cdots&r_{1n}\\
+                        0&r_{22}&\cdots&r_{2n}\\
+                        \vdots&&\ddots&\vdots\\
+                        0&0&\cdots&r_{nn}\end{bmatrix}.
+\]
+The zeros below the diagonal are the statement that $\vc{a}_k$ uses only
+$\vc{q}_1,\dots,\vc{q}_k$.
+
+%------------------------------------------------------------------------------
+\subsection{The theorem}
+%------------------------------------------------------------------------------
+\begin{thm}[$QR$ decomposition]
+\label{thm:qr}
+Every $\mt{A}\in\R^{m\times n}$ with independent columns can be factored as
+\[
+  \boxed{\;\mt{A}=\mt{Q}\mt{R}\;}
+\]
+where $\mt{Q}\in\R^{m\times n}$ has orthonormal columns ($\mt{Q}\T\mt{Q}=\mt{I}_n$)
+and $\mt{R}\in\R^{n\times n}$ is upper triangular with positive diagonal entries
+$r_{kk}=\norm{\vc{w}_k}$.
+\end{thm}
+
+\noindent With the positive-diagonal requirement the factorization is unique; we
+state this without proof. There is also a direct formula for $\mt{R}$. Multiply
+$\mt{A}=\mt{Q}\mt{R}$ on the left by $\mt{Q}\T$ and use $\mt{Q}\T\mt{Q}=\mt{I}$:
+\[
+  \mt{R}=\mt{Q}\T\mt{A},\qquad r_{jk}=\vc{q}_j\T\vc{a}_k .
+\]
+For $j<k$ this is the shadow length of the algorithm. For $j=k$ it gives
+$\vc{q}_k\T\vc{a}_k=\vc{q}_k\T\vc{w}_k=\norm{\vc{w}_k}$. For $j>k$ it is $0$,
+because $\vc{a}_k$ lies in the span of $\vc{q}_1,\dots,\vc{q}_k$, all orthogonal to
+$\vc{q}_j$.
+
+%------------------------------------------------------------------------------
+\subsection{A square example}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:qrsq}
+For the matrix of Example~\ref{ex:gs}, the numbers computed there give
+\[
+  \mt{Q}=\begin{bmatrix}\frac{1}{\sqrt2}&\frac{1}{\sqrt6}&-\frac{1}{\sqrt3}\\[3pt]
+                        \frac{1}{\sqrt2}&-\frac{1}{\sqrt6}&\frac{1}{\sqrt3}\\[3pt]
+                        0&\frac{2}{\sqrt6}&\frac{1}{\sqrt3}\end{bmatrix},
+  \qquad
+  \mt{R}=\begin{bmatrix}\sqrt2&\frac{1}{\sqrt2}&\frac{1}{\sqrt2}\\[3pt]
+                        0&\frac{\sqrt6}{2}&\frac{1}{\sqrt6}\\[3pt]
+                        0&0&\frac{2}{\sqrt3}\end{bmatrix}.
+\]
+Check the third column:
+$\frac{1}{\sqrt2}\vc{q}_1+\frac{1}{\sqrt6}\vc{q}_2+\frac{2}{\sqrt3}\vc{q}_3
+=\frac12[\,1,1,0\,]+\frac16[\,1,-1,2\,]+\frac23[\,-1,1,1\,]=[\,0,1,1\,]=\vc{a}_3$.
+\checkmark
+\end{ex}
+
+\noindent When $\mt{A}$ is square, $\mt{Q}$ is square with orthonormal columns, so
+it is an orthogonal matrix (\S20.6, \S51.3): $\mt{Q}\T\mt{Q}=\mt{Q}\mt{Q}\T=\mt{I}$.
+In the language of Part 3, \emph{every invertible matrix is a rigid motion (a
+rotation, possibly with a reflection) applied after an upper triangular matrix}.
+
+%------------------------------------------------------------------------------
+\subsection{A tall example}
+%------------------------------------------------------------------------------
+\begin{ex}
+\label{ex:qrtall}
+The line-fit matrix of \S49.4, $\mt{A}=\begin{bmatrix}1&1\\1&2\\1&3\end{bmatrix}$.
+\begin{itemize}[leftmargin=1.4em,itemsep=3pt]
+  \item $r_{11}=\norm{[\,1,1,1\,]}=\sqrt3$, $\vc{q}_1=\frac{1}{\sqrt3}[\,1,1,1\,]$.
+  \item $r_{12}=\vc{q}_1\T\vc{a}_2=\frac{6}{\sqrt3}=2\sqrt3$, and
+        $\vc{w}_2=[\,1,2,3\,]-2\sqrt3\cdot\frac{1}{\sqrt3}[\,1,1,1\,]=[\,-1,0,1\,]$,
+        so $r_{22}=\sqrt2$ and $\vc{q}_2=\frac{1}{\sqrt2}[\,-1,0,1\,]$.
+\end{itemize}
+\[
+  \mt{A}=\underbrace{\begin{bmatrix}\frac{1}{\sqrt3}&-\frac{1}{\sqrt2}\\[3pt]
+                                     \frac{1}{\sqrt3}&0\\[3pt]
+                                     \frac{1}{\sqrt3}&\frac{1}{\sqrt2}\end{bmatrix}}_{\mt{Q},\ 3\times2}
+  \underbrace{\begin{bmatrix}\sqrt3&2\sqrt3\\0&\sqrt2\end{bmatrix}}_{\mt{R},\ 2\times2}.
+\]
+\end{ex}
+
+\noindent Here $\mt{Q}$ is $3\times2$. Its columns are orthonormal, so
+$\mt{Q}\T\mt{Q}=\mt{I}_2$, but it is not square and $\mt{Q}\mt{Q}\T\neq\mt{I}_3$
+(the warning of \S51.3). In fact
+$\mt{Q}\mt{Q}\T=\vc{q}_1\vc{q}_1\T+\vc{q}_2\vc{q}_2\T$ is symmetric and idempotent,
+an orthogonal projection, onto $\colsp{\mt{A}}$, as \S57.3 shows. This
+$m\times n$ version is sometimes called the \emph{thin} or \emph{reduced} $QR$.
+Extending $\vc{q}_1,\dots,\vc{q}_n$ to an orthonormal basis of all of $\R^{m}$
+gives a square orthogonal $\mt{Q}$ and the \emph{full} $QR$, with $\mt{R}$ padded
+by rows of zeros.
+
+%------------------------------------------------------------------------------
+\subsection{The factorization that was promised}
+%------------------------------------------------------------------------------
+The computational unit ended its Gram--Schmidt part by observing that the
+relationship between the input vectors and the output vectors ``is itself a
+factorisation of the matrix whose columns are the $\vc{v}_{k}$'', and that naming
+it needed matrix machinery not yet available. This is that factorization, and
+its name is $QR$.
+
+%==============================================================================
+\section{\texorpdfstring{$\colsp{\mt{Q}}=\colsp{\mt{A}}$}{col[Q] = col[A]}}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The theorem}
+%------------------------------------------------------------------------------
+\begin{thm}
+\label{thm:samecol}
+If $\mt{A}=\mt{Q}\mt{R}$ is the $QR$ decomposition of a matrix with independent
+columns, then $\colsp{\mt{Q}}=\colsp{\mt{A}}$.
+\end{thm}
+
+\begin{proof}
+\emph{$\colsp{\mt{A}}\subseteq\colsp{\mt{Q}}$.} Every vector of the column space of
+$\mt{A}$ is $\mt{A}\vc{x}=\mt{Q}(\mt{R}\vc{x})$, which is $\mt{Q}$ times a vector.
+
+\emph{$\colsp{\mt{Q}}\subseteq\colsp{\mt{A}}$.} $\mt{R}$ is triangular with nonzero
+diagonal entries, so $\det\mt{R}=r_{11}\cdots r_{nn}\neq0$ (\S39.1) and $\mt{R}$ is
+invertible (\S51.2). So $\mt{Q}=\mt{A}\mt{R}^{-1}$, and every $\mt{Q}\vc{y}$ equals
+$\mt{A}(\mt{R}^{-1}\vc{y})$.
+\end{proof}
+
+%------------------------------------------------------------------------------
+\subsection{Nested spans}
+%------------------------------------------------------------------------------
+More is true, one column at a time:
+$\spanop\{\vc{q}_1,\dots,\vc{q}_k\}=\spanop\{\vc{a}_1,\dots,\vc{a}_k\}$ for each
+$k$. Each $\vc{a}_k$ uses only $\vc{q}_1,\dots,\vc{q}_k$, because $\mt{R}$ is upper
+triangular. Each $\vc{q}_k$ uses only $\vc{a}_1,\dots,\vc{a}_k$, because
+$\mt{R}^{-1}$ is upper triangular too (\S53.2). This is the property the
+process was designed to have, now read off the shape of $\mt{R}$.
+
+%------------------------------------------------------------------------------
+\subsection{What it gives}
+%------------------------------------------------------------------------------
+\begin{itemize}[leftmargin=1.4em,itemsep=4pt]
+  \item The columns of $\mt{Q}$ are an \emph{orthonormal basis} of $\colsp{\mt{A}}$.
+        Coordinates against an orthonormal basis need no solving, only dot
+        products (the computational unit, \S16): the coordinates of
+        $\vc{y}\in\colsp{\mt{A}}$ are $\mt{Q}\T\vc{y}$.
+  \item The orthogonal projection onto $\colsp{\mt{A}}$ takes its simplest form.
+        By \S54.2 it is $\mt{A}(\mt{A}\T\mt{A})^{-1}\mt{A}\T$. Substituting
+        $\mt{A}=\mt{Q}\mt{R}$ and $\mt{A}\T\mt{A}=\mt{R}\T\mt{R}$ (\S58.1),
+        \[
+          \mt{Q}\mt{R}\,(\mt{R}\T\mt{R})^{-1}\mt{R}\T\mt{Q}\T
+          =\mt{Q}\mt{R}\,\mt{R}^{-1}(\mt{R}\T)^{-1}\mt{R}\T\mt{Q}\T
+          =\mt{Q}\mt{Q}\T .
+        \]
+        With $n=1$ this is $\hat{\vc{u}}\hat{\vc{u}}\T$, the projection onto a
+        line of \S26.2.
+  \item If the columns of $\mt{A}$ are \emph{dependent}, some $\vc{w}_k$ is
+        $\vc{0}$ and $r_{kk}=0$ (the computational unit, \S19). Then
+        $\colsp{\mt{A}}$ has dimension less than $n$ and cannot have $n$
+        orthonormal basis vectors, and the theorem does not apply.
+\end{itemize}
+
+%==============================================================================
+\section{\texorpdfstring{$QR$}{QR} and least squares}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{The normal equations collapse}
+%------------------------------------------------------------------------------
+With $\mt{A}=\mt{Q}\mt{R}$ and $\mt{Q}\T\mt{Q}=\mt{I}$,
+\[
+  \mt{A}\T\mt{A}=\mt{R}\T\mt{Q}\T\mt{Q}\mt{R}=\mt{R}\T\mt{R},
+  \qquad
+  \mt{A}\T\vc{b}=\mt{R}\T\mt{Q}\T\vc{b}.
+\]
+So the normal equations $\mt{A}\T\mt{A}\xh=\mt{A}\T\vc{b}$ become
+$\mt{R}\T\mt{R}\xh=\mt{R}\T\mt{Q}\T\vc{b}$. The matrix $\mt{R}\T$ is invertible
+(its determinant is $\det\mt{R}\neq0$), so multiply both sides by
+$(\mt{R}\T)^{-1}$:
+
+\begin{thm}
+\label{thm:qrls}
+If $\mt{A}=\mt{Q}\mt{R}$, the least-squares solution of $\mt{A}\vc{x}=\vc{b}$ is the
+solution of the triangular system
+\[
+  \boxed{\;\mt{R}\,\xh=\mt{Q}\T\vc{b},\;}
+\]
+found by one back substitution (\S41).
+\end{thm}
+
+\noindent The pseudo-inverse simplifies the same way:
+$\mt{A}^{+}=(\mt{A}\T\mt{A})^{-1}\mt{A}\T=(\mt{R}\T\mt{R})^{-1}\mt{R}\T\mt{Q}\T
+=\mt{R}^{-1}(\mt{R}\T)^{-1}\mt{R}\T\mt{Q}\T=\mt{R}^{-1}\mt{Q}\T$.
+
+%------------------------------------------------------------------------------
+\subsection{The line fit, a third time}
+%------------------------------------------------------------------------------
+\begin{ex}
+With $\mt{Q}$ and $\mt{R}$ from Example~\ref{ex:qrtall} and $\vc{b}=[\,1,2,2\,]$:
+\[
+  \mt{Q}\T\vc{b}=\begin{bmatrix}\frac{1+2+2}{\sqrt3}\\[3pt]\frac{-1+0+2}{\sqrt2}\end{bmatrix}
+  =\begin{bmatrix}\frac{5}{\sqrt3}\\[3pt]\frac{1}{\sqrt2}\end{bmatrix},
+  \qquad
+  \begin{bmatrix}\sqrt3&2\sqrt3\\0&\sqrt2\end{bmatrix}
+  \begin{bmatrix}c_0\\c_1\end{bmatrix}
+  =\begin{bmatrix}\frac{5}{\sqrt3}\\[3pt]\frac{1}{\sqrt2}\end{bmatrix}.
+\]
+Back substitution: $c_1=\frac{1}{\sqrt2}\big/\sqrt2=\frac12$, then
+$c_0=\bigl(\frac{5}{\sqrt3}-2\sqrt3\cdot\frac12\bigr)\big/\sqrt3=\frac53-1=\frac23$.
+The line $y=\frac23+\frac12t$ of \S49.4 and \S53.4, found a third way.
+\end{ex}
+
+%------------------------------------------------------------------------------
+\subsection{Three routes to one answer}
+%------------------------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Route} & \textbf{Solve} & \textbf{Where} \\
+\midrule
+normal equations, by elimination & $\mt{A}\T\mt{A}\xh=\mt{A}\T\vc{b}$ & \S49 \\
+normal equations, by the inverse & $\xh=(\mt{A}\T\mt{A})^{-1}\mt{A}\T\vc{b}=\mt{A}^{+}\vc{b}$ & \S53.4, \S54 \\
+$QR$ & $\mt{R}\xh=\mt{Q}\T\vc{b}$, back substitution & \S58.1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent In exact arithmetic all three give the same $\xh$. On a computer they do
+not behave the same, and that is the reason for the third.
+
+%------------------------------------------------------------------------------
+\subsection{Why \texorpdfstring{$QR$}{QR} in practice}
+%------------------------------------------------------------------------------
+Forming $\mt{A}\T\mt{A}$ is the weak step of the normal equations. When the
+columns of $\mt{A}$ are \emph{nearly} dependent, as often happens with real data,
+$\mt{A}$ is already sensitive to small errors, and $\mt{A}\T\mt{A}$ is much more
+so: roughly, its sensitivity is the square of $\mt{A}$'s. A problem that could be
+solved to eight correct digits may come back with four. The $QR$ route never forms
+$\mt{A}\T\mt{A}$. It works with orthonormal columns, and multiplying by an
+orthogonal matrix does not stretch anything (\S20), so it does not stretch errors
+either.
+
+Two refinements matter for large problems. The classical process of \S55 slowly
+loses orthogonality in floating point; the \emph{modified} Gram--Schmidt process
+rearranges the same arithmetic and holds up far better (the computational unit,
+\S20.3). And professional software usually computes $QR$ by a different method
+altogether, with a sequence of reflections $\mt{I}-2\mt{P}_{\vc{v}}$, the
+Householder reflectors of \S28.5--\S28.7. Each one zeros out a
+column below the diagonal while keeping lengths exactly.
+
+%------------------------------------------------------------------------------
+\subsection{Practice}
+%------------------------------------------------------------------------------
+\begin{enumerate}[label=\textbf{P\arabic*.},leftmargin=2.6em,itemsep=5pt]
+  \item Find the $QR$ decomposition of $\begin{bmatrix}3&1\\4&2\end{bmatrix}$, and
+        check that $\det\mt{A}=\det\mt{Q}\,\det\mt{R}$.
+  \item Find the (thin) $QR$ decomposition of
+        $\mt{A}=\begin{bmatrix}1&0\\1&1\\0&1\end{bmatrix}$.
+  \item Use P2 to find the least-squares solution of $\mt{A}\vc{x}=[\,1,0,1\,]$, and
+        check it against the normal equations.
+  \item Show that for a square $\mt{A}=\mt{Q}\mt{R}$,
+        $|\det\mt{A}|=r_{11}r_{22}\cdots r_{nn}=\norm{\vc{w}_1}\cdots\norm{\vc{w}_n}$,
+        and interpret this for $n=2$ as base times height.
+  \item Explain why $\mt{Q}\mt{Q}\T$ in Example~\ref{ex:qrtall} cannot be
+        $\mt{I}_3$.
+\end{enumerate}
+
+\subsubsection*{Answers}
+
+\noindent\textbf{P1.} $r_{11}=5$, $\vc{q}_1=[\,\frac35,\frac45\,]$;
+$r_{12}=\frac{3+8}{5}=\frac{11}{5}$;
+$\vc{w}_2=[\,1,2\,]-\frac{11}{5}[\,\frac35,\frac45\,]=[\,-\frac{8}{25},\frac{6}{25}\,]$,
+$r_{22}=\frac25$, $\vc{q}_2=[\,-\frac45,\frac35\,]$. So
+$\mt{Q}=\begin{bmatrix}\frac35&-\frac45\\[2pt]\frac45&\frac35\end{bmatrix}$ (a rotation,
+$\det=1$) and $\mt{R}=\begin{bmatrix}5&\frac{11}{5}\\[2pt]0&\frac25\end{bmatrix}$
+($\det=2$); and $\det\mt{A}=6-4=2$. \checkmark
+
+\smallskip
+\noindent\textbf{P2.} $r_{11}=\sqrt2$, $\vc{q}_1=\frac{1}{\sqrt2}[\,1,1,0\,]$;
+$r_{12}=\frac{1}{\sqrt2}$; $\vc{w}_2=[\,0,1,1\,]-\frac12[\,1,1,0\,]=[\,-\frac12,\frac12,1\,]$,
+$r_{22}=\sqrt{\frac32}$, $\vc{q}_2=\frac{1}{\sqrt6}[\,-1,1,2\,]$.
+$\mt{R}=\begin{bmatrix}\sqrt2&\frac{1}{\sqrt2}\\[2pt]0&\sqrt{\frac32}\end{bmatrix}$.
+
+\smallskip
+\noindent\textbf{P3.} $\mt{Q}\T\vc{b}=[\,\frac{1}{\sqrt2},\frac{1}{\sqrt6}\,]$.
+Back substitution: $x_2=\frac{1}{\sqrt6}\big/\sqrt{\frac32}=\frac13$, and
+$x_1=\bigl(\frac{1}{\sqrt2}-\frac{1}{\sqrt2}\cdot\frac13\bigr)\big/\sqrt2=\frac13$.
+Normal equations: $\mt{A}\T\mt{A}=\begin{bmatrix}2&1\\1&2\end{bmatrix}$,
+$\mt{A}\T\vc{b}=[\,1,1\,]$, solved by $[\,\frac13,\frac13\,]$. \checkmark
+
+\smallskip
+\noindent\textbf{P4.} $\det\mt{A}=\det\mt{Q}\det\mt{R}$ with $\det\mt{Q}=\pm1$
+(\S39.3) and $\det\mt{R}=r_{11}\cdots r_{nn}$ (\S39.1). For $n=2$:
+$r_{11}=\norm{\vc{a}_1}$ is the base, and $r_{22}=\norm{\vc{w}_2}$ is the length of
+the part of $\vc{a}_2$ perpendicular to $\vc{a}_1$, the height. So this is
+\S23's base times height, computed by Gram--Schmidt.
+
+\smallskip
+\noindent\textbf{P5.} $\mt{Q}\mt{Q}\T$ has rank at most $2$ (its column space is
+inside $\colsp{\mt{Q}}$, a plane), while $\mt{I}_3$ has rank $3$.
+
+\lookahead This ends the matrix unit. Its last theorems were about choosing a good
+basis: an orthonormal basis of the column space makes least squares easy. The next
+unit asks for a basis that makes a square matrix itself easy. The ideal basis
+vectors are the ones the matrix only stretches, its \emph{eigenvectors}, first met
+as the invariant lines of \S30.4.
+
+\end{document}

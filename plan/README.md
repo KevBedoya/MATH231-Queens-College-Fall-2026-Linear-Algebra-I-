@@ -18,6 +18,7 @@ document is correct**.
 |---|---|
 | `MATH231_projects_and_demos.tex` / `.pdf` | The full menu of candidate projects and lecture demos, plus a draft assessment mapping. Which projects are actually assigned is still being decided. |
 | `MATH231_tentative_topics.tex` / `.pdf` | Topics appearing across the course progression that are **not guaranteed** to be covered, gathered in one place. |
+| `MATH231_remaining_units_plan.tex` / `.pdf` | How the rest of the term is planned to split into lecture documents: the matrix unit's Parts 2–11, then the eigen and linear-maps units. A working plan; nothing in it has been lectured or announced. |
 
 ## Why it is separate
 
@@ -28,11 +29,11 @@ them keeps the progression honest — anything still undecided lives here, so th
 progression can be read as a statement of intent rather than a wish list.
 
 The project menu in particular is deliberately larger than what will be
-assigned. Three projects are graded this semester; the menu lists nine
+assigned. Two projects are graded this semester; the menu lists nine
 candidates. Selecting from it is still in progress.
 
 > **Note on the draft assessment mapping.** It predates the finalized grading
 > split and does not match it — it shows four projects and ten homework
-> assignments, where the course actually has **three projects and five homework
+> assignments, where the course actually has **two projects and five homework
 > assignments** (see the root `README.md` for the authoritative weights). The
 > mapping is kept for its unit-coverage sketch, not its counts.

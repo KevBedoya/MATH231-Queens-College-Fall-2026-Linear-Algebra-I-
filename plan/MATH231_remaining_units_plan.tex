@@ -1,0 +1,1106 @@
+%==============================================================================
+%  MATH 231 -- Linear Algebra I (Queens College, Fall 2026)
+%  PLAN / NOT FINALIZED -- How the rest of the semester's material is split
+%  into lecture documents: the matrix unit, Parts 2-11 (Midterm 2); then, for
+%  the final, the eigen unit and the linear-maps unit (linear maps,
+%  composition, change of basis, the SVD), which closes the course.
+%
+%  SOURCE.  The topic lists and their ORDER are the instructor's (2026-10-25,
+%  given in three messages: the matrix unit, then the eigen unit, then the
+%  closing topics), including the derivations the instructor specified step
+%  by step (the orthogonal-matrix lemma, the area of a parallelogram, the
+%  rotation matrix from the unit circle, least squares from the scalar
+%  problem, rank(A'A) = rank(A) from rank-nullity).  The order is kept
+%  exactly.  What this document
+%  adds is (1) where each topic lands -- which Part, which section number --
+%  (2) the cross-references into material students already have, and (3)
+%  anything proposed beyond the list, tagged [proposed] so it can be struck.
+%  Points where the list and the mathematics disagree are tagged [D1]-[D12]
+%  and collected in the "Decisions" section.
+%
+%  WHEN WRITING A PART: read its entry here, the matching Decisions, and the
+%  Notation section first.  Each Part's header comment should carry over the
+%  decisions it depends on, as Part 1's header does.
+%
+%  AUDIENCE: the instructor.  The lecture documents themselves stay free of
+%  instructor-facing apparatus (pacing, flags); this file is where those live.
+%
+%  Compile with tectonic or pdflatex (standard TeX Live packages only).
+%==============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+\titleformat{\section}{\Large\bfseries\sffamily\color{RoyalBlue}}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titleformat{\subsection}{\large\bfseries\sffamily}{}{0em}{}
+\titlespacing*{\subsection}{0pt}{14pt}{4pt}
+
+\setlength{\emergencystretch}{3em}
+\setlist{itemsep=2pt,topsep=3pt}
+
+%--------------------------------------------------------------- notation ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vc}[1]{\mathbf{#1}}
+\newcommand{\mt}[1]{\mathbf{#1}}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\colsp}[1]{\operatorname{col}[#1]}
+\newcommand{\rowsp}[1]{\operatorname{row}[#1]}
+\newcommand{\nullsp}[1]{\operatorname{null}[#1]}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\nullity}{nullity}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\adj}{adj}
+\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\diagop}{diag}
+\newcommand{\proj}[2]{\operatorname{proj}_{#1}(#2)}
+
+%------------------------------------------------------------------ tags -----
+\newcommand{\prop}{\,{\color{ForestGreen}\sffamily\scriptsize[proposed]}}
+\newcommand{\see}[1]{\,{\color{BrickRed}\sffamily\scriptsize[#1]}}
+
+% \partplan{number}{title}{file stem}{sections}{meetings}
+\newcommand{\partplan}[5]{%
+  \needspace{6\baselineskip}%
+  \subsection{Part #1 \textbullet\ #2}
+  \noindent{\small\sffamily File \texttt{#3} \textbullet\ #4 \textbullet\
+  about #5 meetings}\par\smallskip}
+% \sect{number}{title}
+\newcommand{\sect}[2]{\par\smallskip\noindent\textbf{\S#1\ \ #2.}\ \ignorespaces}
+\newcommand{\fits}{\par\smallskip\noindent\textit{Homework fit.}\ \ignorespaces}
+
+\title{\vspace{-1.2cm}\textbf{\sffamily MATH 231 -- Linear Algebra I}\\[4pt]
+       {\large\sffamily Plan for the Rest of the Term: the Matrix, Eigen,
+        and Linear-Maps Units}\\[2pt]
+       {\normalsize\sffamily Fall 2026 \textbullet\ working draft --- not finalized}}
+\author{}
+\date{\normalsize\sffamily Drafted October 25, 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.0cm}
+
+\begin{center}
+\fcolorbox{BrickRed!50}{BrickRed!7}{%
+\begin{minipage}{0.93\textwidth}
+\small\sffamily
+\textbf{This document is not finalized.} It records how the material is
+planned to be split into lecture documents. Nothing in it has been lectured or
+announced. Where it and an official course document disagree, the official
+document is correct.
+\end{minipage}}
+\end{center}
+
+%==============================================================================
+\section{The split at a glance}
+%==============================================================================
+The topics, in the order given, become ten new Parts of the matrix unit,
+Midterm~2's material, ending with Gram--Schmidt and $QR$. Two shorter units
+follow for the final: the eigen unit, then the linear-maps unit, which closes
+the course with composition, change of basis, and the SVD. Matrix-unit section
+numbers continue across Parts as they do in the vector and computational units,
+so Part~2 opens at \S10; each new unit restarts at \S1. Each Part ends with a
+Looking-ahead into the next, and each one collects or plants a specific debt,
+noted under its entry.
+
+\medskip
+{\renewcommand{\arraystretch}{1.3}
+\small
+\begin{longtable}{@{}l p{4.3cm} l p{6.4cm} c@{}}
+\toprule
+\textbf{Part} & \textbf{Title} & \textbf{\S} & \textbf{Topics} & \textbf{Mtgs} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Part} & \textbf{Title} & \textbf{\S} & \textbf{Topics} & \textbf{Mtgs} \\
+\midrule
+\endhead
+2  & Column Space, Rank, and the Determinant & 10--14 &
+     $\colsp{A}$, $\rowsp{A}$, rank; a matrix as a map of the plane; the
+     $2\times2$ determinant, its effect on the plane, and rank & 1.5 \\
+3  & Matrices That Move the Plane & 15--21 &
+     scaling (uniform, non-uniform), translation, shear, first rotations,
+     reflections, projections; length-preserving matrices; orthogonal
+     matrices and what they do & 2 \\
+4  & Area, and the Rotation Matrix & 22--25 &
+     properties of the $2\times2$ determinant; $|\det\mt{A}|$ as an area;
+     $\mt{R}_\theta$ from the unit circle; rotations in $\R^{3}$ & 1--1.5 \\
+5  & Projection Matrices and the Direct Sum & 26--29 &
+     $\mt{P}_{\vc{u}}$ from the projection formula; idempotence; the
+     complementary projection; the direct sum & 1--1.5 \\
+6  & The Null Space and Rank--Nullity & 30--34 &
+     full rank and rank deficiency, maps between spaces, invariant subspaces;
+     null space, kernel, nullity; rank--nullity;
+     $\rank(\mt{A}\T\mt{A})=\rank(\mt{A})$; the $2\times2$ inverse & 2 \\
+7  & The Determinant in General & 35--39 &
+     minors, cofactors, Laplace expansion, principal minors; properties;
+     triangular, diagonal, orthogonal & 1.5 \\
+8  & Solving Linear Systems & 40--45 &
+     row operations, back/forward substitution, Gaussian and Gauss--Jordan
+     elimination, (reduced) row-echelon form, homogeneous, over- and
+     underdetermined systems & 2 \\
+9  & Least Squares & 46--49 &
+     the scalar problem; the column space; normal equations; the
+     vector-calculus derivation; fitting a line & 1.5 \\
+10 & Cramer's Rule, the Inverse, and the Pseudo-inverse & 50--54 &
+     Cramer's rule; the $n\times n$ inverse; the adjugate; properties;
+     Moore--Penrose & 2 \\
+11 & Gram--Schmidt and the $QR$ Decomposition & 55--58 &
+     Gram--Schmidt in matrix form; $\mt{A}=\mt{Q}\mt{R}$;
+     $\colsp{Q}=\colsp{A}$; $QR$ for least squares & 1.5 \\
+\midrule
+E1 & Eigenvalues and the Characteristic Polynomial & 1--4 &
+     eigenpairs; $\det(\mt{A}-\lambda\mt{I})$; the $2\times2$ formula; trace
+     and determinant; Abel--Ruffini & 1.5 \\
+E2 & Diagonalization and the Spectral Theorem & 5--7 &
+     $\mt{V}\Lambda\mt{V}^{-1}$; symmetric matrices; spectral radius & 1.5 \\
+E3 & Structure and Location & 8--9 &
+     structured matrices and their eigenvalues; Gershgorin & 1 \\
+\midrule
+L1 & Linear Maps and Composition & 1--3 &
+     linear maps; the matrix of a map; matrix multiplication derived from
+     composition & 1 \\
+L2 & Change of Basis & 4--5 &
+     coordinates in a basis; $\mt{V}^{-1}\mt{A}\mt{V}$; similarity &
+     1 \\
+L3 & The Singular Value Decomposition & 6--8 &
+     the circle to an ellipse; $\mt{U}\Sigma\mt{V}\T$ from
+     $\mt{A}\T\mt{A}$; what it gives & 1.5 \\
+\bottomrule
+\end{longtable}}
+
+\noindent File stems:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{MATH231\_matrices\_<n>\_\ldots} in \texttt{lectures/matrix-unit/};
+  \item \texttt{MATH231\_eigen\_<n>\_\ldots} in a new \texttt{lectures/eigen-unit/};
+  \item \texttt{MATH231\_linmaps\_<n>\_\ldots} in a new
+        \texttt{lectures/linear-maps-unit/}.
+\end{itemize}
+Meeting counts are estimates at the pace so far. \S\ref{sec:pacing} sets them
+against the calendar, and they do not fit as they stand.
+
+%==============================================================================
+\section{The matrix unit, Part by Part}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\partplan{2}{Column Space, Row Space, Rank, and the $2\times2$ Determinant}
+  {matrices\_2\_column\_space\_rank\_and\_the\_determinant}{\S10--\S14}{1.5}
+%------------------------------------------------------------------------------
+\noindent\textit{Opens by} picking up Part~1's last question. $\mt{V}\vc{x}=\vc{u}$
+is stated but unsolved, and \S2.6 P5 produced a system with no solution. Before
+asking \emph{how} to solve (Part~8), ask \emph{when} a solution exists. The
+column space answers that. \see{D1}
+
+\sect{10}{The column space} $\colsp{A}=\{\mt{A}\vc{x}:\vc{x}\in\R^{n}\}$, which
+by the column reading (\S2.5) is the span of the columns; a subspace of
+$\R^{m}$ (vector unit \S19.2--\S19.3). $\mt{A}\vc{x}=\vc{b}$ is solvable exactly
+when $\vc{b}\in\colsp{A}$. Revisit \S2.6 P5: $[\,3,1\,]$ is off the line
+spanned by $[\,1,2\,]$. The ``no solution'' outcome of the Oct~1 review,
+explained.
+
+\sect{11}{The row space} $\rowsp{A}=$ the span of the rows $=\colsp{A\T}$, a
+subspace of $\R^{n}$. For $m\neq n$ the two live in different spaces; a
+$2\times3$ example with $\colsp{A}\subseteq\R^{2}$ and
+$\rowsp{A}\subseteq\R^{3}$. The row reading (\S2.3) is the row space at work.
+
+\sect{12}{Rank} $\rank(\mt{A})=\dim\colsp{A}$, the largest number of
+independent columns; $\rank(\mt{A})\le\min(m,n)$. Examples by inspection: the
+zero matrix, $\mt{I}_n$, $\begin{bmatrix}1&2\\2&4\end{bmatrix}$, a $3\times3$
+whose third column is the sum of the first two, and the outer product
+$\vc{u}\vc{v}\T$ (rank one, column space $\spanop\{\vc{u}\}$)\prop. Row rank equals column
+rank: checked here for $2\times2$ only, proved in general in \S33.\see{D4}
+
+\sect{13}{A matrix moves the plane} $\vc{x}\mapsto\mt{A}\vc{x}$ as a function
+$\R^{n}\to\R^{m}$. Linearity,
+$\mt{A}(\alpha\vc{x}+\beta\vc{y})=\alpha\mt{A}\vc{x}+\beta\mt{A}\vc{y}$, from
+M2 and M4 (\S8.4). Conversely, a linear map is fixed by where it sends
+$\vc{e}_1,\dots,\vc{e}_n$. \emph{Column $j$ of $\mt{A}$ is where $\vc{e}_j$
+goes.} This is the first-principles tool Part~3 runs on. The unit square goes
+to the parallelogram on the columns, and the grid to a parallelogram grid. The
+origin stays put; lines go to lines. Keep this to matrices acting on
+$\R^{n}$. Linear maps in general, and the derivation of the product rule from
+composition, belong to the linear-maps unit (L1).\see{D11}
+
+\sect{14}{The $2\times2$ determinant} $\det\mt{A}=ad-bc$ is the number
+$D=u_1v_2-u_2v_1$ of the vector unit's \S18.5, whose Looking-ahead promised it a
+name. That debt is collected here. What it says about the map:
+$|\det\mt{A}|$ is the factor by which areas scale (stated here, derived in
+\S23), and its sign says whether orientation is kept or flipped.
+$\det\mt{A}=0$ holds exactly when the columns are dependent, i.e.\
+$\rank\mt{A}<2$, i.e.\ the plane collapses. At rank~1 it collapses onto the line
+$\colsp{A}$, and a whole line of vectors lands on $\vc{0}$ (planted for \S31). At
+rank~0 everything goes to the origin. One table: rank, determinant, picture.
+
+\fits Catalog Problem~4 (Homework~3 F.1, ``why moving the corners is enough'')
+uses exactly \S13.
+
+%------------------------------------------------------------------------------
+\partplan{3}{Matrices That Move the Plane}
+  {matrices\_3\_matrices\_that\_move\_the\_plane}{\S15--\S21}{2}
+%------------------------------------------------------------------------------
+\sect{15}{Building a matrix from what it does} The recipe: decide geometrically
+where $\vc{e}_1$ and $\vc{e}_2$ go; those are the columns (\S13). Every matrix
+below is built that way, then read back from its structure (diagonal,
+triangular, symmetric, \dots).
+
+\sect{16}{Scaling} Uniform, $\alpha\mt{I}$: every vector scaled by $\alpha$, every
+direction kept, $\det=\alpha^{2}$. Non-uniform, $\diagop(s_1,s_2)$: the axes
+scaled separately, so a circle becomes an ellipse, $\det=s_1s_2$, and a negative
+entry also flips. Structure: diagonal (\S4.2) means the axes are kept.
+
+\sect{17}{Translation} \see{D2} $\vc{x}\mapsto\vc{x}+\vc{t}$ is not linear, and
+no $2\times2$ matrix performs it: $\mt{A}\vc{0}=\vc{0}$ for every $\mt{A}$. It is
+done instead in homogeneous coordinates, $[\,x,y\,]\mapsto[\,x,y,1\,]$, by
+$\begin{bmatrix}1&0&t_1\\0&1&t_2\\0&0&1\end{bmatrix}$. Combining translation
+with the other motions as $3\times3$ products\prop.
+
+\sect{18}{Shear} $\begin{bmatrix}1&k\\0&1\end{bmatrix}$: $\vc{e}_1$ fixed,
+$\vc{e}_2\mapsto[\,k,1\,]$, each horizontal line slides in proportion to its
+height. The vertical shear is the transpose. Structure: triangular with $1$s on
+the diagonal; $\det=1$, so the shape changes and the area does not.
+
+\sect{19}{Rotation, reflection, projection: first examples} Rotation by
+$90^\circ$, $\mt{J}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}$, and by $180^\circ$,
+$-\mt{I}$; reflection across the $x$-axis, $\diagop(1,-1)$, and across $y=x$,
+$\begin{bmatrix}0&1\\1&0\end{bmatrix}$; projection onto the $x$-axis,
+$\diagop(1,0)$, with rank~1 and $\det=0$. Each is built from where $\vc{e}_1,\vc{e}_2$ go. A
+general angle waits for \S24, a general line for \S26.
+
+\sect{20}{Matrices that preserve length} The question: which
+$\mt{A}\in\R^{n\times n}$ satisfy $\norm{\mt{A}\vc{x}}_2=\norm{\vc{x}}_2$ for all
+$\vc{x}$? (Start with $n=2$.)
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Lemma.} If $\mt{M}\in\R^{n\times n}$, $\mt{M}=\mt{M}\T$, and
+        $\vc{x}\T\mt{M}\vc{x}=0$ for all $\vc{x}\in\R^{n}$, then $\mt{M}=\mt{0}$.
+        \emph{Proof:} $\vc{x}=\vc{e}_i$ gives $m_{ii}=0$; then
+        $\vc{x}=\vc{e}_i+\vc{e}_j$ gives
+        $m_{ii}+m_{ij}+m_{ji}+m_{jj}=2m_{ij}=0$, using symmetry.
+  \item \textbf{Remark}\prop: symmetry cannot be dropped. $\mt{J}$ of \S19 has
+        $\vc{x}\T\mt{J}\vc{x}=0$ for every $\vc{x}$, and $\mt{J}\neq\mt{0}$.
+        (It is skew-symmetric, Homework~3 B.3.)
+  \item \textbf{Theorem.} $\norm{\mt{A}\vc{x}}^{2}=\vc{x}\T\mt{A}\T\mt{A}\vc{x}$
+        (\S7.3 with M6) and $\norm{\vc{x}}^{2}=\vc{x}\T\vc{x}$, so
+        $\vc{x}\T(\mt{A}\T\mt{A}-\mt{I})\vc{x}=0$ for all $\vc{x}$. The matrix
+        $\mt{A}\T\mt{A}-\mt{I}$ is symmetric (M6, \S6.4), so the lemma gives
+        $\mt{A}\T\mt{A}=\mt{I}$.
+  \item \textbf{Orthonormal columns.} The $(i,j)$ entry of $\mt{A}\T\mt{A}$ is
+        $\vc{a}_i\T\vc{a}_j$, so $\vc{a}_i\T\vc{a}_j=\delta_{ij}$, column by column.
+        \see{D9: restate $\delta_{ij}$}
+  \item \textbf{Definition.} $\mt{A}\in\R^{n\times n}$ is \emph{orthogonal} if
+        $\mt{A}\T\mt{A}=\mt{A}\mt{A}\T=\mt{I}$. No inverse is mentioned.\see{D3}
+  \item The converse ($\mt{A}\T\mt{A}=\mt{I}$ preserves length), and dot
+        products and angles preserved too:
+        $(\mt{A}\vc{x})\T(\mt{A}\vc{y})=\vc{x}\T\vc{y}$\prop.
+\end{itemize}
+
+\sect{21}{What an orthogonal matrix can do} In $\R^{2}$ the first column is a
+unit vector $[\,a,c\,]$. The second is a unit vector orthogonal to it, and there
+are exactly two: $\pm[\,-c,a\,]$. So every $2\times2$ orthogonal matrix is
+$\begin{bmatrix}a&-c\\c&a\end{bmatrix}$ ($\det=+1$, a rotation) or
+$\begin{bmatrix}a&c\\c&-a\end{bmatrix}$ ($\det=-1$, a reflection), with
+$a^{2}+c^{2}=1$. Both satisfy $\mt{A}\mt{A}\T=\mt{I}$ by direct computation,
+which settles D3 for $n=2$. Sort \S19's examples into the two families. The
+projection is not orthogonal, because it destroys length. The angle form waits
+for \S24.
+
+\fits Catalog Problems~5--6 (Homework~3 F.2 gallery of motions, F.3 one motion
+after another).
+
+%------------------------------------------------------------------------------
+\partplan{4}{Area, and the Rotation Matrix}
+  {matrices\_4\_area\_and\_rotation}{\S22--\S25}{1--1.5}
+%------------------------------------------------------------------------------
+\sect{22}{Properties of the $2\times2$ determinant} Each is a one-line
+computation: $\det\mt{I}=1$; $\det\mt{A}\T=\det\mt{A}$;
+$\det(\alpha\mt{A})=\alpha^{2}\det\mt{A}$; swapping the columns (or rows) flips
+the sign; linear in each column separately; adding a multiple of one column to
+the other changes nothing; $\det(\mt{A}\mt{B})=\det\mt{A}\det\mt{B}$ (by
+expansion); triangular and diagonal give the product of the diagonal;
+orthogonal gives $\pm1$, since $\det(\mt{A}\T\mt{A})=(\det\mt{A})^{2}=1$, matching
+\S21; $\det\neq0$ exactly at rank~2. Read each against the gallery: uniform
+scaling $\alpha^{2}$, shear $1$, rotation $1$, reflection $-1$, projection $0$.
+
+\sect{23}{The determinant is an area} Let $\vc{a}_1=[\,a,c\,]$ and
+$\vc{a}_2=[\,b,d\,]$ be independent, with $\theta$ the angle between them
+(vector unit \S10.3). The base is $\norm{\vc{a}_1}$ and the height is
+$\norm{\vc{a}_2}\sin\theta$, so
+$\text{Area}=\norm{\vc{a}_1}\norm{\vc{a}_2}\sin\theta$. Square it:
+\[
+  \text{Area}^{2}
+  =\norm{\vc{a}_1}^{2}\norm{\vc{a}_2}^{2}(1-\cos^{2}\theta)
+  =\norm{\vc{a}_1}^{2}\norm{\vc{a}_2}^{2}-(\vc{a}_1\cdot\vc{a}_2)^{2}
+  =(a^{2}+c^{2})(b^{2}+d^{2})-(ab+cd)^{2}
+  =(ad-bc)^{2},
+\]
+using $\cos\theta$ from \S11.3. Since $\sin\theta\ge0$ on $[0,\pi]$,
+$\text{Area}=|ad-bc|=|\det\mt{A}|$. Consequences\prop:
+\begin{itemize}[leftmargin=1.4em]
+  \item The middle equality is Cauchy--Schwarz in $\R^{2}$ (vector unit \S13),
+        with the gap measured exactly, so equality holds iff $\det=0$.
+  \item $\text{Area}^{2}=\det(\mt{A}\T\mt{A})$, consistent with \S22.
+  \item Every grid square scales by $|\det\mt{A}|$, so every region does.
+  \item The product rule, seen geometrically: scale by $|\det\mt{B}|$, then by
+        $|\det\mt{A}|$.
+\end{itemize}
+
+\sect{24}{The rotation matrix} Parameterize the unit circle as
+$[\,\cos t,\sin t\,]$; rotation by $\theta$ sends angle $t$ to angle $t+\theta$.
+So $\vc{e}_1$ ($t=0$) goes to $[\,\cos\theta,\sin\theta\,]$, and $\vc{e}_2$
+($t=\pi/2$) goes to $[\,\cos(\theta+\frac{\pi}{2}),\sin(\theta+\frac{\pi}{2})\,]=[\,-\sin\theta,\cos\theta\,]$.
+By \S13, $\mt{R}_\theta=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}$.
+Then $\mt{R}_\theta\T\mt{R}_\theta=\mt{I}$ for all $\theta$, and
+$\det\mt{R}_\theta=1$ for all $\theta$. This is \S21's
+$\begin{bmatrix}a&-c\\c&a\end{bmatrix}$ family with $a=\cos\theta$,
+$c=\sin\theta$. Also:
+$\mt{R}_\alpha\mt{R}_\beta=\mt{R}_{\alpha+\beta}$ (``rotate by $\beta$, then
+by $\alpha$'' is the product, by M1\see{D11}), which yields the
+angle-addition formulas (or, given them, shows $\mt{R}_\theta$ turns every point of
+the circle, not just $\vc{e}_1,\vc{e}_2$)\prop\see{D10}; $\mt{R}_\theta\T=\mt{R}_{-\theta}$; the
+link to complex numbers \S6--\S7 (multiplying by $e^{i\theta}$)\prop; reflection
+across the line at angle $\varphi$,
+$\begin{bmatrix}\cos2\varphi&\sin2\varphi\\\sin2\varphi&-\cos2\varphi\end{bmatrix}$\prop.
+
+\sect{25}{Rotations in $\R^{3}$} About the $z$-axis,
+$\begin{bmatrix}\mt{R}_\theta&\vc{0}\\\vc{0}\T&1\end{bmatrix}$: it turns the
+$xy$-plane and fixes the axis. About the $x$- and $y$-axes, with the sign
+placement for $y$ explained. A rotation \emph{with respect to a plane} turns one
+plane through the origin by $\theta$ and fixes the line orthogonal to it. In an
+orthonormal basis adapted to the plane it is the block matrix above. Such a rotation is orthogonal,
+with $\det=1$. Order matters: $\mt{R}_x\mt{R}_z\neq\mt{R}_z\mt{R}_x$, the
+warning of \S8.4 made physical. Remark\prop: in $\R^{n}$, a rotation in the
+$(i,j)$ coordinate plane (a Givens rotation).
+
+\fits Catalog Problems~7--8 (Homework~3 F.4 rotations, F.5 shadows). Once
+\S14 is lectured, F.2(b) no longer needs to avoid the word ``determinant''.
+
+%------------------------------------------------------------------------------
+\partplan{5}{Projection Matrices and the Direct Sum}
+  {matrices\_5\_projections\_and\_direct\_sums}{\S26--\S29}{1--1.5}
+%------------------------------------------------------------------------------
+\sect{26}{The projection matrix onto a line} Start from the vector unit's
+\S12.4, $\proj{\vc{u}}{\vc{v}}=\frac{\vc{u}\cdot\vc{v}}{\vc{u}\cdot\vc{u}}\vc{u}$.
+Write the dot products as $\vc{u}\T\vc{v}$ (\S7.1) and move the scalar:
+$\vc{u}\,\frac{\vc{u}\T\vc{v}}{\vc{u}\T\vc{u}}=\frac{\vc{u}\vc{u}\T}{\vc{u}\T\vc{u}}\vc{v}$.
+So $\mt{P}_{\vc{u}}=\vc{u}\vc{u}\T/(\vc{u}\T\vc{u})$, an outer product (\S7.2)
+over a number. Examples: $\vc{u}=\vc{e}_1$ gives \S19's $\diagop(1,0)$, and
+$\vc{u}=[\,1,1\,]$ gives
+$\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix}$. Structure: symmetric, rank one,
+$\colsp{P_{\vc{u}}}=\spanop\{\vc{u}\}$, $\det=0$,
+$\mt{P}_{\vc{u}}\vc{u}=\vc{u}$, and $\mt{P}_{\vc{u}}\vc{w}=\vc{0}$ for
+$\vc{w}\perp\vc{u}$. The same formula works unchanged in $\R^{n}$.
+
+\sect{27}{Idempotence} Intuitively, doing it twice is the same as doing it once:
+the shadow of a shadow is itself. $\mt{P}_{\vc{u}}^{2}=\mt{P}_{\vc{u}}$, since
+$\vc{u}(\vc{u}\T\vc{u})\vc{u}\T/(\vc{u}\T\vc{u})^{2}=\mt{P}_{\vc{u}}$.
+\textbf{Definition:} a square $\mt{P}$ is a \emph{projection matrix} if
+$\mt{P}^{2}=\mt{P}$. Then\prop:
+$\begin{bmatrix}1&1\\0&0\end{bmatrix}$ is idempotent and not symmetric. It
+projects onto the $x$-axis \emph{along} $[\,1,-1\,]$, a slanted shadow. So an
+\emph{orthogonal} projection matrix is one with $\mt{P}^{2}=\mt{P}$ and
+$\mt{P}\T=\mt{P}$.
+
+\sect{28}{The complementary projection} $\mt{I}-\mt{P}$ (not $\mt{Q}$; see N3):
+$(\mt{I}-\mt{P})^{2}=\mt{I}-2\mt{P}+\mt{P}^{2}=\mt{I}-\mt{P}$;
+$(\mt{I}-\mt{P}_{\vc{u}})\vc{v}=\vc{v}-\proj{\vc{u}}{\vc{v}}$, the orthogonal
+piece of vector unit \S12.6; $\mt{P}(\mt{I}-\mt{P})=(\mt{I}-\mt{P})\mt{P}=\mt{0}$.
+In $\R^{2}$, with $\vc{u}=[\,a,b\,]$ and $\vc{v}=[\,-b,a\,]\perp\vc{u}$,
+$\vc{u}\vc{u}\T+\vc{v}\vc{v}\T=(a^{2}+b^{2})\mt{I}$, so
+$\mt{I}-\mt{P}_{\vc{u}}=\mt{P}_{\vc{v}}$. The complement of the orthogonal
+projection onto $\vc{u}$ is the orthogonal projection onto $\vc{v}$. Here
+$\mt{P}_{\vc{v}}$ is defined from the projection of $\vc{u}$ onto $\vc{v}$,
+$\mt{P}_{\vc{v}}\vc{u}=\proj{\vc{v}}{\vc{u}}$, as asked. Reflection across
+$\spanop\{\vc{u}\}$ is $2\mt{P}_{\vc{u}}-\mt{I}=\mt{P}_{\vc{u}}-\mt{P}_{\vc{v}}$,
+\S21's $\det=-1$ family again\prop.
+
+\sect{29}{The direct sum} For orthogonal nonzero $\vc{u},\vc{v}\in\R^{2}$, every
+$\vc{x}=\mt{P}_{\vc{u}}\vc{x}+\mt{P}_{\vc{v}}\vc{x}$, one piece on each line.
+The split is unique because
+$\spanop\{\vc{u}\}\cap\spanop\{\vc{v}\}=\{\vc{0}\}$. Intuitive definition:
+$V=U\oplus W$ when every vector of $V$ is uniquely $\vc{u}+\vc{w}$ with
+$\vc{u}\in U$, $\vc{w}\in W$; uniqueness amounts to $U\cap W=\{\vc{0}\}$. So
+$\R^{2}=\spanop\{\vc{u}\}\oplus\spanop\{\vc{v}\}$, and
+$\norm{\vc{x}}^{2}=\norm{\mt{P}_{\vc{u}}\vc{x}}^{2}+\norm{\mt{P}_{\vc{v}}\vc{x}}^{2}$
+(vector unit \S23.4). Also\prop:
+\begin{itemize}[leftmargin=1.4em]
+  \item The oblique sum $\spanop\{[1,0]\}\oplus\spanop\{[1,1]\}$, split by
+        \S27's idempotent: a direct sum need not be orthogonal.
+  \item $\R^{3}$ as a line $\oplus$ a plane.
+  \item Every projection gives $\colsp{P}\oplus\colsp{I-P}$.
+\end{itemize}
+
+\fits Catalog Problems~9--12 (Homework~3 Part~G). Rename $\mt{Q}_{\vc{u}}$
+(N3) and rewrite G.3(e) as its instructor note says.
+
+%------------------------------------------------------------------------------
+\partplan{6}{The Null Space and Rank--Nullity}
+  {matrices\_6\_null\_space\_and\_rank\_nullity}{\S30--\S34}{2}
+%------------------------------------------------------------------------------
+\sect{30}{Column and row space, revisited} Full rank, $\rank\mt{A}=\min(m,n)$;
+full column rank (independent columns) and full row rank; rank-deficient
+otherwise. $\mt{A}$ maps $\R^{n}\to\R^{m}$, landing in $\colsp{A}$;
+$\mt{A}\T$ maps $\R^{m}\to\R^{n}$, landing in $\rowsp{A}$. The image of a
+subspace is a subspace. For square $\mt{A}$, an \emph{invariant subspace} is a
+$W$ with $\mt{A}\vc{w}\in W$ for all $\vc{w}\in W$. Examples:
+\begin{itemize}[leftmargin=1.4em]
+  \item $\spanop\{\vc{u}\}$ and $\spanop\{\vc{v}\}$ for $\mt{P}_{\vc{u}}$;
+  \item the coordinate axes for a diagonal matrix;
+  \item the $z$-axis and the $xy$-plane for a rotation about $z$;
+  \item for $\mt{R}_\theta$ in $\R^{2}$ ($\theta\neq0,\pi$), only $\{\vc{0}\}$ and
+        $\R^{2}$;
+  \item $\colsp{A}$ (and, after \S31, $\nullsp{A}$) for any square $\mt{A}$.
+\end{itemize}
+Looking-ahead: a one-dimensional invariant subspace is spanned by an
+eigenvector, and the eigen unit starts from it.
+
+\sect{31}{The null space} $\nullsp{A}=\{\vc{x}:\mt{A}\vc{x}=\vc{0}\}$, the
+\emph{kernel}; a subspace of $\R^{n}$; $\nullity(\mt{A})=\dim\nullsp{A}$.
+$\mt{A}\vc{x}=\vc{0}$ is a homogeneous system (named here, solved in \S44).
+Simple examples: $\mt{I}$; the zero matrix; $\mt{P}_{\vc{u}}$ (the line
+$\spanop\{\vc{v}\}$); $\begin{bmatrix}1&2\\2&4\end{bmatrix}$
+($\spanop\{[2,-1]\}$); a $2\times3$ (a line in $\R^{3}$); $\vc{u}\vc{v}\T$ (the
+plane $\vc{v}^{\perp}$)\prop. Since
+$\mt{A}\vc{x}=\mt{A}\vc{y}\iff\vc{x}-\vc{y}\in\nullsp{A}$, the kernel is what
+$\mt{A}$ forgets. The solutions of $\mt{A}\vc{x}=\vc{b}$ are
+$\vc{x}_p+\nullsp{A}$, which is the ``infinitely many'' outcome explained.
+By the row reading, $\nullsp{A}\perp\rowsp{A}$: $\mt{A}\vc{x}=\vc{0}$ says
+$\vc{x}$ is orthogonal to every row\prop.
+
+\sect{32}{The rank--nullity theorem} For $\mt{A}\in\R^{m\times n}$,
+$\rank\mt{A}+\nullity\mt{A}=n$. \emph{Proof:} take a basis
+$\vc{k}_1,\dots,\vc{k}_p$ of $\nullsp{A}$ and extend it to a basis of $\R^{n}$
+by $\vc{w}_1,\dots,\vc{w}_{n-p}$. Then $\mt{A}\vc{w}_1,\dots,\mt{A}\vc{w}_{n-p}$
+is a basis of $\colsp{A}$. They span because $\mt{A}$ kills the $\vc{k}$'s. They
+are independent because a dependence would put a combination of the $\vc{w}$'s in
+$\nullsp{A}$.\see{D5} Many simple examples, in one table of matrix, $n$, rank,
+nullity: each $2\times2$ rank, $\mt{P}_{\vc{u}}$, $\mt{R}_\theta$, a
+$3\times3$ shear, $2\times3$, $3\times2$, $\vc{u}\vc{v}\T$, $\mt{0}$,
+$\mt{I}$. Consequences:
+\begin{itemize}[leftmargin=1.4em]
+  \item For square $\mt{A}$: $\nullsp{A}=\{\vc{0}\}$ $\iff$ rank $n$ $\iff$
+        $\colsp{A}=\R^{n}$. This is the fact Part~1 \S1.1 took on trust,
+        modulo D5.
+  \item A wide matrix always has nullity $\ge n-m>0$.
+\end{itemize}
+
+\sect{33}{A corollary: $\rank(\mt{A}\T\mt{A})=\rank(\mt{A})$} First,
+$\nullsp{A^{\mathsf T}A}=\nullsp{A}$. One inclusion is clear. For the other,
+$\mt{A}\T\mt{A}\vc{x}=\vc{0}$ gives
+$\vc{x}\T\mt{A}\T\mt{A}\vc{x}=\norm{\mt{A}\vc{x}}^{2}=0$, so
+$\mt{A}\vc{x}=\vc{0}$. Both matrices have $n$ columns, so rank--nullity gives
+equal ranks. Second corollary\prop: $\rank\mt{A}\T=\rank\mt{A}$, i.e.\
+$\dim\rowsp{A}=\dim\colsp{A}$. Since $\colsp{A^{\mathsf T}A}\subseteq\colsp{A\T}$,
+$\rank\mt{A}\le\rank\mt{A}\T$; apply this to $\mt{A}\T$ for the reverse. No
+elimination is needed, which settles D4. Third: $\mt{A}\T\mt{A}$ has full rank
+$\iff$ $\mt{A}$ has full column rank, which is the hinge of \S49.
+
+\sect{34}{The $2\times2$ inverse} Definition: $\mt{B}$ with
+$\mt{A}\mt{B}=\mt{B}\mt{A}=\mt{I}$. Derive it by solving $\mt{A}\mt{X}=\mt{I}$
+column by column:
+$\mt{A}^{-1}=\frac{1}{ad-bc}\begin{bmatrix}d&-b\\-c&a\end{bmatrix}$. It exists
+$\iff\det\neq0\iff$ rank~2 $\iff\nullsp{A}=\{\vc{0}\}$; one table ties these
+four together. From the gallery:
+\begin{itemize}[leftmargin=1.4em]
+  \item $\mt{R}_\theta^{-1}=\mt{R}_{-\theta}=\mt{R}_\theta\T$;
+  \item the inverse shear $\begin{bmatrix}1&-k\\0&1\end{bmatrix}$;
+  \item $\diagop(1/s_1,1/s_2)$;
+  \item a projection has none, because it forgets a line.
+\end{itemize}
+Solve \S1.5's system as $\vc{x}=\mt{V}^{-1}\vc{u}$, giving \S2.4's analogy with
+$x=b/a$ its meaning.
+
+%------------------------------------------------------------------------------
+\partplan{7}{The Determinant in General}
+  {matrices\_7\_the\_determinant}{\S35--\S39}{1.5}
+%------------------------------------------------------------------------------
+\sect{35}{Minors and cofactors} $M_{ij}$ is the determinant of $\mt{A}$ with row
+$i$ and column $j$ deleted; $C_{ij}=(-1)^{i+j}M_{ij}$, the checkerboard of
+signs. The $2\times2$ case as the base: $ad-bc=aC_{11}+bC_{12}$.
+
+\sect{36}{Laplace (cofactor) expansion} Along row~1, recursively; then along any
+row or column, all giving the same number (stated\see{D6}). Worked $3\times3$
+examples; expand along the row or column with the most zeros. Also, as a
+statement\prop: $|\det|$ of a $3\times3$ is the volume of the parallelepiped on
+its columns, \S23 one dimension up.
+
+\sect{37}{Principal minors} The determinant of the submatrix keeping the same
+set of row and column indices; the leading principal minors (top-left
+$k\times k$). Examples. Looking-ahead\prop: they come back in the eigen unit
+(the characteristic polynomial) and in testing a Hessian (veccalc \S15).
+
+\sect{38}{General properties} $\det\mt{I}=1$; $\det\mt{A}\T=\det\mt{A}$; a row
+swap flips the sign; scaling one row by $\alpha$ scales $\det$ by $\alpha$, so
+$\det(\alpha\mt{A})=\alpha^{n}\det\mt{A}$, which generalizes $\alpha^{2}$; adding a
+multiple of one row to another changes nothing; two equal rows or a zero row
+give $0$; $\det(\mt{A}\mt{B})=\det\mt{A}\det\mt{B}$; $\det\mt{A}\neq0\iff$
+rank $n\iff\nullsp{A}=\{\vc{0}\}$. Which are proved and which are stated is D6.
+
+\sect{39}{Special matrices, with proofs}
+\begin{itemize}[leftmargin=1.4em]
+  \item Triangular (expand down the first column; induction on $n$): the
+        product of the diagonal. Diagonal is a special case.
+  \item Orthogonal:
+        $(\det\mt{Q})^{2}=\det\mt{Q}\T\det\mt{Q}=\det(\mt{Q}\T\mt{Q})=1$, so
+        $\det\mt{Q}=\pm1$; \S25's rotations have $+1$.
+  \item A projection $\mt{P}\neq\mt{I}$ has $\det=0$, since
+        $\mt{P}(\mt{I}-\mt{P})=\mt{0}$ with $\mt{I}-\mt{P}\neq\mt{0}$.
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\partplan{8}{Solving Linear Systems}
+  {matrices\_8\_gaussian\_elimination}{\S40--\S45}{2}
+%------------------------------------------------------------------------------
+\noindent\textit{Collects} Part~1 \S9's Looking-ahead (elimination, existence and
+uniqueness) and \S4.4's hint that the method makes the matrix triangular.
+
+\sect{40}{Elementary row operations} The augmented matrix
+$[\,\mt{A}\mid\vc{b}\,]$; swap two rows, scale a row by a nonzero number, add a
+multiple of one row to another. Each is reversible, so none changes the
+solution set. Each is left multiplication by an elementary matrix (a
+permutation, a scaling, a shear from Part~3)\prop.
+
+\sect{41}{Triangular systems} Back substitution (upper triangular) and forward
+substitution (lower), with pseudocode. They work iff no diagonal entry is zero,
+i.e.\ $\det\neq0$ (\S39). Cost about $n^{2}$\prop.
+
+\sect{42}{Gaussian elimination and row-echelon form} Pivots; a zero pivot forces
+a row swap. Worked: Part~1 \S1.6's system
+$\begin{bmatrix}1&2&0\\0&1&1\\1&0&1\end{bmatrix}\vc{x}=[\,5,5,4\,]$, solved at
+last ($\vc{x}=[\,1,2,3\,]$). Then the $n\times n$ procedure.
+$\det\mt{A}=\pm$ the product of the pivots, with the sign from the swaps, which
+is far cheaper than \S36\prop.
+
+\sect{43}{Gauss--Jordan elimination and reduced row-echelon form} Pivot and free
+variables; every solution read off; a basis of $\nullsp{A}$ from the free
+variables. Rank $=$ the number of pivots and nullity $=$ the number of free
+variables. This is rank--nullity again, now by counting columns: the second
+proof promised in D5.
+
+\sect{44}{Homogeneous systems} $\mt{A}\vc{x}=\vc{0}$ always has $\vc{0}$; it
+has nontrivial solutions $\iff$ there is a free variable $\iff$ nullity $>0$,
+which is guaranteed when there are more unknowns than equations. General solution =
+particular + homogeneous (\S31). Consistency:
+$\vc{b}\in\colsp{A}\iff\rank[\,\mt{A}\mid\vc{b}\,]=\rank\mt{A}$. The three
+outcomes, settled.
+
+\sect{45}{Overdetermined and underdetermined systems} With $m>n$ (more equations
+than unknowns), a system is usually inconsistent, which leads to least squares in
+Part~9. With $m<n$, a consistent system has infinitely many solutions (nullity
+$\ge n-m$). Which one to pick is the minimum-norm question of \S54.
+
+%------------------------------------------------------------------------------
+\partplan{9}{Least Squares}
+  {matrices\_9\_least\_squares}{\S46--\S49}{1.5}
+%------------------------------------------------------------------------------
+\sect{46}{The closest point on a line} For vectors $\vc{u},\vc{v}\in\R^{n}$ and a
+scalar $x$, minimize $f(x)=\norm{\vc{v}-x\vc{u}}_2^{2}
+=\vc{v}\T\vc{v}-2x\,\vc{u}\T\vc{v}+x^{2}\,\vc{u}\T\vc{u}$, a parabola in $x$.
+$f'(x)=0$ gives $\hat x=\vc{u}\T\vc{v}/\vc{u}\T\vc{u}$, the coefficient of
+$\proj{\vc{u}}{\vc{v}}$ (vector unit \S12.4). The residual is the orthogonal
+piece (\S12.6), and the Pythagorean identity shows every other $x$ does worse.
+This needs one-variable calculus only (veccalc \S1).
+
+\sect{47}{The closest point in a column space} Let $\vc{b}\notin\colsp{A}$
+(\S45) and minimize $\norm{\mt{A}\vc{x}-\vc{b}}^{2}$. As $\vc{x}$ varies,
+$\mt{A}\vc{x}$ sweeps $\colsp{A}$. The closest point
+$\mt{A}\hat{\vc{x}}$ is where the residual is orthogonal to $\colsp{A}$, i.e.\
+to every column: $\vc{a}_j\T(\vc{b}-\mt{A}\hat{\vc{x}})=0$ for all $j$. That
+gives the \textbf{normal equations}
+$\mt{A}\T\mt{A}\hat{\vc{x}}=\mt{A}\T\vc{b}$. One column recovers \S46.
+
+\sect{48}{The same answer by calculus} Expand
+$f(\vc{x})=\vc{x}\T\mt{A}\T\mt{A}\vc{x}-2\vc{b}\T\mt{A}\vc{x}+\vc{b}\T\vc{b}$.
+Componentwise, $\nabla(\vc{c}\T\vc{x})=\vc{c}$ and
+$\nabla(\vc{x}\T\mt{M}\vc{x})=2\mt{M}\vc{x}$ for symmetric $\mt{M}$. So
+$\nabla f=2\mt{A}\T\mt{A}\vc{x}-2\mt{A}\T\vc{b}=\vc{0}$ is the normal equations.
+The Hessian is $2\mt{A}\T\mt{A}$, and
+$\vc{x}\T\mt{A}\T\mt{A}\vc{x}=\norm{\mt{A}\vc{x}}^{2}\ge0$, so the critical point
+is a minimum.\see{D9}
+
+\sect{49}{Solving the normal equations; fitting a line} The normal equations are
+always consistent\prop:
+$\mt{A}\T\vc{b}\in\colsp{A\T}=\colsp{A^{\mathsf T}A}$. The two spaces are nested
+and have the same dimension, by \S33. The solution is unique $\iff$ $\mt{A}$ has
+full column rank (\S33). Solve them by elimination (Part~8); no inverse is used.\see{D7}
+Worked example: the line $y=c_0+c_1t$ through three or four data points (linear
+regression), with the residual checked orthogonal to both columns.
+
+\fits Catalog Problems~13--14 (Homework~3 Part~H, the Hessian). H.2, the
+Hessian of a quadratic function, is exactly \S48's computation.
+
+%------------------------------------------------------------------------------
+\partplan{10}{Cramer's Rule, the Inverse, and the Pseudo-inverse}
+  {matrices\_10\_the\_inverse\_and\_the\_pseudoinverse}{\S50--\S54}{2}
+%------------------------------------------------------------------------------
+\sect{50}{Cramer's rule} For $\det\mt{A}\neq0$,
+$x_i=\det\mt{A}_i(\vc{b})/\det\mt{A}$, where $\mt{A}_i(\vc{b})$ has column $i$
+replaced by $\vc{b}$. Geometric intuition ($2\times2$): since
+$\vc{b}=x_1\vc{a}_1+x_2\vc{a}_2$,
+$\det[\,\vc{b}\ \vc{a}_2\,]=x_1\det[\,\vc{a}_1\ \vc{a}_2\,]+x_2\det[\,\vc{a}_2\
+\vc{a}_2\,]=x_1\det\mt{A}$. Sliding $\vc{b}$ parallel to $\vc{a}_2$ is a shear
+and keeps the area (\S22--\S23). So the parallelogram on $(\vc{b},\vc{a}_2)$ has
+$x_1$ times the area of the one on $(\vc{a}_1,\vc{a}_2)$. For $n\times n$, the
+same argument works with volumes. Cost remark\prop: $n+1$ determinants against
+one elimination.
+
+\sect{51}{The inverse of an $n\times n$ matrix} Definition and uniqueness. The
+following are equivalent: $\mt{A}$ is invertible; $\det\neq0$; rank $n$;
+$\nullsp{A}=\{\vc{0}\}$; $\mt{A}\vc{x}=\vc{b}$ has exactly one solution for every
+$\vc{b}$ (collecting Parts~2, 6, 7, 8). For square matrices, a one-sided
+inverse is enough.
+\begin{itemize}[leftmargin=1.4em]
+  \item $\mt{B}\mt{A}=\mt{I}$ gives $\nullsp{A}=\{\vc{0}\}$, so rank $n$.
+  \item Then $\mt{A}\mt{C}=\mt{I}$ is solvable column by column.
+  \item So $\mt{B}=\mt{B}(\mt{A}\mt{C})=(\mt{B}\mt{A})\mt{C}=\mt{C}$.
+\end{itemize}
+This settles D3: $\mt{Q}\T\mt{Q}=\mt{I}$ alone forces $\mt{Q}\mt{Q}\T=\mt{I}$,
+and $\mt{Q}^{-1}=\mt{Q}\T$. Computing $\mt{A}^{-1}$ by Gauss--Jordan on
+$[\,\mt{A}\mid\mt{I}\,]$.
+
+\sect{52}{The inverse by the adjugate} $\adj\mt{A}=\mt{C}\T$, the cofactor
+matrix transposed, and $\mt{A}\,\adj\mt{A}=\det(\mt{A})\,\mt{I}$. On the diagonal
+this is Laplace expansion; off the diagonal it is the expansion of a matrix with
+two equal rows, which is $0$. So $\mt{A}^{-1}=\adj\mt{A}/\det\mt{A}$, which is
+Cramer's rule applied to each column of $\mt{I}$. \S34's formula is the
+$2\times2$ case; a $3\times3$ example.\see{N4}
+
+\sect{53}{Properties of the inverse} $(\mt{A}^{-1})^{-1}=\mt{A}$;
+$(\mt{A}\mt{B})^{-1}=\mt{B}^{-1}\mt{A}^{-1}$ (order reverses, like M6);
+$(\mt{A}\T)^{-1}=(\mt{A}^{-1})\T$; $(\alpha\mt{A})^{-1}=\alpha^{-1}\mt{A}^{-1}$;
+$\det\mt{A}^{-1}=1/\det\mt{A}$; diagonal matrices invert entrywise, and
+triangular ones stay triangular; $\mt{Q}^{-1}=\mt{Q}\T$;
+$\mt{R}_\theta^{-1}=\mt{R}_{-\theta}$. To solve a system, eliminate rather than
+forming $\mt{A}^{-1}$\prop. With full column rank,
+$\hat{\vc{x}}=(\mt{A}\T\mt{A})^{-1}\mt{A}\T\vc{b}$.
+
+\sect{54}{The pseudo-inverse} The cases:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Full column rank:} $\mt{A}^{+}=(\mt{A}\T\mt{A})^{-1}\mt{A}\T$,
+        from \S49, with $\mt{A}^{+}\mt{A}=\mt{I}_n$, and
+        $\mt{A}\mt{A}^{+}=\mt{A}(\mt{A}\T\mt{A})^{-1}\mt{A}\T$ is the orthogonal
+        projection onto $\colsp{A}$. For a single column $\mt{A}=\vc{u}$,
+        $\vc{u}^{+}=\vc{u}\T/\vc{u}\T\vc{u}$ and $\vc{u}\vc{u}^{+}=\mt{P}_{\vc{u}}$
+        of \S26.
+  \item \textbf{Full row rank:} $\mt{A}^{+}=\mt{A}\T(\mt{A}\mt{A}\T)^{-1}$
+        gives the minimum-norm solution of \S45's underdetermined system. It is
+        the solution in $\rowsp{A}$, orthogonal to $\nullsp{A}$.
+  \item \textbf{Invertible:} $\mt{A}^{+}=\mt{A}^{-1}$.
+\end{itemize}
+\textbf{Moore--Penrose:} $\mt{A}^{+}$ is the unique $\mt{X}$ with
+$\mt{A}\mt{X}\mt{A}=\mt{A}$, $\mt{X}\mt{A}\mt{X}=\mt{X}$,
+$(\mt{A}\mt{X})\T=\mt{A}\mt{X}$, $(\mt{X}\mt{A})\T=\mt{X}\mt{A}$. Check both
+formulas against the four conditions. The rank-deficient case is stated here
+and computed with the SVD in L3\see{D8}. One rank-one example\prop:
+$(\vc{x}\vc{y}\T)^{+}=\vc{y}\vc{x}\T/(\norm{\vc{x}}^{2}\norm{\vc{y}}^{2})$.
+
+%------------------------------------------------------------------------------
+\partplan{11}{Gram--Schmidt and the $QR$ Decomposition}
+  {matrices\_11\_gram\_schmidt\_and\_qr}{\S55--\S58}{1.5}
+%------------------------------------------------------------------------------
+\noindent\textit{Collects} computational unit \S20.3's closing promise: ``a
+factorisation of the matrix whose columns are the $\vc{v}_k$ \ldots\ We will
+return to Gram--Schmidt.''
+
+\sect{55}{Gram--Schmidt in matrix language} \see{D9} The algorithm is derived in
+full in computational unit Part~4 (\S16--\S19). Here it is restated in matrix
+terms: $\vc{w}_k=\vc{a}_k-\sum_{j<k}(\vc{q}_j\T\vc{a}_k)\vc{q}_j$ and
+$\vc{q}_k=\vc{w}_k/\norm{\vc{w}_k}$. It requires independent columns
+(computational \S19).
+
+\sect{56}{The $QR$ decomposition} Rearranged,
+$\vc{a}_k=\sum_{j\le k}r_{jk}\vc{q}_j$ with $r_{jk}=\vc{q}_j\T\vc{a}_k$ and
+$r_{kk}=\norm{\vc{w}_k}>0$. So $\mt{A}=\mt{Q}\mt{R}$, where
+$\mt{Q}\in\R^{m\times n}$ has orthonormal columns ($\mt{Q}\T\mt{Q}=\mt{I}_n$) and
+$\mt{R}\in\R^{n\times n}$ is upper triangular with a positive diagonal. Worked
+example: computational \S18.3's $[1,1,0],[1,0,1],[0,1,1]$, whose $\vc{q}$'s are
+already computed there, with $\mt{R}=\mt{Q}\T\mt{A}$. For square $\mt{A}$,
+$\mt{Q}$ is orthogonal (Part~3). For tall $\mt{A}$, $\mt{Q}\T\mt{Q}=\mt{I}$ but
+$\mt{Q}\mt{Q}\T\neq\mt{I}$: it is the projection onto $\colsp{A}$ (\S54).
+
+\sect{57}{$\colsp{Q}=\colsp{A}$} $\mt{A}=\mt{Q}\mt{R}$ gives
+$\colsp{A}\subseteq\colsp{Q}$. $\mt{R}$ is triangular with a nonzero diagonal, so
+$\det\mt{R}\neq0$ (\S39) and $\mt{Q}=\mt{A}\mt{R}^{-1}$, giving the reverse
+inclusion. More strongly,
+$\spanop\{\vc{q}_1,\dots,\vc{q}_k\}=\spanop\{\vc{a}_1,\dots,\vc{a}_k\}$ for every
+$k$.
+
+\sect{58}{$QR$ and least squares}
+$\mt{A}\T\mt{A}=\mt{R}\T\mt{Q}\T\mt{Q}\mt{R}=\mt{R}\T\mt{R}$, so the normal
+equations reduce to $\mt{R}\hat{\vc{x}}=\mt{Q}\T\vc{b}$, a single back
+substitution (\S41). Also $\mt{A}^{+}=\mt{R}^{-1}\mt{Q}\T$, and the projection
+onto $\colsp{A}$ is $\mt{Q}\mt{Q}\T$. Redo \S49's line fit with $QR$. Remark\prop:
+why $QR$ is preferred in floating point (forming $\mt{A}\T\mt{A}$ squares the
+sensitivity), and classical versus modified Gram--Schmidt (computational
+\S20.3).
+
+%==============================================================================
+\section{The eigen unit (the final)}
+%==============================================================================
+This is a new unit, so section numbering restarts at \S1, the convention matrix
+Part~1 set for a new unit. Every topic on the list is placed below. Several
+matrix-unit sections plant it on purpose: \S30 (invariant subspaces), \S37
+(principal minors), \S38--\S39 ($\det(\mt{A}-\lambda\mt{I})$, triangular
+determinants), \S26--\S29 (projections, direct sums), \S24 ($\mt{R}_\theta$ has
+no real eigenvector), \S53 ($\mt{V}^{-1}$), and Part~1 \S9.3
+($\tr\mt{A}\mt{B}=\tr\mt{B}\mt{A}$).
+
+\partplan{E1}{Eigenvalues, Eigenvectors, and the Characteristic Polynomial}
+  {eigen\_1\_eigenvalues\_and\_the\_characteristic\_polynomial}{\S1--\S4}{1.5}
+\sect{1}{Eigenpairs} $\mt{A}\vc{v}=\lambda\vc{v}$, $\vc{v}\neq\vc{0}$; an
+eigenvector spans a one-dimensional invariant subspace (matrix \S30). The
+gallery first, by geometry:
+\begin{itemize}[leftmargin=1.4em]
+  \item scalings;
+  \item projections ($1$ on the column space, $0$ on the null space);
+  \item reflections ($\pm1$);
+  \item shears (only $1$);
+  \item $\mt{R}_\theta$ (no real eigenvalue).
+\end{itemize}
+
+\sect{2}{The characteristic polynomial} $\lambda$ is an eigenvalue
+$\iff\nullsp{A-\lambda I}\neq\{\vc{0}\}\iff\det(\mt{A}-\lambda\mt{I})=0$
+(matrix \S38). The eigenspace is $\nullsp{A-\lambda I}$, and the polynomial has degree $n$.
+
+\sect{3}{The $2\times2$ case; trace and determinant} With $\tau=\tr\mt{A}$ and $\delta=\det\mt{A}$,
+$p(\lambda)=\lambda^{2}-\tau\lambda+\delta$, so
+$\lambda=\tfrac12\bigl(\tau\pm\sqrt{\tau^{2}-4\delta}\bigr)$. The
+discriminant decides between two real roots, a repeated root, or a complex
+pair. $\mt{R}_\theta$ gives $e^{\pm i\theta}$ (complex numbers \S6).
+\textbf{Theorem:} $\tr\mt{A}=\sum\lambda_i$ and $\det\mt{A}=\prod\lambda_i$
+(complex, with multiplicity). Proofs:
+\begin{itemize}[leftmargin=1.4em]
+  \item $2\times2$: the sum and product of the two roots above.
+  \item $n\times n$: $\det(\lambda\mt{I}-\mt{A})=\prod(\lambda-\lambda_i)$ (the
+        fundamental theorem of algebra, stated). Setting $\lambda=0$ gives the
+        determinant. The $\lambda^{n-1}$ coefficient gives the trace, because
+        only the diagonal product contributes: in a first-row expansion, every
+        other term's minor lacks two diagonal entries.
+  \item For diagonalizable $\mt{A}$, also
+        $\tr(\mt{V}\Lambda\mt{V}^{-1})=\tr(\Lambda)$ by R4\prop.
+\end{itemize}
+
+\sect{4}{Abel--Ruffini} Statement: no formula in radicals gives the roots of a
+general polynomial of degree $\ge5$. The relationship: every monic polynomial
+is the characteristic polynomial of its companion matrix\prop. So a radical
+formula for the eigenvalues of every $5\times5$ matrix would solve every
+quintic. Eigenvalues from $5\times5$ up must therefore, in general, be computed
+by iteration rather than formula (looking ahead to the power method and the $QR$
+algorithm).
+
+\partplan{E2}{Diagonalization and the Spectral Theorem}
+  {eigen\_2\_diagonalization\_and\_the\_spectral\_theorem}{\S5--\S7}{1.5}
+\sect{5}{Diagonalization} $\mt{A}=\mt{V}\Lambda\mt{V}^{-1}$, with eigenvectors as the
+columns of $\mt{V}$. This holds $\iff$ there are $n$ independent eigenvectors.
+Distinct eigenvalues give independent eigenvectors. The shear
+$\begin{bmatrix}1&1\\0&1\end{bmatrix}$ is not diagonalizable. Powers:
+$\mt{A}^{k}=\mt{V}\Lambda^{k}\mt{V}^{-1}$. Presented algebraically. Reading it
+as a change of basis, ``in the eigenbasis $\mt{A}$ acts as $\Lambda$'', is
+planted here and done in L2.\see{D12}
+
+\sect{6}{The spectral theorem} For real symmetric $\mt{A}$:
+\begin{itemize}[leftmargin=1.4em]
+  \item the eigenvalues are real;
+  \item eigenvectors of distinct eigenvalues are orthogonal (short proofs of
+        both);
+  \item there is an orthonormal eigenbasis, with
+        $\mt{A}=\mt{Q}\Lambda\mt{Q}\T=\sum\lambda_i\vc{q}_i\vc{q}_i\T$, a
+        weighted sum of the rank-one projections of matrix \S26;
+  \item $\R^{n}$ is the direct sum of the eigenspaces (matrix \S29).
+\end{itemize}
+Existence of the eigenbasis in general is stated. Applied to the symmetric
+matrix $\mt{A}\T\mt{A}$, this is the engine of the SVD (L3).
+
+\sect{7}{The spectral radius} $\rho(\mt{A})=\max|\lambda_i|$. For diagonalizable
+$\mt{A}$, $\mt{A}^{k}\to\mt{0}\iff\rho(\mt{A})<1$\prop.
+
+\partplan{E3}{Structure and Location}
+  {eigen\_3\_structure\_and\_gershgorin}{\S8--\S9}{1}
+\sect{8}{Structure and eigenvalues} A table for real $n\times n$ matrices, each
+row with a short proof:
+\begin{itemize}[leftmargin=1.4em]
+  \item triangular and diagonal: the diagonal entries (matrix \S39 applied to
+        $\mt{A}-\lambda\mt{I}$);
+  \item symmetric: real eigenvalues, orthogonal eigenvectors;
+  \item skew-symmetric: $0$ or purely imaginary;
+  \item orthogonal: $|\lambda|=1$;
+  \item projection: $0$ and $1$; reflection: $\pm1$; nilpotent: only $0$;
+  \item $\vc{u}\vc{v}\T$: $\vc{v}\T\vc{u}$ and zeros;
+  \item $\mt{A}\T$: the same eigenvalues;
+  \item $\mt{A}^{k}$, $\mt{A}^{-1}$, $\mt{A}+c\mt{I}$: $\lambda^{k}$,
+        $1/\lambda$, $\lambda+c$;
+  \item $\mt{A}\T\mt{A}$: eigenvalues $\ge0$;
+  \item invertible $\iff$ $0$ is not an eigenvalue.
+\end{itemize}
+
+\sect{9}{The Gershgorin circle theorem} Every eigenvalue lies in a disc centered
+at some $a_{ii}$ with radius $R_i=\sum_{j\neq i}|a_{ij}|$ (discs in
+$\mathbb{C}$: complex numbers \S5.3). \emph{Proof:} in
+$\mt{A}\vc{v}=\lambda\vc{v}$, choose $i$ with $|v_i|$ largest. Examples.
+Corollaries\prop: a strictly diagonally dominant matrix is invertible, and
+$\rho(\mt{A})\le\max_i\sum_j|a_{ij}|$.
+
+%==============================================================================
+\section{The linear-maps unit (the end of the course)}
+%==============================================================================
+This is a new unit, restarting at \S1. Much of it reinterprets what is already
+built, so it is shorter than its importance. It collects three debts:
+\begin{itemize}[leftmargin=1.4em]
+  \item Part~1 \S8's ``no attempt is made yet to justify why the rule is this
+        one; that motivation comes later in the course'';
+  \item D8's deferred pseudo-inverse;
+  \item the change-of-basis reading of diagonalization planted in E2.
+\end{itemize}
+
+\partplan{L1}{Linear Maps and Composition}
+  {linmaps\_1\_linear\_maps\_and\_composition}{\S1--\S3}{1}
+\sect{1}{Linear maps} $T:\R^{n}\to\R^{m}$ with $T(\vc{x}+\vc{y})=T\vc{x}+T\vc{y}$
+and $T(\alpha\vc{x})=\alpha T\vc{x}$. Examples and non-examples, including
+translation (matrix \S17). Kernel and image of a map, which are matrix
+\S30--\S32 restated for maps: injective $\iff$ kernel $\{\vc{0}\}$, surjective
+$\iff$ image $=\R^{m}$, invertible $\iff$ both.
+
+\sect{2}{The matrix of a linear map} $[T]=[\,T\vc{e}_1\mid\cdots\mid T\vc{e}_n\,]$,
+matrix \S13 made general. Every linear map $\R^{n}\to\R^{m}$ is multiplication
+by exactly one matrix, and vice versa.
+
+\sect{3}{Composition, and where matrix multiplication comes from} Let
+$T:\R^{n}\to\R^{p}$ and $S:\R^{p}\to\R^{m}$. Then $S\circ T$ is linear, and
+column $j$ of its matrix is $S(T\vc{e}_j)=[S]\,(\text{column } j\text{ of }[T])$.
+Writing that out entry by entry \emph{forces}
+$c_{ij}=\sum_k a_{ik}b_{kj}$, the rule of Part~1 \S8.1, now derived rather than
+decreed. The shape rule $(m\times p)(p\times n)$ is the requirement that the
+maps chain. M1 is associativity of composing functions. Non-commutativity is
+order of operations: rotate-then-reflect differs from reflect-then-rotate
+(Part~3). $(\mt{A}\mt{B})^{-1}=\mt{B}^{-1}\mt{A}^{-1}$ is undoing in reverse
+order.
+
+\partplan{L2}{Change of Basis}
+  {linmaps\_2\_change\_of\_basis}{\S4--\S5}{1}
+\sect{4}{Coordinates in a basis} This returns to matrix Part~1 \S1--\S2:
+$\vc{u}=\mt{V}\vc{x}$, so $\vc{x}=\mt{V}^{-1}\vc{u}$ (matrix \S51). Part~1's
+distinction between the point $\vc{u}$ and its recipe $\vc{x}$ becomes the
+change-of-basis matrix. Changing between two non-standard bases:
+$\mt{W}^{-1}\mt{V}$. For an orthonormal basis, $\mt{V}^{-1}=\mt{V}\T$, so
+coordinates are dot products (computational \S16).
+
+\sect{5}{The matrix of a map in another basis; similarity} In the basis of
+$\mt{V}$'s columns, the map $\vc{x}\mapsto\mt{A}\vc{x}$ has matrix
+$\mt{V}^{-1}\mt{A}\mt{V}$. $\mt{A}$ and $\mt{B}$ are \emph{similar} when
+$\mt{B}=\mt{V}^{-1}\mt{A}\mt{V}$. Similar matrices share determinant, trace,
+rank, and eigenvalues, each a one-line proof (the product rule, R4,
+$\det(\mt{V}^{-1}(\mt{A}-\lambda\mt{I})\mt{V})$). Diagonalization reread: in
+the eigenbasis, $\mt{A}$ \emph{is} $\Lambda$. The spectral theorem reread:
+$\mt{Q}\T\mt{A}\mt{Q}=\Lambda$, a change to an orthonormal basis.
+
+\partplan{L3}{The Singular Value Decomposition}
+  {linmaps\_3\_the\_svd}{\S6--\S8}{1.5}
+\sect{6}{The circle goes to an ellipse} Any $2\times2$ matrix sends the unit
+circle to an ellipse (possibly flattened). It looks like non-uniform scaling
+(matrix \S16) between two rotations or reflections (\S21). The claim is that
+every matrix is exactly that: \emph{orthogonal, scale, orthogonal}.
+
+\sect{7}{Construction} $\mt{A}\T\mt{A}$ is symmetric with eigenvalues $\ge0$
+(E2, E3). Take orthonormal eigenvectors $\vc{v}_i$, set
+$\sigma_i=\sqrt{\lambda_i}$, and for $\sigma_i>0$ set
+$\vc{u}_i=\mt{A}\vc{v}_i/\sigma_i$. These are orthonormal:
+$\vc{u}_i\T\vc{u}_j=\vc{v}_i\T\mt{A}\T\mt{A}\vc{v}_j/(\sigma_i\sigma_j)=\delta_{ij}$.
+So $\mt{A}=\mt{U}\Sigma\mt{V}\T$. The number of nonzero $\sigma_i$ is
+$\rank(\mt{A}\T\mt{A})=\rank\mt{A}$ (matrix \S33). Thin and full forms. A
+$2\times2$ example, worked by hand.
+
+\sect{8}{What it gives}
+\begin{itemize}[leftmargin=1.4em]
+  \item Orthonormal bases of all four subspaces. The first $r$ $\vc{u}$'s span
+        $\colsp{A}$. The first $r$ $\vc{v}$'s span $\rowsp{A}$. The rest span
+        $\nullsp{A}$ and $\nullsp{A\T}$. This is matrix \S30--\S33 made
+        explicit.
+  \item $\mt{A}=\sum\sigma_i\vc{u}_i\vc{v}_i\T$, a sum of rank-one matrices.
+  \item The pseudo-inverse in every case,
+        $\mt{A}^{+}=\mt{V}\Sigma^{+}\mt{U}\T$. This collects D8; check it
+        against the four conditions of \S54.
+  \item For square $\mt{A}$, $|\det\mt{A}|=\prod\sigma_i$: area again, \S23\prop.
+  \item Truncating the sum gives the best low-rank approximation (Eckart--Young,
+        stated only; it is listed among the not-guaranteed topics)\prop.
+\end{itemize}
+
+%==============================================================================
+\section{Decisions to settle before writing}
+%==============================================================================
+\begin{enumerate}[label=\textbf{D\arabic*.},leftmargin=2.4em,itemsep=5pt]
+  \item \textbf{Part~1 says elimination is ``next''.} Its closing Looking-ahead
+        (end of \S9) promises Gaussian elimination as the next topic; under
+        this order it is Part~8. Recommended: change ``it is next'' to ``it is
+        coming'' in Part~1 (a one-line edit and recompile of a distributed
+        document), and have Part~2 open by explaining the detour: when a
+        solution exists comes before how to find it.
+  \item \textbf{Translation is not linear.} No matrix acting on $\R^{2}$
+        translates, because $\mt{A}\vc{0}=\vc{0}$ always. \S17 proves this, then
+        translates with a $3\times3$ matrix in homogeneous coordinates.
+        Alternatives: keep translation only as the non-example, or drop it.
+  \item \textbf{$\mt{A}\T\mt{A}=\mt{I}$ is all the length argument gives.} The
+        definition as specified ($\mt{A}\T\mt{A}=\mt{A}\mt{A}\T=\mt{I}$) is
+        kept. For $2\times2$, the second identity follows from the first by
+        \S21's classification. For $n\times n$ it follows from ``a one-sided
+        inverse of a square matrix is two-sided'', proved in \S51 from
+        rank--nullity. Part~3 says so in a Looking-ahead.
+  \item \textbf{Row rank $=$ column rank.} Before \S33 this is checked for
+        $2\times2$ only: $ad-bc$ is the same number read along the rows. \S33
+        proves it in general as a corollary of
+        $\rank(\mt{A}\T\mt{A})=\rank\mt{A}$, which keeps the given order and
+        needs no elimination.
+  \item \textbf{Rank--nullity before elimination.} The \S32 proof extends a
+        basis, so it takes as given three facts about dimension that no
+        document proves in general: every subspace of $\R^{n}$ has a basis; an
+        independent set extends to a basis; all bases of a subspace have the
+        same size. This is the same footing on which Part~1 \S1.1 accepted
+        ``$n$ independent vectors span $\R^{n}$''. \S43 gives the second,
+        computational proof by counting pivots.
+  \item \textbf{What is proved about the general determinant.} Stated without
+        proof (the proofs need permutations): every row or column expansion
+        gives the same number; $\det\mt{A}\T=\det\mt{A}$; the $n\times n$
+        product rule. Proved: $\det(\alpha\mt{A})=\alpha^{n}\det\mt{A}$; a zero
+        row; two equal rows (from the swap rule); triangular and diagonal (by
+        induction); orthogonal (from the product and transpose rules);
+        $\mt{A}\,\adj\mt{A}=\det(\mt{A})\,\mt{I}$.
+  \item \textbf{Least squares comes before the general inverse.} So Part~9
+        solves the normal equations by elimination and never writes
+        $(\mt{A}\T\mt{A})^{-1}$. That formula arrives in \S53 and becomes
+        $\mt{A}^{+}$ in \S54.
+  \item \textbf{Scope of the pseudo-inverse.} For Midterm~2: full column rank,
+        full row rank, invertible, and the four Moore--Penrose conditions.
+        Existence and uniqueness for rank-deficient $\mt{A}$ is stated in \S54
+        and computed in L3 as $\mt{V}\Sigma^{+}\mt{U}\T$, so it is on the final.
+  \item \textbf{Prerequisites not yet lectured.} As of the last recorded lecture
+        (Oct~8), these have not been covered:
+        \begin{itemize}[leftmargin=1.2em]
+          \item veccalc Part~2 (\S10--\S15: the gradient in $\R^{n}$ and the
+                Hessian), needed by \S48;
+          \item computational Part~4 (Gram--Schmidt; the Kronecker delta of
+                \S16.2), needed by \S20 and Part~11;
+          \item complex numbers \S5.3 and \S6 (discs, Euler's formula), used by
+                the eigen unit.
+        \end{itemize}
+        Recommended: restate $\delta_{ij}$ in \S20 and the two gradient facts in
+        \S48 in look-back boxes, as Homework~3's Hessian part did. Lecture
+        computational Part~4's \S17--\S18 instead of rewriting Gram--Schmidt.
+  \item \textbf{Angle-addition formulas} appear in no course document. \S24
+        states them, or derives them from
+        $\mt{R}_\alpha\mt{R}_\beta=\mt{R}_{\alpha+\beta}$.
+  \item \textbf{Composition is used before it is derived.} The matrix unit
+        reads $\mt{A}\mt{B}$ as ``do $\mt{B}$, then $\mt{A}$'' in \S24
+        ($\mt{R}_\alpha\mt{R}_\beta$), \S25 ($\mt{R}_x\mt{R}_z$), and the
+        Part~3 compositions. That reading is free from M1:
+        $(\mt{A}\mt{B})\vc{x}=\mt{A}(\mt{B}\vc{x})$. L1 reverses the logic and
+        derives the product rule \emph{from} composition, as specified. An
+        alternative is to move L1~\S3 forward to sit beside \S13, where the
+        gallery first composes motions. That would answer Part~1 \S8's
+        ``why this rule'' as soon as it is needed and shorten the end of term,
+        but it departs from the given order.
+  \item \textbf{Change of basis comes after diagonalization.} In this order,
+        E2 presents $\mt{V}\Lambda\mt{V}^{-1}$ algebraically, and L2 supplies
+        the change-of-basis meaning afterwards. This works because Part~1
+        \S1--\S2 already treated $\mt{V}\vc{x}=\vc{u}$ as ``coordinates in a
+        basis''. E2 only needs a Looking-ahead.
+\end{enumerate}
+
+%==============================================================================
+\section{Notation}
+%==============================================================================
+\begin{enumerate}[label=\textbf{N\arabic*.},leftmargin=2.4em,itemsep=4pt]
+  \item $\colsp{A}$ and $\rowsp{A}$, as used in class. Proposed: $\nullsp{A}$
+        in the same style, with ``kernel'' and the textbook spellings
+        $N(\mt{A})$, $\ker\mt{A}$ mentioned once. Subspaces take brackets and
+        numbers take parentheses: $\rank(\mt{A})$, $\nullity(\mt{A})$,
+        $\det(\mt{A})$, $\tr(\mt{A})$.
+  \item Never $|\mt{A}|$ for the determinant: it collides with
+        $|\det\mt{A}|$ in \S23.
+  \item $\mt{Q}$ is reserved for orthogonal matrices and $QR$. The
+        complementary projection is written $\mt{I}-\mt{P}_{\vc{u}}$. The
+        held-back Homework~3 Part~G problems (catalog 9--12) write
+        $\mt{Q}_{\vc{u}}$ for it; rename it when they are assigned.
+  \item ``Adjoint'': use \emph{adjugate}, $\adj\mt{A}$, with one sentence
+        noting that ``(classical) adjoint'' is the older name and that
+        ``adjoint'' elsewhere usually means the (conjugate) transpose.
+  \item $\mt{R}_\theta$ for rotations, and $\mt{R}$ (no subscript) for the triangular
+        factor of $QR$. $\mt{P}_{\vc{u}}$ for the orthogonal projection onto
+        $\spanop\{\vc{u}\}$.
+  \item Part~2 opens with \verb|\setcounter{section}{9}|, as the vector and
+        computational units do. The eigen and linear-maps units each restart
+        at \S1.
+\end{enumerate}
+
+%==============================================================================
+\section{Pacing against the calendar}\label{sec:pacing}
+%==============================================================================
+Meetings left after Oct~22 (whatever Oct~20 and~22 covered is not recorded):
+Oct~27, 29; Nov~3, 5, 10, 12, 17, 19, 24; Dec~1, 3, 8, 10. That is
+\textbf{13 meetings}.
+
+\medskip
+\noindent\textbf{Estimated demand}, at the pace so far (matrix Part~1 took two
+meetings; vector-unit Parts took 1.5 to 2.5):
+\begin{itemize}[leftmargin=1.4em]
+  \item matrix Parts~2--11: about 16 meetings;
+  \item the eigen unit: about 4;
+  \item the linear-maps unit: about 3.5;
+  \item Midterm~2: 1.
+\end{itemize}
+That is about \textbf{24 meetings} against 13. Even at a full Part every
+meeting, the sixteen Parts plus the midterm need 17.
+
+\medskip
+\noindent\textbf{What fitting would take.} About $1.3$ Parts per meeting, with
+no review day and Midterm~2 on Nov~24. That is roughly two and a half times
+the pace of matrix Part~1:
+
+{\renewcommand{\arraystretch}{1.25}
+\begin{center}
+\small
+\begin{tabular}{@{}l l @{\qquad} l l@{}}
+\toprule
+Oct 27 & Part 2 & Nov 19 & Part 11 (Gram--Schmidt read beforehand) \\
+Oct 29 & Part 3 & Nov 24 & \textbf{Midterm 2} \\
+Nov 3  & Parts 4 and 5 & Dec 1  & E1, and E2 begun \\
+Nov 5  & Part 6 & Dec 3  & E2 and E3 \\
+Nov 10 & Part 7, and Part 8 begun & Dec 8  & L1 and L2 \\
+Nov 12 & Part 8 finished, and Part 9 & Dec 10 & L3 \\
+Nov 17 & Part 10 &        & \\
+\bottomrule
+\end{tabular}
+\end{center}}
+
+\noindent\textbf{Levers}, since that is too fast:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+  \item Assign lighter sections as reading: \S25 (rotations in $\R^{3}$),
+        \S37 (principal minors), \S50 (Cramer's rule), \S54 beyond full
+        column rank, E3's structure table, and L2's similarity invariants.
+  \item Merge. Part~4's \S22 folds into Part~2, since each property is a
+        one-line check. Part~7 can lean on Part~8 (determinant by pivots) and
+        shrink to minors, cofactors, and Laplace expansion. E3's Gershgorin can
+        close E2.
+  \item Move L1~\S3 (the product rule from composition) forward beside \S13
+        (D11). It costs little there and shortens the end of term.
+  \item Move Midterm~2 earlier with a narrower scope, for example through
+        Part~8, and examine least squares, the inverse, and $QR$ on the final.
+        This changes ``Gram--Schmidt and $QR$ is the last topic for
+        Midterm~2'', so it is the instructor's call.
+  \item Trim the final's scope, for example by stating the SVD and its
+        consequences without the full construction.
+\end{enumerate}
+
+\noindent\textbf{Homework.} Two of the five assignments remain after
+Homework~3. A natural split is Homework~4 on Parts~2--6 (catalog Problems
+4--12) and Homework~5 on Parts~7--11 (catalog 13--14). The eigen and
+linear-maps units would then have no homework of their own.
+
+\end{document}
